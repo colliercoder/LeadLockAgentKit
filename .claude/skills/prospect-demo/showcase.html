@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leadlock × Claude Code — Build a Voice AI Demo in 10 Minutes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0A0A0B;
+    --bg-raised: #131316;
+    --bg-card: #1a1a1f;
+    --text: #ededed;
+    --text-dim: #9ca3af;
+    --text-muted: #6b7280;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --accent-dark: #2563eb;
+    --border: #27272a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .deck { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6vh 8vw;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+
+  .slide.active { opacity: 1; pointer-events: auto; }
+
+  .slide.center { align-items: center; text-align: center; justify-content: center; }
+
+  /* Top bar */
+  .topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 40px;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .topbar img { height: 22px; opacity: 0.5; }
+
+  .counter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+
+  /* Hide topbar logo on slide 1 (already shown in hero) */
+  .slide-1-active .topbar img { display: none; }
+
+  .progress {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: var(--accent);
+    transition: width 0.4s ease;
+    z-index: 10;
+  }
+
+  /* Typography */
+  .eyebrow {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent-light);
+    margin-bottom: 28px;
+  }
+
+  h1 {
+    font-size: clamp(48px, 6vw, 92px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+  }
+
+  h1 .blue, h2 .blue { color: var(--accent); }
+
+  h2 {
+    font-size: clamp(40px, 5vw, 72px);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    margin-bottom: 24px;
+  }
+
+  .lead {
+    font-size: clamp(20px, 1.9vw, 26px);
+    color: var(--text-dim);
+    line-height: 1.45;
+    max-width: 1100px;
+  }
+
+  .lead strong { color: var(--text); font-weight: 600; }
+
+  /* ───── SLIDE 1: HERO PARTNERSHIP LOCKUP ───── */
+  .hero {
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .partnership {
+    display: flex;
+    align-items: center;
+    gap: 56px;
+    margin-bottom: 64px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .brand-tile {
+    background: linear-gradient(180deg, #131316 0%, #0c0c0e 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 0;
+    width: 380px;
+    height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  .brand-tile.leadlock {
+    border-color: rgba(59, 130, 246, 0.3);
+    background: radial-gradient(circle at center, rgba(59,130,246,0.08) 0%, #0c0c0e 70%);
+  }
+
+  .brand-tile.leadlock img {
+    height: 56px;
+    width: auto;
+  }
+
+  .brand-tile.claude {
+    background: #d9d4c5;
+    padding: 0;
+  }
+
+  .brand-tile.claude img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .lockup-x {
+    font-size: 64px;
+    font-weight: 200;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .hero h1 {
+    font-size: clamp(48px, 6.2vw, 96px);
+    max-width: 1400px;
+    margin-bottom: 24px;
+  }
+
+  .hero .hero-sub {
+    font-size: clamp(20px, 1.8vw, 26px);
+    color: var(--text-dim);
+    max-width: 900px;
+    line-height: 1.45;
+  }
+
+  /* ───── SLIDE 2: PROSPECT ───── */
+  .prospect-card {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px 56px;
+    margin-top: 32px;
+    max-width: 900px;
+  }
+
+  .prospect-card .label {
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .prospect-card .name {
+    font-size: 44px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    line-height: 1.1;
+  }
+
+  .prospect-card .url {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent-light);
+    font-size: 22px;
+    margin-bottom: 24px;
+  }
+
+  .prospect-card .desc {
+    font-size: 19px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* ───── SLIDE 3: HOW IT'S DONE ───── */
+  .command-strip {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: 24px 32px;
+    margin-bottom: 36px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(16px, 1.4vw, 22px);
+    line-height: 1.5;
+    color: var(--text);
+    position: relative;
+  }
+
+  .command-strip::before {
+    content: "you type into claude code:";
+    position: absolute;
+    top: -10px;
+    left: 24px;
+    background: var(--bg);
+    padding: 0 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .command-strip .accent { color: var(--accent-light); }
+  .command-strip .str { color: #a3e635; }
+
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+
+  .step {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .step:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+  .step .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 8px;
+    letter-spacing: 0.1em;
+  }
+
+  .step .title {
+    font-size: 19px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    line-height: 1.25;
+  }
+
+  .step .desc {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+
+  /* ───── SLIDE 4: RESULT ───── */
+  .url-display {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(18px, 1.6vw, 24px);
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 26px;
+    margin: 10px 0;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .url-display .model-tag {
+    font-size: 11px;
+    color: var(--accent-light);
+    background: rgba(59, 130, 246, 0.12);
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .url-display .slug { color: var(--accent-light); }
+
+  .iframe-code {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: 24px 32px;
+    margin-top: 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(15px, 1.3vw, 20px);
+    line-height: 1.5;
+    color: var(--text);
+    position: relative;
+  }
+
+  .iframe-code::before {
+    content: "drop into your gohighlevel site:";
+    position: absolute;
+    top: -10px;
+    left: 24px;
+    background: var(--bg);
+    padding: 0 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .iframe-code .kw { color: var(--accent-light); }
+  .iframe-code .str { color: #a3e635; }
+  .iframe-code .attr { color: var(--text-dim); }
+
+  /* ───── SLIDE 5: PARTNER PITCH ───── */
+  .pitch {
+    background: linear-gradient(135deg, rgba(59,130,246,0.10) 0%, rgba(59,130,246,0.02) 100%);
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    border-radius: 16px;
+    padding: 44px 52px;
+    margin-top: 24px;
+    max-width: 1150px;
+  }
+
+  .pitch p {
+    font-size: clamp(19px, 1.7vw, 24px);
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin-bottom: 18px;
+  }
+
+  .pitch p:last-child { margin-bottom: 0; }
+  .pitch p strong { color: var(--text); font-weight: 600; }
+
+  .scarcity-tag {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ───── SLIDE 6: CTA ───── */
+  .cta-list {
+    display: grid;
+    gap: 18px;
+    margin-top: 16px;
+    max-width: 900px;
+    width: 100%;
+  }
+
+  .cta-item {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 26px 32px;
+    text-align: left;
+  }
+
+  .cta-item .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--accent);
+    width: 32px;
+    flex-shrink: 0;
+  }
+
+  .cta-item .text { font-size: clamp(18px, 1.55vw, 22px); line-height: 1.4; }
+  .cta-item .text strong { color: var(--accent-light); font-weight: 600; }
+
+  .leadlock-wordmark { color: var(--accent); font-weight: 700; }
+
+  /* Nav hint */
+  .nav-hint {
+    position: fixed;
+    bottom: 16px;
+    right: 24px;
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+    z-index: 10;
+  }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .steps-grid { grid-template-columns: repeat(2, 1fr); }
+    .partnership { gap: 32px; }
+    .brand-tile { width: 320px; height: 200px; }
+    .brand-tile.leadlock img { height: 44px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <img src="https://app.leadlock.ai/brand/leadlock-logo-horizontal-white.png" alt="Leadlock" onerror="this.style.display='none'">
+  <span class="counter"><span id="cur">1</span> / <span id="total">6</span></span>
+</div>
+
+<div class="progress" id="progress"></div>
+
+<div class="deck" id="deck">
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 1 — HERO / PARTNERSHIP LOCKUP        -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide active hero center">
+    <div class="partnership">
+      <div class="brand-tile leadlock">
+        <img src="https://app.leadlock.ai/brand/leadlock-logo-horizontal-white.png" alt="Leadlock">
+      </div>
+      <div class="lockup-x">&times;</div>
+      <div class="brand-tile claude">
+        <img src="./claude-code.png" alt="Claude Code">
+      </div>
+    </div>
+    <h1>Build voice AI demos<br><span class="blue">in under ten minutes.</span></h1>
+    <p class="hero-sub">A live walkthrough &mdash; from a cold prospect's website to a shareable, embeddable voice demo. Without ever logging into a platform.</p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 2 — TODAY'S PROSPECT                 -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="eyebrow">Let's begin</div>
+    <h2>Today's prospect</h2>
+    <div class="prospect-card">
+      <div class="label">Industry</div>
+      <div class="name">Electrician &middot; Local services</div>
+      <div class="url">northernmistersparky.com</div>
+      <div class="desc">Cold prospect. No prior contact. No intake form. We've never seen this site before. Watch the platform build them a custom voice demo from scratch.</div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 3 — HOW IT'S DONE (one-pager)        -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="eyebrow">How it's done</div>
+    <h2>One command. <span class="blue">Six steps.</span> Zero UI clicks.</h2>
+
+    <div class="command-strip">
+<span class="accent">build a prospect demo for</span> <span class="str">northernmistersparky.com</span><span class="accent"> &mdash; scrape the site, pre-fill the intake, and create A/B agents across gemini, openai, and grok.</span>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step">
+        <div class="num">STEP 01</div>
+        <div class="title">Scrape the site</div>
+        <div class="desc">Services, pricing, hours, tone, service area &mdash; pulled in seconds.</div>
+      </div>
+      <div class="step">
+        <div class="num">STEP 02</div>
+        <div class="title">Pre-fill the intake</div>
+        <div class="desc">Eight intake questions answered automatically from scrape data.</div>
+      </div>
+      <div class="step">
+        <div class="num">STEP 03</div>
+        <div class="title">Write the prompt</div>
+        <div class="desc">Production-grade system prompt with call flow, objections, guardrails.</div>
+      </div>
+      <div class="step">
+        <div class="num">STEP 04</div>
+        <div class="title">Spin up three agents</div>
+        <div class="desc">Same script, three voice engines: Gemini, OpenAI, Grok.</div>
+      </div>
+      <div class="step">
+        <div class="num">STEP 05</div>
+        <div class="title">Generate demo URLs</div>
+        <div class="desc">Each agent gets a live, shareable link. Calendar wired in.</div>
+      </div>
+      <div class="step">
+        <div class="num">STEP 06</div>
+        <div class="title">Embed anywhere</div>
+        <div class="desc">One iframe drops a demo into any GoHighLevel site or landing page.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 4 — THE RESULT                       -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="eyebrow">The result</div>
+    <h2>Three demos. <span class="blue">Ready to call.</span> Ready to embed.</h2>
+
+    <div class="url-display"><span class="model-tag">Gemini</span>app.leadlock.ai/d/<span class="slug">northern-mister-sparky-homeservices-glzrqj</span></div>
+    <div class="url-display"><span class="model-tag">OpenAI</span>app.leadlock.ai/d/<span class="slug">northern-mister-sparky-homeservices-a3w998</span></div>
+    <div class="url-display"><span class="model-tag">Grok</span>app.leadlock.ai/d/<span class="slug">northern-mister-sparky-homeservices-wd41sl</span></div>
+
+    <div class="iframe-code">
+<span class="kw">&lt;iframe</span> <span class="attr">src=</span><span class="str">"https://app.leadlock.ai/d/northern-mister-sparky-homeservices-wd41sl"</span> <span class="attr">width=</span><span class="str">"100%"</span> <span class="attr">height=</span><span class="str">"700"</span><span class="kw">&gt;&lt;/iframe&gt;</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 5 — PARTNER PITCH                    -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="eyebrow">Now opening</div>
+    <span class="scarcity-tag">Only 10 slots</span>
+    <h2>White-label partner program.</h2>
+    <div class="pitch">
+      <p>Leadlock is the speech-to-speech engine behind the next generation of voice AI agencies. We're looking for elite operators to white-label the platform and deploy it at scale.</p>
+      <p><strong>Who qualifies:</strong></p>
+      <p>&middot; Agencies with high client volume &mdash; or clearly on the path<br>
+         &middot; Proven sales operation, ready to move fast<br>
+         &middot; Serious about deploying voice AI to the world</p>
+      <p><strong>We only work with the best. Ten slots. That's the program.</strong></p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 6 — CTA                              -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide center">
+    <div class="eyebrow">See if you qualify</div>
+    <h1>Want in?</h1>
+    <div class="cta-list">
+      <div class="cta-item">
+        <div class="num">01</div>
+        <div class="text"><strong>Apply for white-label partnership.</strong><br>Calendar link in the description below.</div>
+      </div>
+      <div class="cta-item">
+        <div class="num">02</div>
+        <div class="text"><strong>Start using Leadlock today.</strong><br>50 Agency &amp; Pro plan slots available &mdash; link in the description.</div>
+      </div>
+    </div>
+    <p style="margin-top: 56px; font-size: 16px; color: var(--text-muted);">Powered by <span class="leadlock-wordmark">Leadlock.ai</span> &nbsp;&times;&nbsp; <span style="color: var(--text-dim);">Claude Code</span></p>
+  </section>
+
+</div>
+
+<div class="nav-hint">&larr; &rarr; &middot; space &middot; 1-6</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  const counter = document.getElementById('cur');
+  const totalEl = document.getElementById('total');
+  const progress = document.getElementById('progress');
+  let current = 0;
+
+  totalEl.textContent = total;
+
+  function updateBodyClass() {
+    document.body.className = 'slide-' + (current + 1) + '-active';
+  }
+
+  function go(idx) {
+    if (idx < 0 || idx >= total) return;
+    slides[current].classList.remove('active');
+    slides[idx].classList.add('active');
+    current = idx;
+    counter.textContent = current + 1;
+    progress.style.width = ((current + 1) / total * 100) + '%';
+    updateBodyClass();
+  }
+
+  function next() { go(Math.min(current + 1, total - 1)); }
+  function prev() { go(Math.max(current - 1, 0)); }
+
+  progress.style.width = (1 / total * 100) + '%';
+  updateBodyClass();
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault(); next();
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault(); prev();
+    } else if (e.key === 'Home') { go(0); }
+    else if (e.key === 'End') { go(total - 1); }
+    else if (/^[1-9]$/.test(e.key)) {
+      const idx = parseInt(e.key, 10) - 1;
+      if (idx < total) go(idx);
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('a, button, input')) return;
+    const half = window.innerWidth / 2;
+    if (e.clientX > half) next(); else prev();
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,525 @@
+---
+name: prospect-demo
+description: Build voice agent demo(s) for a prospect from a URL or filled-out demo intake. Scrapes the site, writes the system prompt, creates 1-to-N agents across voice models (Gemini, OpenAI, Grok, ElevenLabs) for A/B testing, creates orb demo configs, and returns live shareable URLs ready to embed in any GoHighLevel site. Triggers on /prospect-demo, build a demo, make a demo, create a demo, spin up a demo, give me a voice demo, voice agent demo for, AI demo for this business, demo for a prospect, new prospect demo, prospect sent back their intake, they filled out the form, build a demo for [name], make a demo for [name], demo this URL, demo this website, build me a voice AI for, sales demo from URL.
+---
+
+# Prospect Demo Builder (API edition)
+
+Build a polished voice-agent demo (or multiple demos across models for A/B) for a prospect. Output: live `/d/<slug>` URLs + a ready-to-send email. All work happens via the Leadlock API — no UI clicks, no Supabase access required.
+
+## When to invoke
+
+- User pastes a URL: "build a demo for https://acmeplumbing.com"
+- User pastes a filled-out demo intake form
+- User says "build a demo for [business name]" / "[name] sent back the intake"
+- User wants multi-model A/B demos across providers for the same script
+
+## Setup check
+
+Before doing anything, confirm `.env` exists and has `LEADLOCK_API_KEY` + `LEADLOCK_API_URL`. If missing, stop and tell the user to copy `.env.example` to `.env` and paste their key.
+
+## Rules
+
+1. **Never name the platform in any agent output.** The system prompt must keep "Leadlock" confidential. Use "our system" / "the platform we use". Platform name OK in the outgoing email to the prospect.
+2. **Positive framing.** Tell the agent what TO do, not what NOT to do. Quarantine negatives in a single `## Guardrails` section at the bottom.
+3. **Never use the word "closer"** anywhere in prompts or copy. Use "team member" / "specialist" / "funding specialist" (MCA only).
+4. **Mirror an existing working calendar config** instead of guessing. `GET /agents` and find one with `calendar_integration_id` set, copy its `calendar_id`, `calendar_integration_id`, `calendar_provider`, and `calendar_configs`. If the tenant has no existing agents with a calendar, ask the user for the calendar info or build without `book_appointment` (use `collect_contact` only).
+5. **Verify with explicit columns, not COALESCE.** The API returns default values for non-matching voice columns (e.g. `gemini_voice='Puck'` on every agent regardless of provider). Always check `voice_provider` + the matching voice column explicitly.
+6. **Branch discipline: stay on main.** No `git checkout -b`.
+7. **Demo channel defaults to `orb`** for showpiece voice demos. Only use `web`, `phone`, `fb_lead`, or `messenger` when the intake explicitly asks for that surface.
+8. **Recording disclosure off by default on demos** (`enable_recording_disclosure=false`, `recording_enabled=false`). Flip back on when shipping to a real outbound line.
+9. **Confirm ambiguous names with the user before building.** Intake forms often contradict themselves. Stop and ask.
+10. **Use the Trejon-style template structure exactly** (see `## Shared prompt skeleton`). Don't invent your own structure. Don't hoist a "CRITICAL RULES" section to the top — it duplicates Guardrails.
+11. **Target 5K-9K chars for sales prompts.** Under 3K = missing context. Over 10K = bloat.
+12. **No dynamic variables (`{{...}}`) for cold inbound prospects.** Reserve for stateful agents that pull per-session data.
+13. **Numbered Call Flow with concrete quoted phrases.** Each stage has the actual opening line in quotes the agent can speak. Don't write `"ask about their needs"` — write the actual question in quotes.
+14. **Eligibility gates restated as a Guardrails rule.** "All four gates must be a yes before invoking `book_appointment`" — not just a checklist inside Call Flow.
+15. **End-call discipline mandatory.** Add to Guardrails: `"Tool calls are actions, not speech. Saying 'I'll end the call' does not end it. After saying goodbye once, the next thing you do is end_call."`
+16. **One-line objection responses.** Each entry in Handling Common Situations is the agent's actual reply in quotes, two to three sentences max.
+17. **One question at a time. Thirty-word default cap with override clause for scripted responses.** Add to Guardrails:
+    ```
+    - One question at a time. This is the hard rule.
+    - Default to responses under thirty words. Exception: when this prompt gives you a longer scripted response (in Call Flow or Handling Common Situations), use the scripted version verbatim — don't truncate it.
+    ```
+18. **Speak numbers as words.** Add to Guardrails: `"Speak numbers, prices, and times as words: 'twelve cents', 'fifteen minutes', 'two-point-nine percent'."`
+19. **AI disclosure handler.** Include a `**Caller asks if you're an AI** — "..."` entry in Handling Common Situations with an honest one-line response that doesn't name the platform.
+20. **Closing Line section with a quoted template.** Concrete and short. Then invoke `end_call`.
+21. **Default tool set for inbound qualifier:** `["end_call", "book_appointment", "check_availability", "collect_contact"]`. Add `search_knowledge_base` only when attaching a KB. Don't add `transfer_call` unless the intake explicitly says transfer is supported.
+22. **Agent `timezone` matches the PROSPECT, not the operator.** Infer it from the scrape (the city/state on the contact page). Twin Cities → `America/Chicago`. Phoenix → `America/Phoenix` (no DST). NYC/Miami → `America/New_York`. Denver → `America/Denver`. LA/Seattle → `America/Los_Angeles`. If the business is national / ambiguous (multi-state franchise, B2B SaaS with no obvious HQ city), stop and ask. The agent reasons about times in this timezone, so a mismatch leads to "your 1:30 wasn't my 1:30" booking confusion. See gotcha about GoHighLevel calendar timezone below — it is a *separate* setting in GHL.
+23. **Confirm output format before reporting.** When the trigger doesn't already specify it, ask the user whether they want (a) plain URLs only, (b) iframe embed code, (c) both, or (d) iframe copied to clipboard (single-demo case). Phrases like "embed", "iframe", "GHL", "GoHighLevel", "copy to clipboard", "WordPress" default to iframe output and run `pbcopy` on macOS to drop it on the clipboard.
+24. **Consult `learnings/` before building.** Skim `learnings/index.md` for entries tagged `prospect-demo`, `platform-gap`, or the prospect's vertical. Apply any captured lesson before starting. If a session surfaces a new learning, end with `/add-to-learnings`.
+25. **Phone demos default to logo + accent + transparent embed.** When building a phone-channel demo, ALWAYS run the logo finder (Step 1.5), upload the avatar, and PATCH `phone_caller_image` + `phone_accent_color` (Step 6.5). ALWAYS emit the iframe with `?embed=true` so the parent's section color (typically white in a GHL site) bleeds through. Don't wait for the user to ask — these are the defaults.
+26. **`PATCH /demos/{id}/` (trailing slash) silently drops the body.** Use the no-slash form: `PATCH /demos/{demo_id}`. The slashed form returns 307 and urllib re-issues the request without the body, so the call looks successful but nothing persists. See `learnings/bugs.md`.
+
+## Required inputs
+
+You need EITHER:
+- **A URL** (preferred for cold prospects) — the platform's `/demos/import-from-url` endpoint will scrape and AI-extract business info
+- **A filled-out intake** with: business name, industry, services, primary call type, voice/personality preferences, conversion event, top objections
+
+If the URL gives shallow data, also `curl` the homepage and any `/services`, `/about`, `/contact` pages to enrich. If anything is missing or contradictory, stop and ask using lettered options.
+
+### Intake templates (send to prospects)
+
+The `./intake-templates/` folder next to this SKILL.md has ready-to-send email templates the user can copy and send to a prospect. One generic template plus 11 vertical-specific variants:
+
+- `demo-intake-template.md` — Generic (use for unknown industries)
+- `demo-intake-template-auto-service.md` — Auto repair shops
+- `demo-intake-template-dental.md` — Dental practices
+- `demo-intake-template-fitness.md` — Gyms / fitness studios
+- `demo-intake-template-hvac.md` — HVAC contractors
+- `demo-intake-template-law-firm.md` — Law firms
+- `demo-intake-template-medspa.md` — Med spas / aesthetics
+- `demo-intake-template-mortgage.md` — Mortgage brokers
+- `demo-intake-template-real-estate.md` — Real estate agents
+- `demo-intake-template-restaurants.md` — Restaurants
+- `demo-intake-template-roofing.md` — Roofing contractors
+- `demo-intake-template-salon.md` — Hair / nail salons
+
+When a user mentions "send the intake to [prospect]" or "we don't have their info yet", point them at the matching template. If you don't see a vertical that fits, fall back to the generic.
+
+Common clarification gates:
+- **Agent name** — propose something on-brand or generic (Maya, Casey, Riley). Confirm with user if unsure.
+- **Voice gender** — female receptionist is standard for trades/services. Ask if not obvious.
+- **Number of models** — 1 model, or A/B across 2-4 providers (default 3: Gemini, OpenAI, Grok).
+- **Channel** — `orb` (default, voice-only iframeable) unless the user asks for `web`, `phone`, etc.
+- **Prospect timezone** — infer from the scrape. Confirm with the user when the business serves multiple regions or has no clearly stated HQ city.
+- **Output format** — URLs only, iframe code, both, or iframe-to-clipboard. Default to URLs + iframe table for orb/phone demos; iframe-to-clipboard when the user explicitly says "make me an iframe" or names a hosting target.
+
+## Execution
+
+### Step 0 — Load env and authenticate
+
+Read `LEADLOCK_API_KEY` and `LEADLOCK_API_URL` from `./.env`. Never print the key. All requests use `X-API-Key: <key>` header.
+
+Probe: `GET /tenants/me` — confirms auth works, returns the tenant. Save the tenant id for slug uniqueness checks.
+
+### Step 1 — Scrape / ingest
+
+If the user gave a URL:
+```
+POST /demos/import-from-url
+{ "url": "https://example.com", "channel": "orb" }
+```
+Returns: `business_name`, `industry`, `headline`, `summary`, `welcome_message`, `cta_text`, `landing_instructions`, `extracted_from`.
+
+This is shallow. For real intake data, also fetch the homepage and key pages with `curl` and parse them yourself. Pull: services, pricing, hours, service area, brand voice, promotions, guarantees, top objections.
+
+If the user gave a filled intake, skip the scrape — work from the intake.
+
+### Step 1.5 — Find the prospect's logo and stage it
+
+Run the bundled helper:
+
+```bash
+python3 .claude/skills/prospect-demo/find_logo.py https://prospect.com --download ./output/<prospect-slug>
+```
+
+Returns JSON with two best candidates:
+- `avatar` — square icon for the call-screen avatar circle (priorities: apple-touch-icon → large square favicon → og:image → img.logo)
+- `header` — rectangular logo for email banners or landing artwork (priorities: og:image → img.logo → large square icon)
+
+The helper bypasses basic Cloudflare protection with a real browser User-Agent. If it can't reach the site, fall back to `--also-fetch https://prospect.com/about https://prospect.com/contact` to give it more pages.
+
+Stage the avatar locally — it gets uploaded to the demo in Step 6.5.
+
+If the user already has a brand color in the intake (or the site has an obvious one), capture it now as the demo's `phone_accent_color`. If unsure, leave it null and accept the platform default `#3b82f6`.
+
+### Step 2 — Find calendar config to mirror
+
+```
+GET /agents?limit=50
+```
+
+Find the first agent with `calendar_integration_id` set. Copy:
+- `calendar_provider`
+- `calendar_id`
+- `calendar_integration_id`
+- `calendar_configs` (the full array)
+
+If no agent has a calendar wired, ask the user:
+- (A) Wire a calendar in the Leadlock dashboard first (Integrations → GoHighLevel or Google Calendar), then re-run
+- (B) Build the demo without `book_appointment` (replace with `collect_contact` so the agent captures lead info instead of booking directly)
+
+### Step 3 — Draft the shared system prompt
+
+Use the `## Shared prompt skeleton` at the bottom. Fill placeholders from the scrape/intake. Section order is exact. Target 5K-9K chars.
+
+Before writing:
+- Inbound or outbound? Most prospect demos are inbound.
+- Eligibility gates? If yes, add them as a hard rule in Guardrails.
+- Top 3-5 objections? Those go in Handling Common Situations.
+- Conversion event? Usually `book_appointment`.
+- Closing line?
+
+### Step 4 — Build the agent payload
+
+Common fields on all demos:
+
+```python
+BASE = {
+    "business_name": "<BUSINESS_NAME>",
+    "industry": "<INDUSTRY>",
+    "timezone": "<TZ>",  # "America/Chicago", "America/New_York", etc.
+    "agent_mode": "inbound",
+    "temperature": 0.6,  # 0.7 for xAI-only agents needing variation; 0.8 for "vary your phrasing" prompts
+    "ai_speaks_first": True,
+    "enable_recording_disclosure": False,
+    "recording_enabled": False,
+    "max_call_duration_minutes": 10,
+    "greeting": "<NATIVE_LANGUAGE_GREETING — single open question that matches Call Flow Step 1>",
+    "system_prompt": "<FILLED_TREJON_STYLE_PROMPT>",
+    "tools_enabled": ["end_call", "book_appointment", "check_availability", "collect_contact"],
+    "calendar_provider": "<from step 2>",
+    "calendar_id": "<from step 2>",
+    "calendar_integration_id": "<from step 2>",
+    "calendar_configs": [...from step 2],
+}
+```
+
+Per-provider voice fields:
+
+| Provider | `voice_provider` | Voice field | Language | Male voices | Female voices |
+|---|---|---|---|---|---|
+| Gemini | `gemini` | `gemini_voice` | `gemini_language_code` (BCP-47, e.g. `en-US`, `he-IL`) | `Charon`, `Orus`, `Iapetus` | `Aoede`, `Kore`, `Leda` |
+| OpenAI | `openai` | `openai_voice` | (auto) | `ballad`, `ash`, `verse`, `echo` | `shimmer`, `coral`, `sage` |
+| xAI (Grok) | `xai` | `voice` | (auto) | `rex`, `leo` | `ara` |
+| ElevenLabs | `elevenlabs` | `elevenlabs_voice_id` | `elevenlabs_language` (2-letter) | UUID from ElevenLabs | UUID |
+
+Gemini also needs: `gemini_start_sensitivity: "low"`, `gemini_end_sensitivity: "high"`.
+OpenAI also needs: `openai_vad_type: "semantic_vad"`, `openai_vad_eagerness: "low"`, `openai_noise_reduction: "far_field"`.
+
+### Step 5 — Create agents
+
+For each provider in the A/B set:
+
+```
+POST /agents
+{ ...BASE, ...provider_fields, "name": "<AGENT_NAME> (<Provider>)" }
+```
+
+Returns `{ id, ... }`. Save agent IDs.
+
+### Step 6 — Create demo configs
+
+For each agent:
+
+```
+POST /demos/
+{
+  "agent_id": "<agent_id>",
+  "channel": "orb",
+  "name": "<Display name> (<Provider>)",
+  "config": {
+    "max_duration_seconds": 600,
+    "landing_heading": "<Prospect-facing title> (<Provider>)",
+    "landing_subheading": "<language> demo · <model name> · voice: <Voice>",
+    "landing_instructions": "<Short instructions for the prospect>"
+  }
+}
+```
+
+Slug is auto-generated server-side. Response includes `slug` and `demo_url`. No need to check uniqueness — the server handles it.
+
+**Phone-channel extras**: If `channel == "phone"`, also assign a tenant phone number to the agent so the click-to-call mockup has a real number to dial. Pick an unassigned number from `GET /phone-numbers` and `PATCH /phone-numbers/{phone_number_id}` with `{"agent_id": "<agent_id>"}`.
+
+### Step 6.5 — Wire the logo + accent into the demo (default for phone)
+
+For phone-channel demos, the public renderer reads two undocumented `demo.config` keys (verified empirically against the deployed `/d/<slug>` route chunk `_slug_-*.js` on 2026-05-13):
+
+- `phone_caller_image` — URL the call-screen avatar circle renders as `<img src=...>`. When set, replaces the agent-initials fallback.
+- `phone_accent_color` — hex color for the call-arc rings, accept-button glow. Defaults to `#3b82f6` (blue) when absent.
+
+**Default behavior for phone demos:** ALWAYS wire these when a logo was found in Step 1.5. Don't make the user ask.
+
+Recipe (after the demo is created in Step 6):
+
+```python
+# 1. Upload the avatar — returns a Supabase storage URL
+import urllib.request, os, json
+from pathlib import Path
+boundary = "----LL" + os.urandom(8).hex()
+body  = f"--{boundary}\r\n".encode()
+body += b'Content-Disposition: form-data; name="file"; filename="avatar.png"\r\n'
+body += b'Content-Type: image/png\r\n\r\n'
+body += Path("./output/<slug>/<avatar>.png").read_bytes()
+body += f"\r\n--{boundary}--\r\n".encode()
+req = urllib.request.Request(f"{API_URL}/demos/{demo_id}/upload-image",
+    data=body, method="POST",
+    headers={"X-API-Key": KEY, "Content-Type": f"multipart/form-data; boundary={boundary}"})
+upload = json.loads(urllib.request.urlopen(req).read())
+avatar_url = upload["url"]
+
+# 2. PATCH the demo with the avatar + accent.
+#    IMPORTANT: no trailing slash on the PATCH URL — /demos/{id}/ returns 307
+#    and urllib drops the body on the redirect (see learnings/bugs.md).
+patch_body = {"config": {
+    **existing_config,
+    "phone_caller_image": avatar_url,
+    "phone_accent_color": "#FFC72C",  # set to the prospect's brand color; null to accept default blue
+}}
+req = urllib.request.Request(f"{API_URL}/demos/{demo_id}",
+    data=json.dumps(patch_body).encode(), method="PATCH",
+    headers={"X-API-Key": KEY, "Content-Type": "application/json"})
+urllib.request.urlopen(req)
+```
+
+**Per-channel image slots** (from `/demos/templates` empirical scan + deployed JS):
+| Channel | Avatar/image key | Accent key |
+|---|---|---|
+| `phone` | `phone_caller_image` | `phone_accent_color` |
+| `orb` / `web` | (no per-demo image slot today — agent-initials only) | (no per-demo accent today) |
+| `fb_messenger` | `avatar_url` | `accent_color` |
+| `ig_messenger` / `tiktok` / `whatsapp` | `avatar_url` | — |
+| `fb_lead` | `ad_image_url` | — |
+
+When the prospect has no usable logo (or it's a generic stock image), skip the upload and let the agent-initials fallback render.
+
+### Step 7 — Verify (explicit fields)
+
+For each agent:
+```
+GET /agents/<agent_id>
+```
+
+Confirm on the agent:
+- `voice_provider` matches what you sent
+- The provider-appropriate voice field is your chosen voice (NOT the default value of unused fields — `gemini_voice` defaults to `'Puck'`, `openai_voice` to `'alloy'`, `voice` to `'ara'` regardless of provider)
+- `calendar_integration_id` is non-null
+- `len(system_prompt)` is in the 5K-9K range
+- `greeting` is non-empty (Pydantic validator requires this when `ai_speaks_first=true`)
+- `timezone` matches the prospect's local timezone (not the operator's)
+
+Also `GET /demos/<demo_id>` and confirm on the demo:
+- For phone channel: `config.phone_caller_image` is present (the Supabase URL you uploaded), and `config.phone_accent_color` matches the brand color you set.
+- If either is missing after PATCH, you probably hit the trailing-slash 307 redirect — re-PATCH without the trailing slash. See `learnings/bugs.md`.
+
+### Step 8 — Return output in the chosen format
+
+Public demo URL format: `https://app.leadlock.ai/d/<slug>` (from the `demo_url` field in the create response).
+
+Pick the format per Rule 23 (URLs only / iframe / both / clipboard). Then deliver:
+
+1. **The artifact(s)** — see the templates section below for the iframe shape.
+2. **Config notes** — recording off, tools enabled, calendar wired, max duration, the prospect's timezone the agent was set to.
+3. **The ready-to-send email** using the template below — only when the user is sending demos out to a prospect (not when they're just embedding internally).
+
+If iframe-to-clipboard was chosen on macOS, drop the iframe HTML onto the clipboard via `pbcopy` and also save it to `./output/<slug>-iframe.html` for safekeeping.
+
+### Step 9 — Optional knowledge base attachment
+
+Attach a KB when the prospect has a comprehensive FAQ or technical docs that would otherwise force the agent to say "let me check with the team."
+
+**Decision criteria** — add a KB if any apply:
+- The intake includes a 20+ item FAQ
+- Technical specs (chemistry, compatibility matrix, regulations) don't fit cleanly in objection one-liners
+- The prospect updates info frequently (pricing tiers, service areas, partner names)
+- Tech-savvy callers are expected to push beyond the prompt content
+
+**Skip the KB** if the prompt covers everything and the agent's answer is "the engineer/team handles that" anyway.
+
+**Workflow:**
+1. Format the KB as Markdown Q&A blocks. Multiple phrasings per question at the top of each block improves search recall.
+2. Ask the user to upload the file via the platform's Knowledge Bases UI (the API path for KB upload is not in this kit's default scope).
+3. After upload, the user gives you the KB id (or you list `tenant_collections` via API if available).
+4. Update each agent:
+```
+PATCH /agents/<agent_id>
+{
+  "enable_collections_search": true,
+  "knowledge_base_ids": ["<kb_id>"],
+  "tools_enabled": ["end_call", "book_appointment", "check_availability", "collect_contact", "search_knowledge_base"]
+}
+```
+
+## Iframe templates
+
+Drop these into a GHL Custom Code element or any HTML host. The `allow="microphone; autoplay"` is required for the voice mic prompt to work inside the iframe.
+
+**Orb / web channel** (voice orb fills the iframe). Append `?embed=true` so the parent section color bleeds through:
+```html
+<iframe
+  src="https://app.leadlock.ai/d/<slug>?embed=true"
+  width="100%"
+  height="720"
+  style="border:0; border-radius:12px; max-width:560px; background:transparent;"
+  allow="microphone; autoplay"
+  loading="lazy"
+  title="<Business name> — <Agent name> (<Provider>)"
+></iframe>
+```
+
+**Phone channel** (iPhone-style mockup with click-to-call). Append `?embed=true` to force transparent backgrounds so the parent GHL section color bleeds through:
+```html
+<iframe
+  src="https://app.leadlock.ai/d/<slug>?embed=true"
+  width="100%"
+  height="780"
+  style="border:0; border-radius:12px; max-width:480px; background:transparent;"
+  allow="microphone; autoplay"
+  loading="lazy"
+  title="<Business name> — <Agent name> (Phone Demo)"
+></iframe>
+```
+
+The `?embed=true` query param is read by the deployed `_slug_-*.js` chunk and sets `documentElement.style.background = 'transparent'` on the demo page (also on `body` and `#root`). Auto-detect via `window.self !== window.top` does the same, so the param is belt-and-suspenders — but explicit is better for clarity.
+
+The *phone bezel itself* stays dark (it's the iPhone-frame design, not the page background). Only the surrounding canvas inherits from the parent. White GHL section → white surround. Black section → black surround.
+
+Tweak `height` / `max-width` to fit the destination section. Keep `allow="microphone; autoplay"` on phone demos.
+
+## Email template
+
+```
+Subject: Your <count> <agent-name> demos are live
+
+Hey <Prospect first name>,
+
+Got your brief — thanks for how thorough it was. Made my job easy.
+
+I built <Agent name> <count> times so you can hear the difference between the models you asked about. Same prompt, same personality, same sales flow on all of them — just different voice engines under the hood:
+
+- **Gemini:** https://app.leadlock.ai/d/<slug-gemini>
+- **OpenAI:** https://app.leadlock.ai/d/<slug-openai>
+- **Grok (xAI):** https://app.leadlock.ai/d/<slug-grok>
+
+A few things before you dive in:
+
+**This is a first pass, not the finished product.** Think of it as a showcase of what's possible. Once you tell me which model feels right, we spend another round or two tightening the prompt, voice, pacing, and objection handling — the version that goes on a real line for real callers gets polished pretty heavily.
+
+**<Language-test instruction>** — e.g. "Start in Hebrew, then switch to English mid-call to test the language mirroring." Skip this if monolingual.
+
+Also push back on pricing, play hard to get, tell it you're "just looking" — see how it handles the downsell.
+
+**Appointment booking is live** — if you tell it to book you a call, it'll actually drop you on a real calendar. Feel free to test the whole flow end to end.
+
+What I'd love your ear on:
+- Which voice sounds most natural?
+- Anything about the pitch or pricing delivery that feels off?
+
+Reply however — voice note, bullets, whatever's fastest. Excited to hear what you think.
+
+<Your name>
+```
+
+## Gotchas & prior lessons
+
+- **`gemini_voice` defaults to `'Puck'`** on every agent row, even non-Gemini. A COALESCE-style fallback in your verify check will lie. Always check voice fields explicitly.
+- **`ai_speaks_first=true` requires `greeting` to be non-empty** — the Pydantic validator in `AgentCreate` enforces this.
+- **xAI and OpenAI have no explicit language field** — they rely on prompt instructions + audio to detect language. If the prospect is non-English, this is part of the A/B test. Gemini's `gemini_language_code` is the only explicit hint.
+- **Greeting must be a single open-ended question that matches Call Flow Step 1 verbatim** — otherwise the model "completes" the greeting by tacking on a follow-up question on its first turn.
+- **Don't use contractions in greetings.** ElevenLabs handles them gracefully; OpenAI and Gemini sometimes literally read the apostrophe.
+- **Don't write `$0`** — voice models read it as "dollar zero." Use "no upfront cost" instead. Always speak numbers and prices as words in the prompt.
+- **Default temperature 0.6** for inbound qualifiers/sales agents. Use 0.7 only for xAI agents that need slightly more natural variation, 0.8 only for agents with explicit "vary your phrasing each time" instruction.
+- **Slug uniqueness is handled server-side.** The server auto-generates a unique slug from the demo name. Don't try to set it manually.
+- **Don't add `transfer_call` to inbound demos** unless the intake explicitly says transfer is supported.
+- **GoHighLevel calendars have their OWN timezone.** Setting `agent.timezone = America/Chicago` makes the agent reason about times in Central — but the wired GHL calendar will book into whatever timezone is set inside GoHighLevel itself. If your default calendar is on Eastern and the prospect is Central, the agent says "1:30" meaning Central, the slot lands as 1:30 Eastern in GHL, and the prospect gets a confirmation email showing 12:30 their time. Verify the calendar's timezone in the GHL admin matches the prospect before sending the demo out.
+- **Phone demo customization keys are undocumented but live.** Set `phone_caller_image` (URL) and `phone_accent_color` (hex) on `demo.config` — the deployed `/d/<slug>` route chunk reads them and passes them as React props to PhoneDemoView. Don't trust openapi alone: `demo.config` is `additionalProperties: true`, so accepted keys are discoverable only from the rendering chunk. See `learnings/best-practices.md` → "Phone demo per-prospect branding works today".
+- **Iframe surround is controlled by the parent.** Always include `?embed=true` on iframe sources for phone/web/orb demos — it forces transparent backgrounds, so the GHL section's own color bleeds through. The iframe auto-detect (`window.self !== window.top`) does this too, but `?embed=true` is explicit and safer.
+- **There is only one phone demo channel.** Channel enum is `phone | sms | web | orb | fb_messenger | ig_messenger | tiktok | whatsapp | fb_lead | ig_lead` — verified in both `openapi-spec.json` and `LEADLOCKDOCS.json` on 2026-05-13. No `phone_mockup` or `incoming_call` variant exists.
+- **Two OpenAPI files at the kit root.** `openapi-spec.json` has more newer endpoints (sms-pools, admin/agencies, phone-numbers/search). `LEADLOCKDOCS.json` is a slightly older export but with longer descriptions. For most demo-skill questions they're equivalent. **Critical:** neither file documents the per-demo customization keys like `phone_caller_image` — those live inside the renderer chunk, not the schema. When openapi says a feature isn't supported and a user says it is, audit the deployed JS before publishing a "platform gap" finding.
+
+## Prompt Length Targets
+
+| Agent type | Char count |
+|---|---|
+| Minimum viable | ~350 |
+| Lean SMS receptionist | ~1,000 |
+| Outbound callback confirmer | ~3,500 |
+| Outbound rep (B2B, multi-workflow) | ~4,400 |
+| Inbound qualifier (warm) | ~6,100 |
+| Inbound receptionist + booking | ~6,200 |
+| Inbound qualifier with eligibility gates + KB | ~9,200 |
+
+If you're over 10K chars, audit for:
+- Multiple sections that say the same thing (consolidate)
+- Multi-paragraph explanations under each header (cut to a sentence)
+- Multi-paragraph objection responses (compress to 1-2 sentences each)
+- A "CRITICAL RULES" section AND a Guardrails section (pick one — Guardrails)
+
+If you're under 3K and the agent has any complexity (eligibility gates, multiple objections, KB), you're missing context.
+
+## Shared prompt skeleton
+
+Fill the `<PLACEHOLDERS>` from the intake/scrape. Keep section order exactly as shown. Cut any section that doesn't apply (e.g. omit `## Eligibility` for agents that don't gate on qualification).
+
+```
+## Role
+You are <AGENT_NAME>, the AI <inbound setter | outbound caller | receptionist> for <BUSINESS_NAME>. <ONE_SENTENCE_CALL_CONTEXT — e.g. "People call after watching the VSL on <URL> — they're curious about <OFFER> and want to know if they qualify.">. Your job is to <PRIMARY_GOAL: qualify them and book the engineer call / confirm a callback window / send the checkout link / etc>. <TRANSFER_RULE — pick one: "There is no human to transfer to." | "If asked, you can hand off to <ROLE>."> <ROLE_BOUNDARIES — e.g. "You are not a coach and you are not a closer.">
+
+## Personality
+<TONE_DESCRIPTORS — warm, friendly, direct, professional, etc.>. Talk like a real person: "<FILLER_EXAMPLE_1>", "<FILLER_EXAMPLE_2>", "<FILLER_EXAMPLE_3>". <PERSONALITY_RULES — Curious before pitching. Ask first, listen, then explain. Respect their time. Never pushy. Mirror their energy.>
+
+## Context
+- Business: <BUSINESS_NAME> — <ONE_LINE_BUSINESS_DESCRIPTION>.
+- Product: <WHAT_THEY_INSTALL_OR_SELL>.
+- Pricing: <PRICING_SUMMARY — speak numbers as words: "twelve cents", "two-point-nine percent">.
+- Service area / who you serve: <ICP>.
+- <ANY_OTHER_KEY_FACT_THAT_RECURS_IN_CALLS — partner companies, regulatory context, etc.>
+- The conversion is the <CONVERSION_EVENT — engineer video call, booked appointment, sent checkout link>. <ONE_LINE_DESCRIPTION_OF_WHAT_HAPPENS_NEXT>.
+
+## Call Flow
+
+1. **Open warmly.** Your first turn is exactly: "<ACTUAL_OPENING_PHRASE_IN_QUOTES>". Deliver it as-is. Do not append additional questions or follow-ups. Wait for them to speak before saying anything else.
+
+   This phrase MUST exactly match the `greeting` field stored on the agent. Single open-ended question only — no compound questions like "thanks for calling, are you reaching out about X?" because the model will append a second question on top.
+
+2. **<STAGE_NAME>.**
+   "<ACTUAL_PHRASE>"
+
+3. **Handle the <TOP_OBJECTION> objection.** Lean on: <BULLET_REFRAMES>.
+
+4. **Qualify.** [If eligibility gates apply, list them as conversational asks one at a time.]
+   - "<QUESTION_1>"
+   - "<QUESTION_2>"
+   - "<QUESTION_3>"
+
+5. **Push the conversion.**
+   "<PHRASE_THAT_FRAMES_NEXT_STEP>"
+
+6. **Book / send / capture.** Once <PRECONDITION>, call `<TOOL_NAME>`. <ANY_TOOL_PRECONDITIONS>.
+
+7. **<POST_CONVERSION_STEP — bill photo, follow-up reminder>.**
+   "<ACTUAL_PHRASE>"
+
+8. **Wrap.** Say one brief goodbye, then immediately invoke `end_call`. Do not announce that you're ending the call without firing the tool.
+
+## Tools
+- **<primary_tool>**: When to use. Required inputs.
+- **check_availability**: Before booking when no time was given.
+- **collect_contact**: Caller won't book but wants a callback.
+- **search_knowledge_base**: For specific questions this prompt doesn't directly answer (only if a KB is attached).
+- **end_call**: After mutual goodbyes. Invoke it; don't just announce it.
+
+## Handling Common Situations
+
+[10-20 entries. Each is the agent's actual reply in quotes, two to three sentences max.]
+
+- **"<COMMON_OBJECTION_1>"** — "<TERSE_RESPONSE>"
+- **"<COMMON_OBJECTION_2>"** — "<TERSE_RESPONSE>"
+- **"<COMMON_OBJECTION_3>"** — "<TERSE_RESPONSE>"
+- **<DISQUALIFIER_SCENARIO — e.g. "I'm in <wrong_area>" or "I'm renting">** — "<KIND_DISQUALIFICATION>"
+- **"Just send me an email."** — "<EMAIL_FALLBACK>"
+- **"I'm just looking, not ready."** — "<DOWNSELL_TO_VSL_OR_CALLBACK>"
+- **Caller asks if you're an AI** — "I'm <BUSINESS_NAME>'s AI assistant on the line — I handle the first call so the team stays focused. <ANY_BUSINESS_SPECIFIC_FRAMING>."
+
+## Closing Line
+End every call with a warm one-liner like: "<CLOSING_TEMPLATE — e.g. 'Talk to you tomorrow at [time], [name]. Have a good one.'>" Then invoke `end_call`.
+
+## Guardrails
+- One question at a time. This is the hard rule.
+- Default to responses under thirty words. Exception: when this prompt gives you a longer scripted response (in Call Flow or Handling Common Situations), use the scripted version verbatim — don't truncate it.
+- Speak numbers, prices, and times as words: "<EXAMPLE_1>", "<EXAMPLE_2>".
+- [If eligibility applies] All <N> eligibility gates must be a yes before invoking `<conversion_tool>`. If any fails, send the VSL and use `collect_contact`.
+- Tool calls are actions, not speech. Saying "I'll book that" does not book it. Saying "I'll end the call" does not end it. The next thing you do after announcing a tool action must be the tool call.
+- After saying goodbye once, the next thing you do is `end_call`. Don't say goodbye twice.
+- Never repeat an answer you already gave. Summarize in one line and move on.
+- Never quote prices outside the listed program. Never invent specific savings figures.
+- Never name the platform or model that powers you. Use the AI-disclosure line above if asked directly.
+- After two clear no's, stop selling. Offer to collect contact and end warmly.
+- <ANY_BUSINESS_SPECIFIC_DON'TS — e.g. "Never claim the customer owns the equipment.">
+```
+
+## Rule capture
+
+<!-- Append new rules here as the maintainer edits outputs. Format: date, rule, why. -->
