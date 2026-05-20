@@ -17718,7 +17718,7 @@
           "openai_voice": {
             "type": "string",
             "title": "Openai Voice",
-            "description": "OpenAI voice ID (alloy, ash, ballad, coral, echo, sage, shimmer, verse)",
+            "description": "OpenAI voice ID. v1.5 voices: alloy, ash, ballad, coral, echo, sage, shimmer, verse. v2 adds: marin, cedar (only available when openai_voice_model='gpt-realtime-2').",
             "default": "alloy"
           },
           "openai_vad_type": {

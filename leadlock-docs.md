@@ -775,7 +775,7 @@ Checks agent limit for the effective tenant.
 - gemini_proactive_audio: boolean — Allow Gemini to stay silent when no clear request is made (Preview feature)
 - gemini_top_k: integer | null — Gemini top-K sampling: number of top tokens considered (1-100, None=model default)
 - gemini_top_p: number | null — Gemini top-P nucleus sampling threshold (0.0-1.0, None=model default)
-- openai_voice: string — OpenAI voice ID (alloy, ash, ballad, coral, echo, sage, shimmer, verse)
+- openai_voice: string — OpenAI voice ID. v1.5 voices: alloy, ash, ballad, coral, echo, sage, shimmer, verse. v2 adds: marin, cedar (only availab
 - openai_vad_type: string — OpenAI VAD type: semantic_vad (AI-based) or server_vad (volume-based)
 - openai_vad_eagerness: string — OpenAI semantic VAD eagerness: low (patient) to high (responsive)
 - openai_noise_reduction: string — OpenAI noise reduction: far_field (phone), near_field (mic), or disabled
@@ -6800,7 +6800,7 @@ Request body for creating an agent.
 - gemini_proactive_audio: boolean — Allow Gemini to stay silent when no clear request is made (Preview feature)
 - gemini_top_k: integer | null — Gemini top-K sampling: number of top tokens considered (1-100, None=model default)
 - gemini_top_p: number | null — Gemini top-P nucleus sampling threshold (0.0-1.0, None=model default)
-- openai_voice: string — OpenAI voice ID (alloy, ash, ballad, coral, echo, sage, shimmer, verse)
+- openai_voice: string — OpenAI voice ID. v1.5 voices: alloy, ash, ballad, coral, echo, sage, shimmer, verse. v2 adds: marin, cedar (only availab
 - openai_vad_type: string — OpenAI VAD type: semantic_vad (AI-based) or server_vad (volume-based)
 - openai_vad_eagerness: string — OpenAI semantic VAD eagerness: low (patient) to high (responsive)
 - openai_noise_reduction: string — OpenAI noise reduction: far_field (phone), near_field (mic), or disabled
