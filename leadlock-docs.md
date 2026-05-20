@@ -206,6 +206,20 @@ Enable or disable a user account (super admin only).
 
 ---
 
+### GET /admin/voice/model-adoption
+Get Voice Model Adoption
+
+Count OpenAI voice agents grouped by openai_voice_model.
+
+Used to inform the Phase 2 backfill decision — when v2 adoption is
+meaningful, support can switch from manual sub-attach to auto-attach on
+signup.
+
+**Responses:**
+- `200`: Successful Response
+
+---
+
 ## Affiliates
 
 ### GET /affiliates/code
@@ -765,6 +779,8 @@ Checks agent limit for the effective tenant.
 - openai_vad_type: string — OpenAI VAD type: semantic_vad (AI-based) or server_vad (volume-based)
 - openai_vad_eagerness: string — OpenAI semantic VAD eagerness: low (patient) to high (responsive)
 - openai_noise_reduction: string — OpenAI noise reduction: far_field (phone), near_field (mic), or disabled
+- openai_voice_model: string — OpenAI Realtime model version. v1.5 is the default audio model; v2 adds reasoning at premium pricing.
+- openai_reasoning_effort: string — Reasoning effort for gpt-realtime-2. Ignored on v1.5. Default 'low' is recommended for production voice.
 - elevenlabs_voice_id: string | null — ElevenLabs voice ID
 - elevenlabs_model_id: string — LLM model ID for ElevenLabs agent (e.g., claude-sonnet-4-5, gpt-4o-mini, claude-3-haiku)
 - elevenlabs_speed: number — Speaking speed for ElevenLabs (0.7-1.2x)
@@ -1287,6 +1303,8 @@ For direct tenants: updates their agent.
 - openai_vad_type: string | null
 - openai_vad_eagerness: string | null
 - openai_noise_reduction: string | null
+- openai_voice_model: string | null
+- openai_reasoning_effort: string | null
 - elevenlabs_voice_id: string | null
 - elevenlabs_model_id: string | null
 - elevenlabs_speed: number | null
@@ -6786,6 +6804,8 @@ Request body for creating an agent.
 - openai_vad_type: string — OpenAI VAD type: semantic_vad (AI-based) or server_vad (volume-based)
 - openai_vad_eagerness: string — OpenAI semantic VAD eagerness: low (patient) to high (responsive)
 - openai_noise_reduction: string — OpenAI noise reduction: far_field (phone), near_field (mic), or disabled
+- openai_voice_model: string — OpenAI Realtime model version. v1.5 is the default audio model; v2 adds reasoning at premium pricing.
+- openai_reasoning_effort: string — Reasoning effort for gpt-realtime-2. Ignored on v1.5. Default 'low' is recommended for production voice.
 - elevenlabs_voice_id: string | null — ElevenLabs voice ID
 - elevenlabs_model_id: string — LLM model ID for ElevenLabs agent (e.g., claude-sonnet-4-5, gpt-4o-mini, claude-3-haiku)
 - elevenlabs_speed: number — Speaking speed for ElevenLabs (0.7-1.2x)
@@ -6913,6 +6933,8 @@ Agent data response.
 - openai_vad_type: string | null
 - openai_vad_eagerness: string | null
 - openai_noise_reduction: string | null
+- openai_voice_model: string | null
+- openai_reasoning_effort: string | null
 - elevenlabs_voice_id: string | null
 - elevenlabs_model_id: string | null
 - elevenlabs_speed: number | null
@@ -7019,6 +7041,8 @@ Request body for updating an agent.
 - openai_vad_type: string | null
 - openai_vad_eagerness: string | null
 - openai_noise_reduction: string | null
+- openai_voice_model: string | null
+- openai_reasoning_effort: string | null
 - elevenlabs_voice_id: string | null
 - elevenlabs_model_id: string | null
 - elevenlabs_speed: number | null

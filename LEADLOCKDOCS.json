@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Leadlock API",
-    "description": "Multi-tenant voice agent platform API\n\n[Download LLM-Friendly Docs](/llms-full.txt)",
+    "title": "Leadlock Voice Agent SaaS API",
+    "description": "Multi-tenant voice agent platform API.\n\n## LLM-friendly prose docs\n\nLooking for a single-page Markdown reference? [**llms-full.txt**](/llms-full.txt) (~270 KB) has every endpoint with descriptions, request/response shapes, all component schemas, and the Demo Customization Reference appendix. Designed for LLM context windows.\n\n## Authentication\n\nEvery endpoint accepts either `X-API-Key: <your_key>` or `Authorization: Bearer <your_key>`. Get a key from [app.leadlock.ai/dashboard/settings/api-keys](https://app.leadlock.ai/dashboard/settings/api-keys).\n\n## Demo customization\n\nThe `demo.config` object accepts well-known keys like `phone_caller_image`, `phone_accent_color`, `avatar_url`, `landing_heading`, and more. See the **Demo Customization Reference** section at the bottom of [llms-full.txt](/llms-full.txt) for the full per-channel inventory + copy-paste recipes (including the `?embed=true` flag for white-surround iframe embedding).",
     "version": "0.1.0"
   },
   "paths": {
@@ -89,8 +89,8 @@
           "Affiliates",
           "Affiliates"
         ],
-        "summary": "Get Affiliate Code (Coming Soon)",
-        "description": "This feature is coming soon and is not yet available.",
+        "summary": "Get Affiliate Code",
+        "description": "Get current user's affiliate code.\n\nCreates a new code if one doesn't exist yet.\nReturns the code and full referral URL.",
         "operationId": "get_affiliate_code_affiliates_code_get",
         "responses": {
           "200": {
@@ -117,8 +117,8 @@
           "Affiliates",
           "Affiliates"
         ],
-        "summary": "Get Affiliate Stats (Coming Soon)",
-        "description": "This feature is coming soon and is not yet available.",
+        "summary": "Get Affiliate Stats",
+        "description": "Get affiliate dashboard stats.\n\nReturns total referrals, earnings, and list of all commissions.",
         "operationId": "get_affiliate_stats_affiliates_stats_get",
         "responses": {
           "200": {
@@ -229,7 +229,7 @@
           "Authentication"
         ],
         "summary": "Embed Sso",
-        "description": "Embedded SSO — authenticate via partner platform iframe integration.\n\nAccepts an encrypted payload from the partner postMessage protocol,\ndecrypts it, maps the user to a Leadlock account, and returns\nJWT tokens for the session.\n\nPublic endpoint - no auth required (SSO replaces login).",
+        "description": "Embedded SSO \u2014 authenticate via partner platform iframe integration.\n\nAccepts an encrypted payload from the partner postMessage protocol,\ndecrypts it, maps the user to a Leadlock account, and returns\nJWT tokens for the session.\n\nPublic endpoint - no auth required (SSO replaces login).",
         "operationId": "embed_sso_auth_embed_sso_post",
         "requestBody": {
           "content": {
@@ -1863,7 +1863,7 @@
           "Webhooks"
         ],
         "summary": "Handle App Install",
-        "description": "Handle GHL AppInstall webhook (marketplace lifecycle).\n\nNOTE: GHL marketplace lifecycle webhooks do NOT include signature headers,\nso this endpoint does not use verify_ghl_signature. This is expected\nGHL behavior — only conversation/message webhooks are signed.\n\nLogs the install event and reactivates existing integrations if found.\nNew integrations are NOT created here — the existing OAuth flow handles\ncreating the integration record with proper tenant_id and tokens.\n\nAlways returns 200 to prevent GHL retries.",
+        "description": "Handle GHL AppInstall webhook (marketplace lifecycle).\n\nNOTE: GHL marketplace lifecycle webhooks do NOT include signature headers,\nso this endpoint does not use verify_ghl_signature. This is expected\nGHL behavior \u2014 only conversation/message webhooks are signed.\n\nLogs the install event and reactivates existing integrations if found.\nNew integrations are NOT created here \u2014 the existing OAuth flow handles\ncreating the integration record with proper tenant_id and tokens.\n\nAlways returns 200 to prevent GHL retries.",
         "operationId": "handle_app_install_webhooks_ghl_app_install_post",
         "responses": {
           "200": {
@@ -1890,7 +1890,7 @@
           "Webhooks"
         ],
         "summary": "Handle App Uninstall",
-        "description": "Handle GHL AppUninstall webhook (marketplace lifecycle).\n\nNOTE: GHL marketplace lifecycle webhooks do NOT include signature headers,\nso this endpoint does not use verify_ghl_signature. This is expected\nGHL behavior — only conversation/message webhooks are signed.\n\nDeactivates the integration for the uninstalled location.\n\nAlways returns 200 to prevent GHL retries.",
+        "description": "Handle GHL AppUninstall webhook (marketplace lifecycle).\n\nNOTE: GHL marketplace lifecycle webhooks do NOT include signature headers,\nso this endpoint does not use verify_ghl_signature. This is expected\nGHL behavior \u2014 only conversation/message webhooks are signed.\n\nDeactivates the integration for the uninstalled location.\n\nAlways returns 200 to prevent GHL retries.",
         "operationId": "handle_app_uninstall_webhooks_ghl_app_uninstall_post",
         "responses": {
           "200": {
@@ -4377,7 +4377,153 @@
         ]
       }
     },
+    "/phone-numbers/search": {
+      "get": {
+        "tags": [
+          "Phone Numbers",
+          "Phone Numbers"
+        ],
+        "summary": "Search Available Numbers",
+        "description": "Search for available phone numbers to purchase.\n\nReturns a list of available numbers matching the criteria.",
+        "operationId": "search_available_numbers_phone_numbers_search_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "area_code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by area code",
+              "title": "Area Code"
+            },
+            "description": "Filter by area code"
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "ISO country code",
+              "default": "US",
+              "title": "Country"
+            },
+            "description": "ISO country code"
+          },
+          {
+            "name": "contains",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Pattern to search for",
+              "title": "Contains"
+            },
+            "description": "Pattern to search for"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "description": "Max results",
+              "default": 10,
+              "title": "Limit"
+            },
+            "description": "Max results"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/phone-numbers": {
+      "post": {
+        "tags": [
+          "Phone Numbers",
+          "Phone Numbers"
+        ],
+        "summary": "Purchase Phone Number",
+        "description": "Purchase a phone number.\n\nThe number will be registered with Twilio and configured with\nthe appropriate webhook URLs for voice calls.\n\nNOTE: Only agencies can purchase phone numbers (not sub-accounts).\nAgencies must be in agency view (not viewing as sub-account).",
+        "operationId": "purchase_phone_number_phone_numbers_post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhoneNumberPurchase"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhoneNumberResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "tags": [
           "Phone Numbers",
@@ -4919,7 +5065,7 @@
           "Phone Numbers"
         ],
         "summary": "Send Test Sms",
-        "description": "Send a test SMS message using the specified phone number.\n\nThis endpoint:\n- Validates phone number is SMS-capable\n- Validates A2P registration (required for US numbers)\n- Routes to Twilio or GoHighLevel based on phone number source\n- Returns delivery status\n\nRequirements:\n- Phone number must be sms_capable = true\n- Phone number must have messaging_enabled = true (A2P verified)\n- Recipient number must be in E.164 format (+14155551234)\n\nNOTE: Uses get_effective_tenant_id so sub-account users (or agency users\nimpersonating a sub-account) are correctly attributed in text metering\n(FORGE text-agent-metering Step 9, 2026-04-08 — Site #10 / Issue #148 pattern).\n\nArgs:\n    phone_number_id: UUID of phone number to send from\n    to: Recipient phone number (E.164 format)\n    message: Message text (optional, defaults to test message)\n\nReturns:\n    SMSResult with delivery status and provider details",
+        "description": "Send a test SMS message using the specified phone number.\n\nThis endpoint:\n- Validates phone number is SMS-capable\n- Validates A2P registration (required for US numbers)\n- Routes to Twilio or GoHighLevel based on phone number source\n- Returns delivery status\n\nRequirements:\n- Phone number must be sms_capable = true\n- Phone number must have messaging_enabled = true (A2P verified)\n- Recipient number must be in E.164 format (+14155551234)\n\nNOTE: Uses get_effective_tenant_id so sub-account users (or agency users\nimpersonating a sub-account) are correctly attributed in text metering\n(FORGE text-agent-metering Step 9, 2026-04-08 \u2014 Site #10 / Issue #148 pattern).\n\nArgs:\n    phone_number_id: UUID of phone number to send from\n    to: Recipient phone number (E.164 format)\n    message: Message text (optional, defaults to test message)\n\nReturns:\n    SMSResult with delivery status and provider details",
         "operationId": "send_test_sms_phone_numbers__phone_number_id__test_sms_post",
         "security": [
           {
@@ -4967,6 +5113,259 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sms-pools/": {
+      "get": {
+        "tags": [
+          "SMS Pools",
+          "sms-pools"
+        ],
+        "summary": "List Pools",
+        "description": "List active pools for the current tenant (owned or sub-account).",
+        "operationId": "list_pools_sms_pools__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PoolResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Pools Sms Pools  Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/sms-pools/import/list-services": {
+      "get": {
+        "tags": [
+          "SMS Pools",
+          "sms-pools"
+        ],
+        "summary": "List Available Services",
+        "description": "List Twilio Messaging Services across all the tenant's Twilio integrations.",
+        "operationId": "list_available_services_sms_pools_import_list_services_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MSListItem"
+                  },
+                  "type": "array",
+                  "title": "Response List Available Services Sms Pools Import List Services Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/sms-pools/import": {
+      "post": {
+        "tags": [
+          "SMS Pools",
+          "sms-pools"
+        ],
+        "summary": "Import Pool",
+        "description": "Create a pool by importing an existing Twilio Messaging Service.",
+        "operationId": "import_pool_sms_pools_import_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MSImportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PoolResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/sms-pools/{pool_id}": {
+      "get": {
+        "tags": [
+          "SMS Pools",
+          "sms-pools"
+        ],
+        "summary": "Get Pool",
+        "description": "Fetch a single pool with members + today's per-member stats.",
+        "operationId": "get_pool_sms_pools__pool_id__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "pool_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pool Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PoolResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "SMS Pools",
+          "sms-pools"
+        ],
+        "summary": "Delete Pool",
+        "description": "Soft-delete the pool (Twilio MS remains untouched \u2014 customer owns it).",
+        "operationId": "delete_pool_sms_pools__pool_id__delete",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "pool_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pool Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sms-pools/{pool_id}/sync": {
+      "post": {
+        "tags": [
+          "SMS Pools",
+          "sms-pools"
+        ],
+        "summary": "Sync Pool",
+        "description": "Reconcile local members with current Twilio MS membership (non-destructive).",
+        "operationId": "sync_pool_sms_pools__pool_id__sync_post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "pool_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pool Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PoolResponse"
+                }
               }
             }
           },
@@ -5544,6 +5943,75 @@
         ]
       }
     },
+    "/webhooks/twilio/{tenant_id}/sms-status": {
+      "post": {
+        "tags": [
+          "Webhooks",
+          "Webhooks"
+        ],
+        "summary": "Handle Sms Status Callback",
+        "description": "Twilio status callback for SMS pool sends.\n\nPool sends include a per-message status_callback URL that routes Twilio's\nqueued \u2192 sent \u2192 delivered/failed transitions back to us. Each callback\ncarries the pool_member_id in the query string so we can attribute stats\nto the right pool member without secondary lookups.\n\nReturns 204 on success (or duplicate); 403 on bad signature (handled by\nthe validate_twilio_signature dependency).",
+        "operationId": "handle_sms_status_callback_webhooks_twilio__tenant_id__sms_status_post",
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          },
+          {
+            "name": "x-twilio-signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Twilio-Signature"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_handle_sms_status_callback_webhooks_twilio__tenant_id__sms_status_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/webhooks/twilio/{tenant_id}/sms": {
       "post": {
         "tags": [
@@ -5551,7 +6019,7 @@
           "Webhooks"
         ],
         "summary": "Handle Incoming Sms",
-        "description": "Handle inbound SMS/MMS from Twilio.\n\nMMS attachments (images, voice notes) are extracted from the variable-count\nMediaUrl{N}/MediaContentType{N} form fields Twilio sends and passed to\n_process_incoming_sms for analysis via BYOK OpenAI/Anthropic. Voice-only\nMMS (empty Body + audio attachment) are processed after transcription.",
+        "description": "Handle inbound SMS/MMS from Twilio.\n\nMMS attachments (images, voice notes) are extracted from the variable-count\nMediaUrl{N}/MediaContentType{N} form fields Twilio sends and passed to\n_process_incoming_sms for analysis via platform OpenAI key. Voice-only\nMMS (empty Body + audio attachment) are processed after transcription.",
         "operationId": "handle_incoming_sms_webhooks_twilio__tenant_id__sms_post",
         "parameters": [
           {
@@ -6411,6 +6879,37 @@
         }
       }
     },
+    "/integrations/ghl/timezones": {
+      "get": {
+        "tags": [
+          "Integrations"
+        ],
+        "summary": "List Ghl Timezones",
+        "description": "Return the IANA timezones GHL supports for the current tenant's sub-account.\n\nPicks any active GHL integration on the tenant (or assigned to this sub-account)\nand calls GET /locations/:locationId/timezones. Result is cached in-process for\n7 days since GHL's list is effectively static.\n\nReturns an empty list if no active GHL integration exists \u2014 frontend falls back\nto the full IANA set via Intl.supportedValuesOf('timeZone').",
+        "operationId": "list_ghl_timezones_integrations_ghl_timezones_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array",
+                  "title": "Response List Ghl Timezones Integrations Ghl Timezones Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
     "/integrations/ghl/phone-numbers": {
       "get": {
         "tags": [
@@ -7028,33 +7527,6 @@
         }
       }
     },
-    "/billing/end-trial": {
-      "post": {
-        "tags": [
-          "Billing"
-        ],
-        "summary": "End Trial Early",
-        "description": "End trial immediately and start paid subscription.\n\nConverts a trial subscription to active by setting trial_end='now'.\nStripe will immediately charge the customer's payment method.\nOnly tenant owner can end trial.\n\nFor sub-accounts, ends the parent agency's trial (sub-accounts share\nthe agency's subscription and trial limits).",
-        "operationId": "end_trial_early_billing_end_trial_post",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EndTrialResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ]
-      }
-    },
     "/billing/apply-coupon": {
       "post": {
         "tags": [
@@ -7090,33 +7562,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ]
-      }
-    },
-    "/billing/trial": {
-      "get": {
-        "tags": [
-          "Billing"
-        ],
-        "summary": "Get Trial Status Endpoint",
-        "description": "Get current trial status including voice minutes used/remaining.\n\nReturns trial info if in trial, or is_trial=False if paid.\nRespects sub-account context when X-Sub-Account-Id header is present.",
-        "operationId": "get_trial_status_endpoint_billing_trial_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TrialStatusResponse"
                 }
               }
             }
@@ -8025,7 +8470,7 @@
           "Agency Management"
         ],
         "summary": "Upload Logo",
-        "description": "Upload a logo image.\n\nAccepts PNG, JPEG, or SVG. Maximum 5MB.",
+        "description": "Upload a logo image.\n\nAccepts PNG, JPEG, SVG, or ICO. Maximum 5MB.",
         "operationId": "upload_logo_agency_branding_logo_post",
         "requestBody": {
           "content": {
@@ -8054,6 +8499,31 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Agency Management"
+        ],
+        "summary": "Delete Logo",
+        "description": "Delete the logo image and clear logo_url. Returns refreshed branding.",
+        "operationId": "delete_logo_agency_branding_logo_delete",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandingSettings"
                 }
               }
             }
@@ -8111,6 +8581,31 @@
             "APIKeyHeader": []
           }
         ]
+      },
+      "delete": {
+        "tags": [
+          "Agency Management"
+        ],
+        "summary": "Delete Favicon",
+        "description": "Delete the favicon image and clear favicon_url. Returns refreshed branding.",
+        "operationId": "delete_favicon_agency_branding_favicon_delete",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandingSettings"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
       }
     },
     "/agency/overview": {
@@ -8128,6 +8623,33 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AgencyOverview"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/agency/invoice-summary": {
+      "get": {
+        "tags": [
+          "Agency Management"
+        ],
+        "summary": "Get Invoice Summary",
+        "description": "Get per-sub-account invoice summary for the current billing period.\n\nReturns voice minutes + revenue, text count + revenue, platform fees,\nand total due for every active sub-account. Sorted by total due descending.",
+        "operationId": "get_invoice_summary_agency_invoice_summary_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceSummaryResponse"
                 }
               }
             }
@@ -8439,7 +8961,7 @@
           "Agency Management"
         ],
         "summary": "Copy Agent Between Sub Accounts",
-        "description": "Copy an agent from one sub-account to another (agency-only).\n\nVerifies the agency owns both source and target sub-accounts.\nCreates a disabled copy with \" (Copy)\" suffix.\n\nNote: Returns the raw agent dict from the database insert, not AgentResponse.\nAgentResponse has computed fields (phone_count, text_assistants) that aren't\npresent in the raw insert result. The frontend doesn't use this response body\nfor rendering — it invalidates the query cache after a successful copy.",
+        "description": "Copy an agent from one sub-account to another (agency-only).\n\nVerifies the agency owns both source and target sub-accounts.\nCreates a disabled copy with \" (Copy)\" suffix.\n\nNote: Returns the raw agent dict from the database insert, not AgentResponse.\nAgentResponse has computed fields (phone_count, text_assistants) that aren't\npresent in the raw insert result. The frontend doesn't use this response body\nfor rendering \u2014 it invalidates the query cache after a successful copy.",
         "operationId": "copy_agent_between_sub_accounts_agency_agents__agent_id__copy_post",
         "security": [
           {
@@ -8911,7 +9433,7 @@
           "Stats"
         ],
         "summary": "Get Analytics",
-        "description": "Get analytics data for the interactive dashboard.\n\nReturns summary stats, daily call volume trends, status/direction\nbreakdowns, and per-agent performance — all in one response.",
+        "description": "Get analytics data for the interactive dashboard.\n\nReturns summary stats, daily call volume trends, status/direction\nbreakdowns, and per-agent performance \u2014 all in one response.",
         "operationId": "get_analytics_stats_analytics_get",
         "security": [
           {
@@ -10386,7 +10908,7 @@
           "Public Demos"
         ],
         "summary": "Public Demo Chat",
-        "description": "Public text chat endpoint for demo pages.\nUses the agent's system prompt + tools to generate AI text responses.\nNo auth required — authenticates via active demo config slug.",
+        "description": "Public text chat endpoint for demo pages.\nUses the agent's system prompt + tools to generate AI text responses.\nNo auth required \u2014 authenticates via active demo config slug.",
         "operationId": "public_demo_chat_d__slug__chat_post",
         "parameters": [
           {
@@ -10439,7 +10961,7 @@
           "Public Demos"
         ],
         "summary": "Get Showcase",
-        "description": "Public endpoint: Get all active demos for a showcase page.\nThe slug here is any demo slug — we find the agent and return all demos for it.",
+        "description": "Public endpoint: Get all active demos for a showcase page.\nThe slug here is any demo slug \u2014 we find the agent and return all demos for it.",
         "operationId": "get_showcase_d_showcase__slug__get",
         "parameters": [
           {
@@ -11060,7 +11582,7 @@
           "Contacts"
         ],
         "summary": "Patch Contact",
-        "description": "Update a GHL contact: add/remove tags, update custom fields, update pipeline stage.\n\nEach field is independently optional — partial success is OK.",
+        "description": "Update a GHL contact: add/remove tags, update custom fields, update pipeline stage.\n\nEach field is independently optional \u2014 partial success is OK.",
         "operationId": "patch_contact_contacts__phone__patch",
         "security": [
           {
@@ -11119,7 +11641,7 @@
           "Contacts"
         ],
         "summary": "Get Conversation Timeline",
-        "description": "Get merged call + SMS conversation timeline for a contact.\n\nReturns chronological list merging call_logs and text_messages.\nGracefully degrades to voice-only if GHL lookup fails (sms_included=false).\nNever returns 404 — empty timeline is valid.",
+        "description": "Get merged call + SMS conversation timeline for a contact.\n\nReturns chronological list merging call_logs and text_messages.\nGracefully degrades to voice-only if GHL lookup fails (sms_included=false).\nNever returns 404 \u2014 empty timeline is valid.",
         "operationId": "get_conversation_timeline_contacts__phone__conversations_get",
         "security": [
           {
@@ -11897,6 +12419,86 @@
                   "additionalProperties": true,
                   "type": "object",
                   "title": "Response Trigger Quota Check Admin Rate Limits Check Post"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/admin/agencies/{agency_id}": {
+      "delete": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Delete Agency Endpoint",
+        "description": "Soft-delete an agency and cascade through sub-accounts (super admin only).",
+        "operationId": "delete_agency_endpoint_admin_agencies__agency_id__delete",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "agency_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Agency Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Delete Agency Endpoint Admin Agencies  Agency Id  Delete"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/voice/model-adoption": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Get Voice Model Adoption",
+        "description": "Count OpenAI voice agents grouped by openai_voice_model.\n\nUsed to inform the Phase 2 backfill decision \u2014 when v2 adoption is\nmeaningful, support can switch from manual sub-attach to auto-attach on\nsignup.",
+        "operationId": "get_voice_model_adoption_admin_voice_model_adoption_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Get Voice Model Adoption Admin Voice Model Adoption Get"
                 }
               }
             }
@@ -16261,8 +16863,8 @@
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 365,
-                "minimum": 1
+                "maximum": 365.0,
+                "minimum": 1.0
               },
               {
                 "type": "null"
@@ -16679,7 +17281,7 @@
           "avg_margin_pct": {
             "type": "number",
             "title": "Avg Margin Pct",
-            "default": 0
+            "default": 0.0
           },
           "total_booked": {
             "type": "integer",
@@ -16689,7 +17291,7 @@
           "conversion_rate": {
             "type": "number",
             "title": "Conversion Rate",
-            "default": 0
+            "default": 0.0
           },
           "calls_by_direction": {
             "additionalProperties": {
@@ -16755,7 +17357,7 @@
           "minutes": {
             "type": "number",
             "title": "Minutes",
-            "default": 0
+            "default": 0.0
           },
           "booked": {
             "type": "integer",
@@ -16765,7 +17367,7 @@
           "conversion_rate": {
             "type": "number",
             "title": "Conversion Rate",
-            "default": 0
+            "default": 0.0
           }
         },
         "type": "object",
@@ -16818,8 +17420,8 @@
           },
           "temperature": {
             "type": "number",
-            "maximum": 2,
-            "minimum": 0,
+            "maximum": 2.0,
+            "minimum": 0.0,
             "title": "Temperature",
             "default": 0.7
           },
@@ -16916,24 +17518,24 @@
           },
           "vad_threshold": {
             "type": "number",
-            "maximum": 1,
-            "minimum": 0,
+            "maximum": 1.0,
+            "minimum": 0.0,
             "title": "Vad Threshold",
             "description": "VAD sensitivity (0.0-1.0, higher = less sensitive)",
             "default": 0.65
           },
           "vad_silence_duration_ms": {
             "type": "integer",
-            "maximum": 2000,
-            "minimum": 100,
+            "maximum": 2000.0,
+            "minimum": 100.0,
             "title": "Vad Silence Duration Ms",
             "description": "Silence duration before ending turn (ms)",
             "default": 500
           },
           "vad_prefix_padding_ms": {
             "type": "integer",
-            "maximum": 1000,
-            "minimum": 0,
+            "maximum": 1000.0,
+            "minimum": 0.0,
             "title": "Vad Prefix Padding Ms",
             "description": "Audio capture before speech detection (ms)",
             "default": 300
@@ -16985,6 +17587,12 @@
             "description": "Announce call recording at start of calls (required for two-party consent states)",
             "default": true
           },
+          "recording_enabled": {
+            "type": "boolean",
+            "title": "Recording Enabled",
+            "description": "When true, defer GHL conversation sync and post-call webhook to recording.ready so the Twilio recording URL is included. When false, fire on call.completed without the recording URL.",
+            "default": true
+          },
           "enable_contact_intelligence": {
             "type": "boolean",
             "title": "Enable Contact Intelligence",
@@ -17002,6 +17610,18 @@
             "title": "Ai Speaks First Outbound",
             "description": "If true, AI greets recipient immediately on outbound calls.",
             "default": true
+          },
+          "finish_greeting_before_listening": {
+            "type": "boolean",
+            "title": "Finish Greeting Before Listening",
+            "description": "If true, caller cannot interrupt the agent's first response (inbound). Ignored if ai_speaks_first is false \u2014 validator will reject the combo.",
+            "default": false
+          },
+          "finish_greeting_before_listening_outbound": {
+            "type": "boolean",
+            "title": "Finish Greeting Before Listening Outbound",
+            "description": "If true, recipient cannot interrupt the agent's first response on outbound calls. Ignored if ai_speaks_first_outbound is false.",
+            "default": false
           },
           "prompt_includes_contact_intelligence": {
             "type": "boolean",
@@ -17071,8 +17691,8 @@
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 100,
-                "minimum": 1
+                "maximum": 100.0,
+                "minimum": 1.0
               },
               {
                 "type": "null"
@@ -17085,8 +17705,8 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 1,
-                "minimum": 0
+                "maximum": 1.0,
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -17122,6 +17742,20 @@
             "description": "OpenAI noise reduction: far_field (phone), near_field (mic), or disabled",
             "default": "far_field"
           },
+          "openai_voice_model": {
+            "type": "string",
+            "pattern": "^(gpt-realtime-1\\.5|gpt-realtime-2)$",
+            "title": "Openai Voice Model",
+            "description": "OpenAI Realtime model version. v1.5 is the default audio model; v2 adds reasoning at premium pricing.",
+            "default": "gpt-realtime-1.5"
+          },
+          "openai_reasoning_effort": {
+            "type": "string",
+            "pattern": "^(minimal|low|medium|high|xhigh)$",
+            "title": "Openai Reasoning Effort",
+            "description": "Reasoning effort for gpt-realtime-2. Ignored on v1.5. Default 'low' is recommended for production voice.",
+            "default": "low"
+          },
           "elevenlabs_voice_id": {
             "anyOf": [
               {
@@ -17137,8 +17771,8 @@
           "elevenlabs_model_id": {
             "type": "string",
             "title": "Elevenlabs Model Id",
-            "description": "LLM model ID for ElevenLabs agent (e.g., gpt-4o-mini, claude-3-haiku)",
-            "default": "gpt-4o-mini"
+            "description": "LLM model ID for ElevenLabs agent (e.g., claude-sonnet-4-5, gpt-4o-mini, claude-3-haiku)",
+            "default": "claude-sonnet-4-5"
           },
           "elevenlabs_speed": {
             "type": "number",
@@ -17146,7 +17780,7 @@
             "minimum": 0.7,
             "title": "Elevenlabs Speed",
             "description": "Speaking speed for ElevenLabs (0.7-1.2x)",
-            "default": 1
+            "default": 1.0
           },
           "elevenlabs_eagerness": {
             "type": "string",
@@ -17171,8 +17805,8 @@
           },
           "elevenlabs_stability": {
             "type": "number",
-            "maximum": 1,
-            "minimum": 0,
+            "maximum": 1.0,
+            "minimum": 0.0,
             "title": "Elevenlabs Stability",
             "description": "Voice stability for ElevenLabs (0.0=creative, 0.5=natural, 1.0=robust)",
             "default": 0.5
@@ -17181,7 +17815,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 60
+                "minimum": 60.0
               },
               {
                 "type": "null"
@@ -17408,18 +18042,31 @@
             "title": "Sms Templates",
             "description": "SMS templates for send_sms: [{name, content}]"
           },
+          "sms_phone_number_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sms Phone Number Id",
+            "description": "Phone number ID to use for send_sms tool (overrides agent's voice number)"
+          },
           "max_call_duration_minutes": {
             "type": "integer",
-            "maximum": 180,
-            "minimum": 0,
+            "maximum": 180.0,
+            "minimum": 0.0,
             "title": "Max Call Duration Minutes",
             "description": "Max call duration in minutes (0=unlimited, max 180)",
             "default": 30
           },
           "max_silence_seconds": {
             "type": "integer",
-            "maximum": 600,
-            "minimum": 0,
+            "maximum": 600.0,
+            "minimum": 0.0,
             "title": "Max Silence Seconds",
             "description": "Max silence before ending call in seconds (0=unlimited, max 600)",
             "default": 120
@@ -17480,7 +18127,7 @@
           "text_model": {
             "type": "string",
             "title": "Text Model",
-            "description": "LLM model for text assistant (claude-haiku-4-5-20251001, claude-sonnet-4-6, claude-sonnet-4-5-20250929, claude-opus-4-6, gpt-5.2, gpt-4.1, gpt-4.1-mini, gpt-4.1-nano, gpt-4o, gpt-4o-mini)",
+            "description": "LLM model for text assistant (claude-haiku-4-5-20251001, claude-sonnet-4-6, claude-sonnet-4-5-20250929, claude-opus-4-6, gpt-5.5-pro, gpt-5.5, gpt-5.4-mini, gpt-5.4-nano, gpt-5.2)",
             "default": "claude-haiku-4-5-20251001"
           },
           "channel_pivot_enabled": {
@@ -17488,6 +18135,21 @@
             "title": "Channel Pivot Enabled",
             "description": "Auto-send text when outbound call fails (no-answer, busy, voicemail)",
             "default": false
+          },
+          "mcp_servers": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/MCPServerConfig"
+                },
+                "type": "array",
+                "maxItems": 5
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mcp Servers"
           }
         },
         "type": "object",
@@ -17861,6 +18523,18 @@
             "title": "Enable Recording Disclosure",
             "default": true
           },
+          "recording_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recording Enabled",
+            "default": true
+          },
           "enable_contact_intelligence": {
             "anyOf": [
               {
@@ -17896,6 +18570,30 @@
             ],
             "title": "Ai Speaks First Outbound",
             "default": true
+          },
+          "finish_greeting_before_listening": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finish Greeting Before Listening",
+            "default": false
+          },
+          "finish_greeting_before_listening_outbound": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finish Greeting Before Listening Outbound",
+            "default": false
           },
           "prompt_includes_contact_intelligence": {
             "anyOf": [
@@ -18074,6 +18772,30 @@
             "title": "Openai Noise Reduction",
             "default": "far_field"
           },
+          "openai_voice_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Openai Voice Model",
+            "default": "gpt-realtime-1.5"
+          },
+          "openai_reasoning_effort": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Openai Reasoning Effort",
+            "default": "low"
+          },
           "elevenlabs_voice_id": {
             "anyOf": [
               {
@@ -18095,7 +18817,7 @@
               }
             ],
             "title": "Elevenlabs Model Id",
-            "default": "gpt-4o-mini"
+            "default": "claude-sonnet-4-5"
           },
           "elevenlabs_speed": {
             "anyOf": [
@@ -18107,7 +18829,7 @@
               }
             ],
             "title": "Elevenlabs Speed",
-            "default": 1
+            "default": 1.0
           },
           "elevenlabs_eagerness": {
             "anyOf": [
@@ -18406,6 +19128,18 @@
             ],
             "title": "Sms Templates"
           },
+          "sms_phone_number_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sms Phone Number Id"
+          },
           "max_call_duration_minutes": {
             "anyOf": [
               {
@@ -18520,6 +19254,13 @@
             },
             "type": "array",
             "title": "Text Assistants"
+          },
+          "mcp_servers": {
+            "items": {
+              "$ref": "#/components/schemas/MCPServerSummary"
+            },
+            "type": "array",
+            "title": "Mcp Servers"
           },
           "created_at": {
             "type": "string",
@@ -18641,8 +19382,8 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 2,
-                "minimum": 0
+                "maximum": 2.0,
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -18757,8 +19498,8 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 1,
-                "minimum": 0
+                "maximum": 1.0,
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -18770,8 +19511,8 @@
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 2000,
-                "minimum": 100
+                "maximum": 2000.0,
+                "minimum": 100.0
               },
               {
                 "type": "null"
@@ -18783,8 +19524,8 @@
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 1000,
-                "minimum": 0
+                "maximum": 1000.0,
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -18864,6 +19605,17 @@
             ],
             "title": "Enable Recording Disclosure"
           },
+          "recording_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recording Enabled"
+          },
           "enable_contact_intelligence": {
             "anyOf": [
               {
@@ -18896,6 +19648,28 @@
               }
             ],
             "title": "Ai Speaks First Outbound"
+          },
+          "finish_greeting_before_listening": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finish Greeting Before Listening"
+          },
+          "finish_greeting_before_listening_outbound": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finish Greeting Before Listening Outbound"
           },
           "prompt_includes_contact_intelligence": {
             "anyOf": [
@@ -19005,8 +19779,8 @@
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 100,
-                "minimum": 1
+                "maximum": 100.0,
+                "minimum": 1.0
               },
               {
                 "type": "null"
@@ -19018,8 +19792,8 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 1,
-                "minimum": 0
+                "maximum": 1.0,
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -19070,6 +19844,30 @@
               }
             ],
             "title": "Openai Noise Reduction"
+          },
+          "openai_voice_model": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(gpt-realtime-1\\.5|gpt-realtime-2)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Openai Voice Model"
+          },
+          "openai_reasoning_effort": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(minimal|low|medium|high|xhigh)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Openai Reasoning Effort"
           },
           "elevenlabs_voice_id": {
             "anyOf": [
@@ -19147,8 +19945,8 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 1,
-                "minimum": 0
+                "maximum": 1.0,
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -19160,7 +19958,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 60
+                "minimum": 60.0
               },
               {
                 "type": "null"
@@ -19403,12 +20201,24 @@
             ],
             "title": "Sms Templates"
           },
+          "sms_phone_number_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sms Phone Number Id"
+          },
           "max_call_duration_minutes": {
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 180,
-                "minimum": 0
+                "maximum": 180.0,
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -19420,8 +20230,8 @@
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 600,
-                "minimum": 0
+                "maximum": 600.0,
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -19505,6 +20315,21 @@
               }
             ],
             "title": "Channel Pivot Enabled"
+          },
+          "mcp_servers": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/MCPServerConfig"
+                },
+                "type": "array",
+                "maxItems": 5
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mcp Servers"
           }
         },
         "type": "object",
@@ -19657,7 +20482,7 @@
           "total_minutes": {
             "type": "number",
             "title": "Total Minutes",
-            "default": 0
+            "default": 0.0
           },
           "total_cost_cents": {
             "type": "integer",
@@ -19667,7 +20492,7 @@
           "conversion_rate": {
             "type": "number",
             "title": "Conversion Rate",
-            "default": 0
+            "default": 0.0
           },
           "total_texts": {
             "type": "integer",
@@ -19703,7 +20528,7 @@
           "model": {
             "type": "string",
             "title": "Model",
-            "default": "openai/gpt-4o"
+            "default": "openai/gpt-5.5"
           }
         },
         "type": "object",
@@ -20379,6 +21204,50 @@
         ],
         "title": "Body_handle_recording_ready_webhooks_twilio__tenant_id__recording_post"
       },
+      "Body_handle_sms_status_callback_webhooks_twilio__tenant_id__sms_status_post": {
+        "properties": {
+          "MessageSid": {
+            "type": "string",
+            "title": "Messagesid"
+          },
+          "MessageStatus": {
+            "type": "string",
+            "title": "Messagestatus"
+          },
+          "From": {
+            "type": "string",
+            "title": "From",
+            "default": ""
+          },
+          "To": {
+            "type": "string",
+            "title": "To",
+            "default": ""
+          },
+          "ErrorCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errorcode"
+          },
+          "AccountSid": {
+            "type": "string",
+            "title": "Accountsid",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "MessageSid",
+          "MessageStatus"
+        ],
+        "title": "Body_handle_sms_status_callback_webhooks_twilio__tenant_id__sms_status_post"
+      },
       "Body_parse_csv_knowledge_bases__kb_id__tables_parse_csv_post": {
         "properties": {
           "file": {
@@ -20546,17 +21415,6 @@
               }
             ],
             "title": "Support Url"
-          },
-          "custom_domain": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Custom Domain"
           }
         },
         "type": "object",
@@ -20604,7 +21462,7 @@
             },
             "type": "object",
             "title": "Field Mapping",
-            "description": "CSV column → schema field mapping"
+            "description": "CSV column \u2192 schema field mapping"
           }
         },
         "type": "object",
@@ -21123,7 +21981,7 @@
           "response_rate": {
             "type": "number",
             "title": "Response Rate",
-            "default": 0
+            "default": 0.0
           }
         },
         "type": "object",
@@ -21242,22 +22100,22 @@
           "time_saved_minutes": {
             "type": "number",
             "title": "Time Saved Minutes",
-            "default": 0
+            "default": 0.0
           },
           "response_rate": {
             "type": "number",
             "title": "Response Rate",
-            "default": 0
+            "default": 0.0
           },
           "avg_messages_per_conversation": {
             "type": "number",
             "title": "Avg Messages Per Conversation",
-            "default": 0
+            "default": 0.0
           },
           "human_takeover_rate": {
             "type": "number",
             "title": "Human Takeover Rate",
-            "default": 0
+            "default": 0.0
           },
           "daily_trend": {
             "items": {
@@ -22291,21 +23149,21 @@
           },
           "per_minute_rate_cents": {
             "type": "integer",
-            "maximum": 1000,
-            "minimum": 0,
+            "maximum": 1000.0,
+            "minimum": 0.0,
             "title": "Per Minute Rate Cents",
             "default": 20
           },
           "monthly_platform_fee_cents": {
             "type": "integer",
-            "minimum": 0,
+            "minimum": 0.0,
             "title": "Monthly Platform Fee Cents",
             "default": 0
           },
           "billing_start_day": {
             "type": "integer",
-            "maximum": 28,
-            "minimum": 1,
+            "maximum": 28.0,
+            "minimum": 1.0,
             "title": "Billing Start Day",
             "default": 1
           },
@@ -22492,8 +23350,8 @@
           },
           "webhook_timeout_ms": {
             "type": "integer",
-            "maximum": 30000,
-            "minimum": 1000,
+            "maximum": 30000.0,
+            "minimum": 1000.0,
             "title": "Webhook Timeout Ms",
             "description": "Timeout for webhook call in milliseconds (1000-30000)",
             "default": 5000
@@ -22702,8 +23560,8 @@
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 30000,
-                "minimum": 1000
+                "maximum": 30000.0,
+                "minimum": 1000.0
               },
               {
                 "type": "null"
@@ -22795,7 +23653,7 @@
           "minutes": {
             "type": "number",
             "title": "Minutes",
-            "default": 0
+            "default": 0.0
           },
           "cost_cents": {
             "type": "integer",
@@ -23636,40 +24494,6 @@
         "type": "object",
         "title": "EnabledChannels",
         "description": "Per-channel AI enable/disable settings.\n\nSupports both legacy boolean format and new ChannelConfig format:\n- Legacy: {\"sms\": true, \"instagram\": false}\n- New: {\"sms\": {\"enabled\": true, \"accounts\": []}, \"instagram\": {\"enabled\": true, \"accounts\": [\"@mybusiness\"]}}"
-      },
-      "EndTrialResponse": {
-        "properties": {
-          "status": {
-            "type": "string",
-            "enum": [
-              "success",
-              "error"
-            ],
-            "title": "Status"
-          },
-          "message": {
-            "type": "string",
-            "title": "Message"
-          },
-          "subscription_status": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Subscription Status"
-          }
-        },
-        "type": "object",
-        "required": [
-          "status",
-          "message"
-        ],
-        "title": "EndTrialResponse",
-        "description": "Response after ending trial early."
       },
       "EnhanceDescriptionRequest": {
         "properties": {
@@ -24746,7 +25570,7 @@
           "contact_id": {
             "type": "string",
             "title": "Contact Id",
-            "description": "GHL contact ID — always present via Contact Intelligence",
+            "description": "GHL contact ID \u2014 always present via Contact Intelligence",
             "default": "test-contact-id"
           }
         },
@@ -25100,8 +25924,8 @@
           },
           "num_pairs": {
             "type": "integer",
-            "maximum": 50,
-            "minimum": 1,
+            "maximum": 50.0,
+            "minimum": 1.0,
             "title": "Num Pairs",
             "default": 10
           }
@@ -25204,7 +26028,7 @@
           "model": {
             "type": "string",
             "title": "Model",
-            "default": "openai/gpt-4o"
+            "default": "openai/gpt-5.5"
           }
         },
         "type": "object",
@@ -25263,8 +26087,8 @@
         "properties": {
           "score": {
             "type": "integer",
-            "maximum": 100,
-            "minimum": 0,
+            "maximum": 100.0,
+            "minimum": 0.0,
             "title": "Score"
           },
           "status": {
@@ -25718,6 +26542,110 @@
         "title": "InvoiceListResponse",
         "description": "Response containing list of invoices."
       },
+      "InvoiceSubAccountLine": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "voice_minutes": {
+            "type": "number",
+            "title": "Voice Minutes"
+          },
+          "voice_calls": {
+            "type": "integer",
+            "title": "Voice Calls"
+          },
+          "voice_revenue_cents": {
+            "type": "integer",
+            "title": "Voice Revenue Cents"
+          },
+          "text_count": {
+            "type": "integer",
+            "title": "Text Count"
+          },
+          "text_revenue_cents": {
+            "type": "integer",
+            "title": "Text Revenue Cents"
+          },
+          "platform_fee_cents": {
+            "type": "integer",
+            "title": "Platform Fee Cents"
+          },
+          "total_due_cents": {
+            "type": "integer",
+            "title": "Total Due Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "voice_minutes",
+          "voice_calls",
+          "voice_revenue_cents",
+          "text_count",
+          "text_revenue_cents",
+          "platform_fee_cents",
+          "total_due_cents"
+        ],
+        "title": "InvoiceSubAccountLine",
+        "description": "Per-sub-account billing line item for invoice summary."
+      },
+      "InvoiceSummaryResponse": {
+        "properties": {
+          "period_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period Start"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period End"
+          },
+          "sub_accounts": {
+            "items": {
+              "$ref": "#/components/schemas/InvoiceSubAccountLine"
+            },
+            "type": "array",
+            "title": "Sub Accounts"
+          },
+          "grand_total_cents": {
+            "type": "integer",
+            "title": "Grand Total Cents"
+          },
+          "grand_voice_revenue_cents": {
+            "type": "integer",
+            "title": "Grand Voice Revenue Cents"
+          },
+          "grand_text_revenue_cents": {
+            "type": "integer",
+            "title": "Grand Text Revenue Cents"
+          },
+          "grand_platform_fees_cents": {
+            "type": "integer",
+            "title": "Grand Platform Fees Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period_start",
+          "period_end",
+          "sub_accounts",
+          "grand_total_cents",
+          "grand_voice_revenue_cents",
+          "grand_text_revenue_cents",
+          "grand_platform_fees_cents"
+        ],
+        "title": "InvoiceSummaryResponse",
+        "description": "Aggregated invoice summary across all sub-accounts for current billing period."
+      },
       "IssueReportResponse": {
         "properties": {
           "id": {
@@ -26066,6 +26994,230 @@
         ],
         "title": "LogoUploadResponse",
         "description": "Response after uploading logo."
+      },
+      "MCPServerConfig": {
+        "properties": {
+          "server_url": {
+            "type": "string",
+            "maxLength": 2048,
+            "title": "Server Url"
+          },
+          "server_label": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Server Label"
+          },
+          "server_description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Server Description"
+          },
+          "bearer_token": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2048
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bearer Token"
+          },
+          "allowed_tools": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allowed Tools"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "server_url",
+          "server_label"
+        ],
+        "title": "MCPServerConfig",
+        "description": "Per-agent MCP server. Used for create/update payloads.\n\nBearer token semantics for PATCH (mirrored exactly in\n`_upsert_mcp_servers_for_agent`):\n  - field absent / None  -> preserve existing ciphertext\n  - empty string \"\"      -> explicit clear (revoke stored bearer)\n  - non-empty plaintext  -> replace (encrypt new value)"
+      },
+      "MCPServerSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "server_url": {
+            "type": "string",
+            "title": "Server Url"
+          },
+          "server_label": {
+            "type": "string",
+            "title": "Server Label"
+          },
+          "server_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Server Description"
+          },
+          "auth_configured": {
+            "type": "boolean",
+            "title": "Auth Configured"
+          },
+          "allowed_tools": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allowed Tools"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "server_url",
+          "server_label",
+          "auth_configured",
+          "enabled"
+        ],
+        "title": "MCPServerSummary",
+        "description": "Read model: never includes ciphertext or plaintext bearer."
+      },
+      "MSImportRequest": {
+        "properties": {
+          "messaging_service_sid": {
+            "type": "string",
+            "title": "Messaging Service Sid"
+          },
+          "integration_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Integration Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "messaging_service_sid",
+          "integration_id"
+        ],
+        "title": "MSImportRequest",
+        "description": "Body for POST /sms-pools/ \u2014 import an existing Twilio MS as a pool."
+      },
+      "MSListItem": {
+        "properties": {
+          "sid": {
+            "type": "string",
+            "title": "Sid"
+          },
+          "friendly_name": {
+            "type": "string",
+            "title": "Friendly Name"
+          },
+          "sticky_sender": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sticky Sender"
+          },
+          "area_code_geomatch": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Area Code Geomatch"
+          },
+          "scaler": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scaler"
+          },
+          "inbound_request_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inbound Request Url"
+          },
+          "integration_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Integration Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sid",
+          "friendly_name",
+          "integration_id"
+        ],
+        "title": "MSListItem",
+        "description": "A Twilio Messaging Service visible to a tenant (across all their integrations)."
       },
       "MeResponse": {
         "properties": {
@@ -27468,6 +28620,189 @@
         "title": "PlanDistributionItem",
         "description": "Plan distribution for donut chart."
       },
+      "PoolMemberResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "phone_number_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Phone Number Id"
+          },
+          "phone_number": {
+            "type": "string",
+            "title": "Phone Number"
+          },
+          "first_used_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Used Date"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "quarantined",
+              "paused",
+              "removed"
+            ],
+            "title": "Status"
+          },
+          "quarantined_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quarantined Until"
+          },
+          "quarantine_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quarantine Reason"
+          },
+          "last_used_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Used At"
+          },
+          "today_sent": {
+            "type": "integer",
+            "title": "Today Sent",
+            "default": 0
+          },
+          "today_cap": {
+            "type": "integer",
+            "title": "Today Cap",
+            "default": 10
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "phone_number_id",
+          "phone_number",
+          "status"
+        ],
+        "title": "PoolMemberResponse",
+        "description": "A phone number attached to a pool, with today's usage stats."
+      },
+      "PoolResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Tenant Id"
+          },
+          "sub_account_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sub Account Id"
+          },
+          "integration_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Integration Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "messaging_service_sid": {
+            "type": "string",
+            "title": "Messaging Service Sid"
+          },
+          "warm_up_days": {
+            "type": "integer",
+            "title": "Warm Up Days"
+          },
+          "daily_cap_max": {
+            "type": "integer",
+            "title": "Daily Cap Max"
+          },
+          "daily_cap_start": {
+            "type": "integer",
+            "title": "Daily Cap Start"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/PoolMemberResponse"
+            },
+            "type": "array",
+            "title": "Members"
+          },
+          "import_warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Import Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tenant_id",
+          "integration_id",
+          "name",
+          "messaging_service_sid",
+          "warm_up_days",
+          "daily_cap_max",
+          "daily_cap_start",
+          "status",
+          "created_at"
+        ],
+        "title": "PoolResponse",
+        "description": "A pool row with its members expanded."
+      },
       "PortalRequest": {
         "properties": {
           "return_url": {
@@ -27929,6 +29264,11 @@
             "title": "Config",
             "default": {}
           },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "default": ""
+          },
           "agent_name": {
             "type": "string",
             "title": "Agent Name"
@@ -28214,7 +29554,7 @@
           "model": {
             "type": "string",
             "title": "Model",
-            "default": "openai/gpt-4o"
+            "default": "openai/gpt-5.5"
           }
         },
         "type": "object",
@@ -28418,17 +29758,17 @@
           "judge_model": {
             "type": "string",
             "title": "Judge Model",
-            "default": "openai/gpt-4o"
+            "default": "openai/gpt-5.5"
           },
           "simulator_model": {
             "type": "string",
             "title": "Simulator Model",
-            "default": "openai/gpt-4o-mini"
+            "default": "openai/gpt-5.4-mini"
           },
           "max_turns": {
             "type": "integer",
-            "maximum": 20,
-            "minimum": 2,
+            "maximum": 20.0,
+            "minimum": 2.0,
             "title": "Max Turns",
             "default": 10
           }
@@ -28735,7 +30075,7 @@
           "confidence": {
             "type": "number",
             "title": "Confidence",
-            "default": 1
+            "default": 1.0
           },
           "created_by": {
             "anyOf": [
@@ -28965,15 +30305,15 @@
           },
           "width": {
             "type": "integer",
-            "maximum": 3840,
-            "minimum": 320,
+            "maximum": 3840.0,
+            "minimum": 320.0,
             "title": "Width",
             "default": 1280
           },
           "height": {
             "type": "integer",
-            "maximum": 2160,
-            "minimum": 240,
+            "maximum": 2160.0,
+            "minimum": 240.0,
             "title": "Height",
             "default": 800
           },
@@ -29024,8 +30364,8 @@
           },
           "max_results": {
             "type": "integer",
-            "maximum": 20,
-            "minimum": 1,
+            "maximum": 20.0,
+            "minimum": 1.0,
             "title": "Max Results",
             "default": 5
           }
@@ -29113,9 +30453,28 @@
             "title": "Agent Id"
           },
           "phone_number_id": {
-            "type": "string",
-            "format": "uuid",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Phone Number Id"
+          },
+          "pool_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pool Id"
           },
           "active_tag": {
             "anyOf": [
@@ -29144,8 +30503,8 @@
           },
           "max_attempts": {
             "type": "integer",
-            "maximum": 20,
-            "minimum": 1,
+            "maximum": 20.0,
+            "minimum": 1.0,
             "title": "Max Attempts",
             "default": 6
           },
@@ -29196,7 +30555,6 @@
         "required": [
           "name",
           "agent_id",
-          "phone_number_id",
           "steps"
         ],
         "title": "SequenceCreate"
@@ -29255,9 +30613,28 @@
             "title": "Agent Id"
           },
           "phone_number_id": {
-            "type": "string",
-            "format": "uuid",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Phone Number Id"
+          },
+          "pool_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pool Id"
           },
           "active_tag": {
             "anyOf": [
@@ -29398,7 +30775,7 @@
           "booking_rate": {
             "type": "number",
             "title": "Booking Rate",
-            "default": 0
+            "default": 0.0
           }
         },
         "type": "object",
@@ -29407,7 +30784,6 @@
           "tenant_id",
           "name",
           "agent_id",
-          "phone_number_id",
           "steps",
           "max_attempts",
           "stop_on_booking",
@@ -29483,7 +30859,7 @@
           },
           "delay_minutes": {
             "type": "integer",
-            "minimum": 0,
+            "minimum": 0.0,
             "title": "Delay Minutes",
             "description": "Minutes to wait before executing this step"
           },
@@ -29565,6 +30941,18 @@
             ],
             "title": "Phone Number Id"
           },
+          "pool_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pool Id"
+          },
           "active_tag": {
             "anyOf": [
               {
@@ -29605,8 +30993,8 @@
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 20,
-                "minimum": 1
+                "maximum": 20.0,
+                "minimum": 1.0
               },
               {
                 "type": "null"
@@ -30532,7 +31920,7 @@
           "total_minutes": {
             "type": "number",
             "title": "Total Minutes",
-            "default": 0
+            "default": 0.0
           },
           "agents_count": {
             "type": "integer",
@@ -30582,11 +31970,6 @@
           "cancel_at_period_end": {
             "type": "boolean",
             "title": "Cancel At Period End"
-          },
-          "white_label_enabled": {
-            "type": "boolean",
-            "title": "White Label Enabled",
-            "default": false
           },
           "usage": {
             "anyOf": [
@@ -30714,7 +32097,7 @@
           "model": {
             "type": "string",
             "title": "Model",
-            "default": "openai/gpt-4o"
+            "default": "openai/gpt-5.5"
           }
         },
         "type": "object",
@@ -31083,6 +32466,11 @@
               }
             ],
             "title": "Effective Plan"
+          },
+          "white_label_enabled": {
+            "type": "boolean",
+            "title": "White Label Enabled",
+            "default": false
           }
         },
         "type": "object",
@@ -31124,7 +32512,7 @@
           "total_minutes_this_month": {
             "type": "number",
             "title": "Total Minutes This Month",
-            "default": 0
+            "default": 0.0
           }
         },
         "type": "object",
@@ -31371,8 +32759,8 @@
           },
           "human_takeover_timeout_hours": {
             "type": "integer",
-            "maximum": 168,
-            "minimum": 1,
+            "maximum": 168.0,
+            "minimum": 1.0,
             "title": "Human Takeover Timeout Hours",
             "default": 24
           },
@@ -31768,8 +33156,8 @@
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 168,
-                "minimum": 1
+                "maximum": 168.0,
+                "minimum": 1.0
               },
               {
                 "type": "null"
@@ -32324,58 +33712,6 @@
         "title": "TimelineEvent",
         "description": "Timeline event for user history."
       },
-      "TrialStatusResponse": {
-        "properties": {
-          "is_trial": {
-            "type": "boolean",
-            "title": "Is Trial"
-          },
-          "trial_ends_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Trial Ends At"
-          },
-          "voice_minutes_used": {
-            "type": "integer",
-            "title": "Voice Minutes Used"
-          },
-          "voice_minutes_limit": {
-            "type": "integer",
-            "title": "Voice Minutes Limit"
-          },
-          "voice_minutes_remaining": {
-            "type": "integer",
-            "title": "Voice Minutes Remaining"
-          },
-          "days_remaining": {
-            "type": "integer",
-            "title": "Days Remaining"
-          },
-          "is_exceeded": {
-            "type": "boolean",
-            "title": "Is Exceeded"
-          }
-        },
-        "type": "object",
-        "required": [
-          "is_trial",
-          "trial_ends_at",
-          "voice_minutes_used",
-          "voice_minutes_limit",
-          "voice_minutes_remaining",
-          "days_remaining",
-          "is_exceeded"
-        ],
-        "title": "TrialStatusResponse",
-        "description": "Trial status for dashboard display."
-      },
       "TwilioCredentialsRequest": {
         "properties": {
           "account_name": {
@@ -32556,18 +33892,6 @@
               }
             ],
             "title": "Support Url"
-          },
-          "custom_domain": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 253
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Custom Domain"
           }
         },
         "type": "object",
@@ -32698,8 +34022,8 @@
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 1000,
-                "minimum": 0
+                "maximum": 1000.0,
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -32711,7 +34035,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -32734,8 +34058,8 @@
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 28,
-                "minimum": 1
+                "maximum": 28.0,
+                "minimum": 1.0
               },
               {
                 "type": "null"
@@ -33451,8 +34775,8 @@
           },
           "health_score": {
             "type": "integer",
-            "maximum": 100,
-            "minimum": 0,
+            "maximum": 100.0,
+            "minimum": 0.0,
             "title": "Health Score"
           },
           "health_status": {
@@ -34111,8 +35435,8 @@
           },
           "webhook_timeout_ms": {
             "type": "integer",
-            "maximum": 30000,
-            "minimum": 1000,
+            "maximum": 30000.0,
+            "minimum": 1000.0,
             "title": "Webhook Timeout Ms",
             "description": "Timeout for webhook call in milliseconds",
             "default": 5000
@@ -34367,7 +35691,7 @@
             "type": "string",
             "pattern": "^(inbound|outbound|both)$",
             "title": "Agent Mode",
-            "description": "Agent mode — outbound routes 'team' to objections generator",
+            "description": "Agent mode \u2014 outbound routes 'team' to objections generator",
             "default": "inbound"
           }
         },
@@ -34416,7 +35740,7 @@
             "type": "string",
             "pattern": "^(inbound|outbound|both)$",
             "title": "Agent Mode",
-            "description": "Agent mode — outbound routes 'team' to objections generator",
+            "description": "Agent mode \u2014 outbound routes 'team' to objections generator",
             "default": "inbound"
           }
         },
