@@ -57,4 +57,26 @@ Evidence: `openapi-spec.json` (492KB, 283 paths) and `LEADLOCKDOCS.json` (910KB,
 
 ## Real platform gaps (not retracted)
 
-(None currently. All entries above were probing errors, not actual gaps.)
+---
+
+### ~~`openai_voice` description lists only legacy voices; cedar/marin (V2-only) accepted but undocumented~~ — RESOLVED 2026-05-19
+
+**Resolution (2026-05-19, same day):** Platform docs updated. `LEADLOCKDOCS.json` → `AgentCreate.properties.openai_voice.description` now reads: `"OpenAI voice ID. v1.5 voices: alloy, ash, ballad, coral, echo, sage, shimmer, verse. v2 adds: marin, cedar (only available when openai_voice_model='gpt-realtime-2')."` The description correctly enumerates both the legacy and V2-native voices and notes the model-compatibility constraint. The field is still `type: string` with no enum/pattern (so other voice names won't error at the schema layer), but the documented contract is now accurate. Leaving the entry below as a historical record; do not act on the original "gap" since it's been closed.
+
+---
+
+### Original entry (kept for history)
+
+Date: 2026-05-19
+Tags: skill:build-agent, type:platform-gap, file:LEADLOCKDOCS.json, model:gpt-realtime-2
+Evidence: `LEADLOCKDOCS.json` → `AgentCreate.properties.openai_voice.description` reads `"OpenAI voice ID (alloy, ash, ballad, coral, echo, sage, shimmer, verse)"`. Field schema is `{"type": "string"}` with no pattern restriction. Setting `openai_voice: "cedar"` via PATCH on agent `baef6000-6707-40c6-91d4-45086c7514cf` returned 200 and the value persisted; a follow-up GET confirmed `openai_voice: "cedar"`. The user named `marin` as a second V2-only voice but it wasn't probed in this session.
+
+**Rule:** When building an agent with `openai_voice_model=gpt-realtime-2`, prefer the V2-native voices (`cedar`, `marin`, and likely others) over the legacy v1 voices listed in the schema description. The schema description is wrong by omission; treat the documented list as a non-exhaustive sample, not a closed enum.
+
+**Why:** The OpenAI realtime API ships with provider-version-specific voice rosters. The legacy v1 voices (alloy, ash, ballad, coral, echo, sage, shimmer, verse) technically render on V2 but don't take advantage of V2's improved prosody/expressiveness. The V2-native voices (cedar, marin, …) were introduced alongside the V2 model and are noticeably better for it. The platform's docs description hasn't been updated to reflect them, but the field is open-string so they accept anything; verification only happens at runtime against OpenAI's API.
+
+**How to apply:**
+- In `build-agent`'s voice picker, when the user selects `voice_provider=openai` AND the agent is being created with `openai_voice_model=gpt-realtime-2` (which should be the new default — see best-practices entry), surface cedar/marin as the primary recommendations and demote ash/alloy/etc. to a "legacy" sub-list.
+- Don't restrict the picker to only the documented voice list. If a user pastes a voice name the docs don't mention, accept it and verify with a test call.
+- Re-probe periodically — OpenAI ships new voices on the V2 line; update the curated list as they appear.
+- Until the platform updates the field description, this gap stays open. A short feature request to Leadlock: "Update `openai_voice` description to reflect the V2 voice roster (cedar, marin, …) and add a `model_compatibility` tag if possible."

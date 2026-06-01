@@ -122,3 +122,99 @@ curl -s https://app.leadlock.ai/assets/_slug_-<hash>.js | grep -oE '\.[a-z][a-z_
 **Why:** The platform's openapi schema is the formal contract for typed fields. For `additionalProperties: true` fields like `demo.config`, the schema doesn't enumerate accepted keys — they're discoverable only from the renderer. Doing this discovery in 60 seconds saves a feature-request round-trip and prevents publishing wrong "platform gap" entries.
 
 **How to apply:** Whenever you're about to write "the API doesn't support X" for a feature that lives in a free-form config object, run this audit first. If the JS chunk contains the snake_case key, the feature exists — try it. If it doesn't, then it's a real gap. Document the audit result either way.
+
+---
+
+### Default V2-native voices when using `openai_voice_model=gpt-realtime-2`
+
+Date: 2026-05-19
+Tags: skill:build-agent, type:pattern, model:gpt-realtime-2, provider:openai
+Evidence: live YouTube demo agent `baef6000-6707-40c6-91d4-45086c7514cf` — switched from `ash` (legacy v1 voice) to `cedar` (V2-native voice) once the user pointed it out; the V2-native voice noticeably improved prosody and expressiveness on the test call.
+
+**Rule:** When creating an agent with `voice_provider=openai` and `openai_voice_model=gpt-realtime-2`, default to a V2-native voice (currently `cedar` or `marin`) rather than the legacy v1 voices (`alloy`, `ash`, `ballad`, `coral`, `echo`, `sage`, `shimmer`, `verse`). Only fall back to a legacy voice if the user explicitly requests one or if voice continuity with an existing V1.5 agent matters.
+
+**Why:** Legacy v1 voices technically render on V2 but were tuned for V1.5 and don't take advantage of V2's improved expressiveness. V2-native voices were introduced alongside the V2 model. For demos and customer-facing agents where voice quality matters, the V2-native voices are the better default. See `[[platform-gaps#openai_voice-description-lists-only-legacy-voices-cedar-marin-v2-only-accepted-but-undocumented]]` for why this isn't obvious from the docs.
+
+**How to apply:**
+- Update `build-agent`'s curated voice menu so the top picks for `voice_provider=openai` lead with V2-native voices (cedar, marin, …) when the user is picking V2 mode.
+- Group the legacy voices into a "legacy / v1.5" sub-section in the picker so users see them but understand they're not the recommended path for V2.
+- When the user explicitly requests V1.5 (e.g. for cost reasons — V2 is premium-priced), revert to the legacy v1 voices as the default.
+
+---
+
+### `openai_vad_eagerness=auto` for conversational demo agents
+
+Date: 2026-05-19
+Tags: skill:build-agent, type:pattern, model:gpt-realtime-2, surface:vad
+Evidence: live YouTube demo agent `baef6000-6707-40c6-91d4-45086c7514cf` — the user manually changed `openai_vad_eagerness` from `low` (the kit's default) to `auto` after the first test call felt awkwardly paced. The follow-up call held conversational rhythm better.
+
+**Rule:** For conversational demo or receptionist agents where the human user may pause, laugh, react slowly, or talk to someone off-mic mid-call, set `openai_vad_eagerness=auto` rather than the kit's `low` default. `low` is meant for production qualifying agents where being extra patient is safer; `auto` lets the model decide based on context.
+
+**Why:** `low` eagerness instructs the OpenAI realtime VAD to wait longer before deciding the user has finished talking. For qualifying calls where the agent must not interrupt the prospect's objection mid-sentence, `low` is correct. For demo or banter-style calls where the human may finish their turn quickly with a one-word reaction ("nice", "yeah", a laugh), `low` holds the turn open too long and creates an awkward gap. `auto` adapts based on speech patterns and tends to feel more natural in those contexts. `high` (the other end) is fine for fast-paced calls but risks talking over the user.
+
+**How to apply:**
+- In `build-agent`, when the agent's purpose is a demo, a receptionist with light conversational intent, or any "feels like a friend" use case — default to `openai_vad_eagerness=auto`.
+- Keep `low` as the default for outbound prospecting / qualifying agents where being patient is critical.
+- Make this a question in the build-agent interview if the agent's primary purpose isn't obvious from context.
+- This applies to `voice_provider=openai`. Other providers have their own analogues (`gemini_end_sensitivity`, etc.) — different tuning rules.
+
+---
+
+### `GET /calls/{id}` transcript field is the primary diagnostic for "the call ended weird"
+
+Date: 2026-05-19
+Tags: skill:build-agent, skill:call-audit, skill:prompt-tuner, type:debug-pattern, surface:transcript
+Evidence: call `74f62ec4-4982-4b66-a703-f14a07ced784` — `transcript` field contained an ordered list of `{role, content, timestamp}` entries (plus `tool_args`/`tool_result` for tool roles), which pinpointed `end_call` firing at 24.45s, ~1.5s after a one-word misheard user utterance. Without the transcript, we'd have been guessing at AMD vs silence vs prompt issue. With it, the root cause was immediate.
+
+**Rule:** Whenever a call ends unexpectedly (too soon, too late, dropped, weird tool firing, missed booking), the FIRST diagnostic step is `GET /calls/{id}` and read the `transcript` array. The transcript shows role (`assistant` / `user` / `tool` / `tool_result`), content, timestamp (seconds from start), and for tool roles also `tool_name`, `tool_args`, and `tool_result`. Scan for the exact moment things went wrong and the immediate preceding turn — that's almost always the cause.
+
+**Why:** The call detail also has `amd_status`, `amd_detection_ms`, `duration_seconds`, and `ended_at` — useful framing but not diagnostic. The transcript is where the actual sequence is. Reasoning models can fire tools based on a single misheard utterance, a scripted dialogue line, or a punchline phrase — none of those are visible from status fields, only from the transcript. The `tool_args` field is especially useful: e.g. `end_call({"reason":"completed"})` vs `end_call({"reason":"no_response"})` tells you whether the model thought the call was wrapped up or thought the user was unreachable.
+
+**How to apply:**
+- `build-agent` and `prompt-tuner` should both include "fetch call transcript via `GET /calls/{id}` after test call" as a standard step.
+- `call-audit` should make the transcript the centerpiece of every per-call analysis.
+- When PATCH'ing an agent's prompt after a bad call, quote the offending transcript line(s) in the change rationale so the next maintainer can see what triggered the rewrite.
+- Useful one-liner: list the last 5 calls for an agent, then pull the transcript of the most recent one:
+  ```python
+  calls = GET(f"{API}/calls?agent_id={aid}&limit=5")
+  last = calls['calls'][0]
+  detail = GET(f"{API}/calls/{last['id']}")
+  for turn in detail['transcript']:
+      print(f"{turn['timestamp']:6.2f}s  {turn['role']:12s}  {turn.get('content','')[:140]}")
+  ```
+
+---
+
+### `LEADLOCKDOCS.json` is the canonical doc source; `openapi-spec.json` and `leadlock-docs.md` are stale exports
+
+Date: 2026-05-19
+Tags: type:docs-meta, file:LEADLOCKDOCS.json, kit-rule
+Evidence: User explicitly designated `LEADLOCKDOCS.json` as the canonical reference (2026-05-19). During this session, the file was updated twice mid-session by the user (adding `openai_voice_model`, then updating `openai_voice` description to enumerate cedar/marin) — both updates landed in `LEADLOCKDOCS.json`, neither in `openapi-spec.json` or `leadlock-docs.md`. The latter two files at the kit root were not refreshed and are now drifted.
+
+**Rule:** When referencing the Leadlock API docs from any skill, helper script, or new code in this kit, point at `/Users/danielgauerke/Projects/LeadLockAgentKit/LEADLOCKDOCS.json` (or just `LEADLOCKDOCS.json` if working from the kit root). Do not reference `leadlock-docs.md` or `openapi-spec.json` in new content. The latter two are kept on disk for now but are slightly older snapshots — drift will accumulate.
+
+**Why:** The user maintains `LEADLOCKDOCS.json` as the live export from the platform. The other two files were earlier exports and don't get updated when fields are added or descriptions are corrected. Skills that reference the stale files will give wrong answers about new fields (e.g. `openai_voice_model`, `openai_reasoning_effort`, V2-only voices). The user has also stated they will refresh `LEADLOCKDOCS.json` as the platform changes — so it's the live contract.
+
+**How to apply:**
+- New skill SKILL.md files should reference `LEADLOCKDOCS.json` in their endpoint-lookup steps. Pattern: `python3 -c "import json; s=json.load(open('LEADLOCKDOCS.json')); print(s['paths']['/agents']['post'])"`.
+- Existing skills (prospect-demo, add-to-learnings) had references to the old filenames — those were updated 2026-05-19 (this session).
+- CLAUDE.md and README.md were also updated to reflect this 2026-05-19.
+- When the user says "the docs were updated," re-read `LEADLOCKDOCS.json` (not the other two). The pattern of "user updates docs mid-session" happens — assume it could happen again.
+
+---
+
+### `openai_vad_eagerness: high` for outbound 1:1 demo agents (not `auto` or `low`)
+
+Date: 2026-05-23
+Tags: skill:build-agent, type:pattern, model:gpt-realtime-2, surface:vad
+Evidence: Big Dawg outbound demo (agent `cbdfa5b7-dfc6-4b50-b958-ff8eb0fed22e`). Initial config set `openai_vad_eagerness: "low"` (under the false assumption the agent would be "performing to a room" and need to ride audience laughter). Operator changed to `high` for the live outbound call to a single picker-upper. Existing learning (2026-05-19) said "use `auto` for conversational/demo agents" — that was for inbound web-widget demos with potentially ambient noise. Outbound 1:1 is different.
+
+**Rule:** For outbound voice agents on `gpt-realtime-2` calling a single human (including live demos played on speaker), set `openai_vad_eagerness: "high"`. The agent needs snappy turn-taking with one person on a phone line. Reserve `auto` for inbound conversational demos and `low` only when the agent genuinely needs to ride extended pauses (long-form storytelling, multi-party crowd interaction directly).
+
+**Why:** Outbound 1:1 calls have one clear conversation partner. High eagerness means the agent picks up turns quickly, which feels lively and natural. Low/auto eagerness makes the agent feel slow on the phone, with awkward gaps after the human stops speaking. Crowd noise from a room hearing the call on speaker is not a real ambient-noise concern for the agent's mic — the agent only hears the picker-upper's phone, not the room.
+
+**How to apply:**
+- Build-agent flow: if `agent_mode` is `outbound`, default to `openai_vad_eagerness: "high"`. If `inbound` and the demo is web-widget / quiet-room, use `auto`. If `inbound` and used in a noisy retail/restaurant phone line, consider `medium` or `low`.
+- Cross-reference: the 2026-05-19 best-practice entry "openai_vad_eagerness=auto for conversational/demo agents" applies to inbound conversational demos, not outbound. Both rules coexist — pick based on direction and use case.
+- Verify after create/PATCH with `GET /agents/{id}` — confirm `openai_vad_eagerness` matches intent.
+- If a skill genuinely needs prose for grepping (the old `leadlock-docs.md` use case), generate it on demand from `LEADLOCKDOCS.json` rather than reading the stale file.

@@ -76,7 +76,7 @@ Identify candidate learnings:
 - Decisions that worked out
 
 Skip:
-- Things already documented in CLAUDE.md, SKILL.md files, or `leadlock-docs.md`
+- Things already documented in CLAUDE.md, SKILL.md files, or `LEADLOCKDOCS.json`
 - One-off context that doesn't generalize (the prospect's name, today's specific calendar id)
 - Vague generalities ("be careful with edge cases")
 
