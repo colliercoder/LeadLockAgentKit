@@ -86,6 +86,13 @@ Setup helpers:
   setup-check
     "Check my setup" / "Is my API key working?" / "Diagnose"
 
+  kit-audit
+    "Audit the kit" / "Is the repo optimized?" / "Health check the kit"
+    Maintainer self-check: lints every skill, verifies endpoints against
+    LEADLOCKDOCS.json, confirms each skill is registered, scans for
+    hard-rule violations and leaked secrets, auto-fixes safe drift, and
+    writes a scored health report to ./output/.
+
 The ./learnings/ folder is the kit's persistent memory. Before starting
 non-trivial work, Claude skims learnings/index.md for prior lessons.
 

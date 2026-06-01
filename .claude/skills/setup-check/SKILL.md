@@ -103,6 +103,7 @@ except Exception as e:
     ✓ agent-to-agent-call-testing
     <✓ or ✗> retell-to-leadlock  (requires RETELL_API_KEY in .env)
     <✓ or ✗> subaccount-onboarding  (requires agency-tier key — you are: <tenant_type>)
+    ✓ kit-audit  (maintainer self-check — no key needed for the static half)
 
   Try: "Build a demo for https://example.com"
 ```

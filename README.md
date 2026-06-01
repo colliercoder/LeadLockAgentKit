@@ -23,6 +23,7 @@ A growing library of Claude Code skills for Leadlock agency owners. Run them wit
 | `welcome` | Lists what the kit can do. Fires on "help", "what can you do", "I'm new", or any ambiguous first prompt. |
 | `setup-check` | Verifies `.env`, tests your API key, identifies your tenant tier, reports which skills are available. Auto-fires when another skill hits a 401/403. |
 | `add-to-learnings` | Captures bugs, platform gaps, and working recipes from a session into `learnings/` so the kit gets smarter over time. Run it at the end of a non-trivial session. |
+| `kit-audit` | Maintainer self-check. Points the kit at itself: every skill structurally sound, every endpoint real (vs `LEADLOCKDOCS.json`), every skill registered, no hard-rule violations or leaked secrets, learnings healthy. Static lint + read-only live probes, auto-fixes safe drift, writes a scored health report to `./output/`. Run it now and then. |
 
 More skills land here over time. Drop a new folder under `.claude/skills/<name>/SKILL.md` and Claude Code picks it up.
 
