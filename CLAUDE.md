@@ -47,19 +47,17 @@ The user should never feel lost. Either route them to the right tool or show the
 
 ## Source of truth for the API
 
-Two files at the kit root — use whichever fits the question:
+**`LEADLOCKDOCS.json`** at the kit root is the canonical doc source. Every skill, helper, and script in this kit MUST reference `LEADLOCKDOCS.json` (not `leadlock-docs.md`, not `openapi-spec.json`) when looking up endpoints, schemas, or field shapes.
 
-- **`leadlock-docs.md`** — prose narrative form. 280+ endpoints, request/response shapes, descriptions, auth notes, plus a full component-schema appendix. Best for "what does this endpoint do" + grepping for endpoint paths or schema names.
-
-- **`openapi-spec.json`** — structured OpenAPI 3.1 spec. Same data, machine-readable. Best when you need exact request body shapes, enum values, nested schemas, or want to parse programmatically (`python3 -c "import json; ..."`). The prose file is regenerated from this one, so this is the canonical source.
+Two older files (`leadlock-docs.md`, `openapi-spec.json`) remain on disk from earlier exports but are stale. Do not reference them in any new content. They will drift further as `LEADLOCKDOCS.json` is refreshed.
 
 When you need details Claude doesn't have memorized:
 ```
-grep -n "POST /endpoint" leadlock-docs.md
-python3 -c "import json; s=json.load(open('openapi-spec.json')); print(s['paths']['/agents']['post'])"
+python3 -c "import json; s=json.load(open('LEADLOCKDOCS.json')); print(s['paths']['/agents']['post'])"
+python3 -c "import json; s=json.load(open('LEADLOCKDOCS.json')); print(s['components']['schemas']['AgentCreate']['properties']['openai_voice'])"
 ```
 
-Don't guess endpoint shapes. Look them up.
+Don't guess endpoint shapes. Look them up. If a doc you need is missing from `LEADLOCKDOCS.json`, flag it to the user — don't fall back to the older files.
 
 ---
 
@@ -138,7 +136,7 @@ Body structure (use this order):
 4. **## Setup check** — confirm `.env` is configured
 5. **## Rules** — numbered list. Hard constraints, gotchas, things-that-must-be-true. Mirror the prospect-demo skill's rule discipline.
 6. **## Required inputs** — what the user must supply. Use lettered options when asking the user to pick.
-7. **## Execution** — numbered steps. Each step shows the API call(s) with example payloads. Reference `leadlock-docs.md` for shapes you don't have memorized.
+7. **## Execution** — numbered steps. Each step shows the API call(s) with example payloads. Reference `LEADLOCKDOCS.json` for shapes you don't have memorized.
 8. **## Templates** — email templates, prompt skeletons, output formats, as relevant
 9. **## Gotchas** — things that have burned us before
 10. **## Rule capture** — empty comment block: `<!-- Append new rules here as the maintainer learns from real runs. -->`
@@ -207,7 +205,7 @@ Confirmation gates (step 3) are mandatory before any mutation that the user can'
 
 1. Create `.claude/skills/<your-skill-name>/` directory
 2. Write `SKILL.md` following the anatomy above
-3. Use `leadlock-docs.md` to confirm the endpoints exist and their request/response shapes
+3. Use `LEADLOCKDOCS.json` to confirm the endpoints exist and their request/response shapes
 4. Live-probe the critical endpoints with a real API key before committing
 5. Add a row to the README's skills table
 6. Commit to main
@@ -219,7 +217,7 @@ If your skill needs an agency-tier API key (anything under `/agency/*`), say so 
 ## Useful references
 
 - `README.md` — user-facing install and use guide
-- `leadlock-docs.md` — full API reference (270+ endpoints)
+- `LEADLOCKDOCS.json` — canonical API reference (275+ endpoints + full component schemas). Parse with `json.load`.
 - `.claude/skills/prospect-demo/SKILL.md` — the canonical skill example. Mirror its structure when writing new skills.
 - `.claude/skills/prospect-demo/showcase.html` — branded slide deck explaining what `prospect-demo` does. Use as a reference if you build similar marketing artifacts for other skills.
 - `learnings/` — the kit's persistent memory across sessions. Read `learnings/index.md` before starting non-trivial work. Append to it via `/add-to-learnings`.
