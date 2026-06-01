@@ -421,8 +421,9 @@ def main() -> int:
     p.add_argument("--sub-account-id", default=Cfg.sub_id,
                    help="X-Sub-Account-Id for an agency key acting on a sub-account")
     p.add_argument("--dry-run", action="store_true")
-    p.add_argument("--out", default="/tmp/agent_loop_results.json")
+    p.add_argument("--out", default="./output/agent_loop_results.json")
     args = p.parse_args()
+    os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
 
     require_api_key()
     if args.sub_account_id:

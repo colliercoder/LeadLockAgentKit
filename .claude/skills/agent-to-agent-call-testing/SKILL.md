@@ -10,6 +10,8 @@ call-time behavior is verified against the true production path. This is a guide
 wizard: walk the user through it question by question, place the test call(s),
 then judge the transcript and report PASS/FAIL with the proof.
 
+For any Leadlock field or endpoint shape you need to confirm, consult `LEADLOCKDOCS.json` at the kit root (the canonical API reference). The harness also self-checks its required paths against the live `/openapi.json` before placing any paid call (Step 4).
+
 ## Why this exists (say this if the user asks "why not just use the simulator?")
 
 The bot-vs-bot simulator and the browser voice playground **do not create a
@@ -111,14 +113,14 @@ drifted endpoint stops here instead of mid-test:
 
 ```bash
 cd .claude/skills/agent-to-agent-call-testing
-python harness.py --verify-contract
+python3 harness.py --verify-contract
 ```
 
 Optionally show the user a **dry run** (creates + configures the agents, assigns
 the numbers, then deletes them — no call placed, no charge):
 
 ```bash
-python harness.py --user-number-id <USER_ID> --under-number-id <UNDER_ID> --dry-run
+python3 harness.py --user-number-id <USER_ID> --under-number-id <UNDER_ID> --dry-run
 ```
 
 ### Step 5 — Confirm, then place the real call
@@ -128,14 +130,14 @@ Require an explicit **yes**. Then run:
 
 ```bash
 # Single feature:
-python harness.py --user-number-id <USER_ID> --under-number-id <UNDER_ID> --only caller_phone
+python3 harness.py --user-number-id <USER_ID> --under-number-id <UNDER_ID> --only caller_phone
 
 # Agent-team transfer:
-python team_harness.py --team --ask-for billing --voice xai \
+python3 team_harness.py --team --ask-for billing --voice xai \
     --user-number-id <USER_ID> --under-number-id <UNDER_ID>
 
 # Latency benchmark (one call per voice):
-python team_harness.py --latency --voices xai,openai-2 \
+python3 team_harness.py --latency --voices xai,openai-2 \
     --user-number-id <USER_ID> --under-number-id <UNDER_ID>
 ```
 
@@ -145,7 +147,7 @@ agent-under-test (or front desk) receives ON.
 ### Step 6 — Judge and report
 
 The harness writes the full result (transcript, status, signals) to
-`/tmp/agent_loop_results.json` and does NOT call an LLM itself. **You are the
+`./output/agent_loop_results.json` and does NOT call an LLM itself. **You are the
 judge.** Read that file and for each case:
 
 1. Read the `transcript` against the `judge_question`.
@@ -198,3 +200,7 @@ From `./.env` in the kit root (same as every other skill):
   Department agents need NO phone number — transfer swaps the live session brain.
 - Verdict signal for transfers: `call_logs.agent_transitions` (the department's
   agent_id appears in the timeline); `call_logs.agent_id` stays the front desk.
+
+## Rule capture
+
+<!-- Append new rules here as the maintainer learns from real runs. -->
