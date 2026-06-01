@@ -49,7 +49,7 @@ The user should never feel lost. Either route them to the right tool or show the
 
 **`LEADLOCKDOCS.json`** at the kit root is the canonical doc source. Every skill, helper, and script in this kit MUST reference `LEADLOCKDOCS.json` (not `leadlock-docs.md`, not `openapi-spec.json`) when looking up endpoints, schemas, or field shapes.
 
-Two older files (`leadlock-docs.md`, `openapi-spec.json`) remain on disk from earlier exports but are stale. Do not reference them in any new content. They will drift further as `LEADLOCKDOCS.json` is refreshed.
+Two older exports (`leadlock-docs.md`, `openapi-spec.json`) were removed from the kit; `LEADLOCKDOCS.json` fully replaces them. Don't reintroduce or reference them.
 
 When you need details Claude doesn't have memorized:
 ```
@@ -238,6 +238,8 @@ When skills create or modify agents, these are the working voice options on the 
 Gemini additionally needs: `gemini_start_sensitivity: "low"`, `gemini_end_sensitivity: "high"`.
 OpenAI additionally needs: `openai_vad_type: "semantic_vad"`, `openai_vad_eagerness: "low"`, `openai_noise_reduction: "far_field"`.
 
+OpenAI Realtime **v2** (`openai_voice_model: "gpt-realtime-2"`) adds two voices not in the table above: `marin` and `cedar` (v2-only). The `retell-to-leadlock` skill defaults to this v2 block (`gpt-realtime-2` + `marin`/`cedar` + `openai_reasoning_effort: "low"`).
+
 The API returns default values on every non-matching voice column (e.g. `gemini_voice` defaults to `"Puck"` on every agent regardless of provider). Always verify with explicit columns matched to `voice_provider`, not a fallback chain.
 
 ---
@@ -246,4 +248,4 @@ The API returns default values on every non-matching voice column (e.g. `gemini_
 
 Maintain a one-line note here when CLAUDE.md changes substantially. Don't pad with version history — just the most recent meaningful update.
 
-2026-05-13 — Added `learnings/` folder and `/add-to-learnings` skill. prospect-demo now requires prospect-timezone match and an explicit output-format choice (URLs / iframe / both / clipboard).
+2026-05-31 - Added three skills (`build-agent`, `agent-to-agent-call-testing`, `retell-to-leadlock`); the last needs `RETELL_API_KEY` in `.env`. Migrated the canonical API doc to `LEADLOCKDOCS.json` and removed the stale `leadlock-docs.md` + `openapi-spec.json`. All skills are now surfaced in the README, the `welcome` menu, and `setup-check`.

@@ -22,6 +22,7 @@ A growing library of Claude Code skills for Leadlock agency owners. Run them wit
 |---|---|
 | `welcome` | Lists what the kit can do. Fires on "help", "what can you do", "I'm new", or any ambiguous first prompt. |
 | `setup-check` | Verifies `.env`, tests your API key, identifies your tenant tier, reports which skills are available. Auto-fires when another skill hits a 401/403. |
+| `add-to-learnings` | Captures bugs, platform gaps, and working recipes from a session into `learnings/` so the kit gets smarter over time. Run it at the end of a non-trivial session. |
 
 More skills land here over time. Drop a new folder under `.claude/skills/<name>/SKILL.md` and Claude Code picks it up.
 
@@ -67,6 +68,10 @@ check my setup                              → verifies your API key works
 ### Common phrases that fire each skill
 
 ```
+"Build me an agent for Acme Plumbing"
+"Create an inbound receptionist agent"
+    → build-agent
+
 "Build a demo for https://acmeplumbing.com"
 "Make a voice agent demo for [business name]"
     → prospect-demo
@@ -94,6 +99,10 @@ check my setup                              → verifies your API key works
 "Port my Retell agent into Leadlock"
 "Consolidate my Retell orchestrator + sub-agents into one agent"
     → retell-to-leadlock  (needs RETELL_API_KEY in .env)
+
+"Test my agent on a real call"
+"Benchmark voice latency across providers"
+    → agent-to-agent-call-testing
 ```
 
 Claude picks up the matching skill, reads your `.env`, hits the Leadlock API, and hands you back the result.

@@ -24,6 +24,11 @@ Output exactly this (substitute the user's name if known):
 Welcome to the Leadlock Agent Kit. Every skill is driven from natural language.
 You don't need to memorize commands — just describe what you want.
 
+  build-agent
+    "Build me an agent for Acme Plumbing"
+    "Create an inbound receptionist"
+    "Spin up a setter / qualifier agent"
+
   prospect-demo
     "Build a demo for https://acmeplumbing.com"
     "Make a voice demo for [business name]"
@@ -62,6 +67,11 @@ You don't need to memorize commands — just describe what you want.
     "Port my Retell agent into Leadlock"
     "Consolidate my Retell orchestrator + sub-agents into one agent"
     "Migrate my Retell setup to Leadlock"
+
+  agent-to-agent-call-testing
+    "Test my agent on a real call"
+    "Benchmark voice latency across providers"
+    "Test an agent-team transfer"
 
   add-to-learnings
     "/add-to-learnings"

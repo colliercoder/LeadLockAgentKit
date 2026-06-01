@@ -94,11 +94,13 @@ except Exception as e:
   Plan: <plan_name>
 
   Skills available to this key:
+    ✓ build-agent
     ✓ prospect-demo
     ✓ prompt-tuner
     ✓ call-audit
     ✓ knowledge-base-builder
     ✓ agent-from-recording
+    ✓ agent-to-agent-call-testing
     <✓ or ✗> retell-to-leadlock  (requires RETELL_API_KEY in .env)
     <✓ or ✗> subaccount-onboarding  (requires agency-tier key — you are: <tenant_type>)
 
