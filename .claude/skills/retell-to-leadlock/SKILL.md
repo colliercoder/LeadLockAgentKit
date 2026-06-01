@@ -23,7 +23,15 @@ Before anything, confirm `./.env` has:
 - `RETELL_API_KEY` (required — the source)
 - **Optional, only if the Retell agent has custom HTTP tools that hit your own backend** (e.g. a Modal/cal.com wrapper): `MODAL_TOKEN_ID` + `MODAL_TOKEN_SECRET` (to deploy the bridge adapter) and any backend keys.
 
-If `LEADLOCK_API_KEY` or `RETELL_API_KEY` is missing, stop and fire `setup-check`. Auth headers: Leadlock `X-API-Key: <key>`; Retell `Authorization: Bearer <key>`. **Never print full keys** — mask as `sk_live_***…last4`.
+`RETELL_API_KEY` is specific to this skill — most users of the kit never need it, so it is **not** part of the base `.env`. If it's missing, don't bounce to `setup-check`. Stop and tell the user directly to add it, then re-run:
+
+```
+echo 'RETELL_API_KEY=key_your_real_retell_key' >> ./.env
+```
+
+Grab the key from the Retell dashboard → Settings → API Keys. If `LEADLOCK_API_KEY` / `LEADLOCK_API_URL` is the thing that's missing (the base config), that's a different problem — fire `setup-check` instead.
+
+Auth headers: Leadlock `X-API-Key: <key>`; Retell `Authorization: Bearer <key>`. **Never print full keys** — mask as `sk_live_***…last4`.
 
 ## Rules
 
