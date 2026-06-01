@@ -21,7 +21,7 @@ When the user is new, lost, or asks "what can this do", surface the kit's full s
 Output exactly this (substitute the user's name if known):
 
 ```
-Welcome to the Leadlock Agent Kit. Seven skills, all driven from natural language.
+Welcome to the Leadlock Agent Kit. Every skill is driven from natural language.
 You don't need to memorize commands — just describe what you want.
 
   prospect-demo
@@ -57,6 +57,11 @@ You don't need to memorize commands — just describe what you want.
     "Onboard a new client [Name] at [domain]"
     "Spin up a new sub-account for [Client]"
     "Create a sub-account: name=Acme, slug=acme, admin=email@..."
+
+  retell-to-leadlock   (needs RETELL_API_KEY in .env)
+    "Port my Retell agent into Leadlock"
+    "Consolidate my Retell orchestrator + sub-agents into one agent"
+    "Migrate my Retell setup to Leadlock"
 
   add-to-learnings
     "/add-to-learnings"
