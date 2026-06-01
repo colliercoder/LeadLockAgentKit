@@ -235,6 +235,8 @@ When skills create or modify agents, these are the working voice options on the 
 | xAI (Grok) | `xai` | `voice` | (auto) | `rex`, `leo` | `ara` |
 | ElevenLabs | `elevenlabs` | `elevenlabs_voice_id` | `elevenlabs_language` | voice UUID | voice UUID |
 
+xAI (Grok) `voice` also accepts `eve` and `sal` beyond the `rex`/`leo`/`ara` listed above (all set via the `voice` field).
+
 Gemini additionally needs: `gemini_start_sensitivity: "low"`, `gemini_end_sensitivity: "high"`.
 OpenAI additionally needs: `openai_vad_type: "semantic_vad"`, `openai_vad_eagerness: "low"`, `openai_noise_reduction: "far_field"`.
 

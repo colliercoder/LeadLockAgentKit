@@ -22,6 +22,8 @@ Content lives in the category files, not here. To add a new entry, invoke `/add-
 
 ## Best practices
 
+- 2026-05-31 - A skill isn't shipped until it's in README + welcome + setup-check + .env.example - [best-practices.md](best-practices.md)
+- 2026-05-31 - Helper-script artifacts go to ./output/, never /tmp/ - [best-practices.md](best-practices.md)
 - 2026-05-23 — `openai_vad_eagerness: high` for outbound 1:1 demo agents (refines the earlier `auto` rule) — [best-practices.md](best-practices.md)
 - 2026-05-19 — `LEADLOCKDOCS.json` is the canonical doc source; openapi-spec.json + leadlock-docs.md are stale — [best-practices.md](best-practices.md)
 - 2026-05-19 — `GET /calls/{id}` transcript field is the primary diagnostic for unexpected call endings — [best-practices.md](best-practices.md)

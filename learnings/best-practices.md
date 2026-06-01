@@ -6,6 +6,36 @@ Each entry includes: date, tags, evidence link, rule, why, how to apply.
 
 ---
 
+### A skill isn't shipped until it's in README + welcome + setup-check + .env.example
+
+Date: 2026-05-31
+Tags: type:pattern, area:skill-integration, discoverability
+
+Evidence: `build-agent` and `agent-to-agent-call-testing` shipped with only a README skills-table row. Both were missing from the README "common phrases" block, the `welcome` menu, and the `setup-check` available-skills list, so a new user typing "help" would never be routed to them. `retell-to-leadlock` had the same gap before it was wired in.
+
+**Rule:** Adding `.claude/skills/<name>/SKILL.md` makes a skill auto-discoverable by Claude, but NOT by a human reading the kit. A new skill is only "done" when it appears in all five surfaces: (1) README skills table, (2) README "Common phrases that fire each skill" block, (3) `welcome/SKILL.md` menu, (4) `setup-check/SKILL.md` "Skills available" list, and (5) any required env var documented in `.env.example`.
+
+**Why:** CLAUDE.md promises the welcome skill will "either route them to the right tool or show them the menu." A skill absent from the menu silently breaks that promise, and setup-check (the auto-fired "what can I run" diagnostic) under-reports the kit on a user's first authenticated turn.
+
+**How to apply:** Make this the closing checklist of "Adding a new skill." Grep all five surfaces for the new name before calling it shipped: `grep -c <skill-name> README.md .claude/skills/welcome/SKILL.md .claude/skills/setup-check/SKILL.md .env.example`.
+
+---
+
+### Helper-script artifacts go to ./output/, never /tmp/
+
+Date: 2026-05-31
+Tags: type:pattern, area:helper-scripts, hard-rule-10
+
+Evidence: `agent-to-agent-call-testing/harness.py` + `team_harness.py` defaulted `--out` to `/tmp/agent_loop_results.json`, and the Claude session is told to read that file to judge transcripts. Hard rule 10 says output artifacts live in `./output/` (gitignored). Fixed both defaults to `./output/agent_loop_results.json` with `os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)`.
+
+**Rule:** Any helper script that writes a results/output artifact must default to `./output/` under the kit root, and must `os.makedirs(..., exist_ok=True)` first (the dir is gitignored and won't exist on a fresh clone). Never default to `/tmp/`: users look in `./output/`, `/tmp/` isn't guaranteed writable/persistent cross-platform, and Hard rule 8 says don't write to `/tmp/` without flagging it.
+
+**Why:** A new user following the kit convention looks in `./output/` and finds nothing if the artifact landed in `/tmp/`. One consistent location also means one place to find every run's output.
+
+**How to apply:** When writing or reviewing a helper `.py`, check its output-path default. Mirror the pattern: `default="./output/<name>.json"` plus a mkdir at the top of `main()`.
+
+---
+
 ### Use `find_logo.py` to pull a prospect's logo with browser headers
 
 Date: 2026-05-13
