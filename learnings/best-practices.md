@@ -248,3 +248,59 @@ Evidence: Big Dawg outbound demo (agent `cbdfa5b7-dfc6-4b50-b958-ff8eb0fed22e`).
 - Cross-reference: the 2026-05-19 best-practice entry "openai_vad_eagerness=auto for conversational/demo agents" applies to inbound conversational demos, not outbound. Both rules coexist — pick based on direction and use case.
 - Verify after create/PATCH with `GET /agents/{id}` — confirm `openai_vad_eagerness` matches intent.
 - If a skill genuinely needs prose for grepping (the old `leadlock-docs.md` use case), generate it on demand from `LEADLOCKDOCS.json` rather than reading the stale file.
+
+---
+
+### Dogfood a new lint/audit skill on the real repo before trusting its output
+
+Date: 2026-05-31
+Tags: skill:kit-audit, type:pattern
+Evidence: commit 9b383ec (kit-audit), output/kit-audit-2026-05-31.md
+
+**Rule:** Run any new audit/lint skill against the actual kit on its first build, treat the first run's false positives as the design spec for a suppression list, and bake that list into the SKILL.md before relying on the skill.
+
+**Why:** kit-audit's first run threw 8 FAILs + 41 WARNs against the repo — nearly all false positives from a naive regex pass (forbidden strings used to forbid them, placeholder secrets, slash-commands/website-routes mistaken for API paths, utility skills held to execution-skill anatomy). A regex can't tell "names a file to prohibit it" from "instructs reading it." Endpoint correctness and content-rule checks need Claude's judgment, not grep.
+
+**How to apply:** On a new lint/audit skill, do a first real run, sort findings into real vs false-positive, and write the false-positive classes into a "Suppress these" block in the SKILL.md so future runs (and other Claudes) don't repeat them. The script is only a first-pass net; the SKILL.md drives the judgment.
+
+---
+
+### Content rules apply to prompt TEMPLATES, not just runtime output
+
+Date: 2026-05-31
+Tags: skill:prospect-demo, type:pattern
+Evidence: commit ef9fb46
+
+**Rule:** Apply the kit's content rules (no "closer", never name the platform in agent copy) to generated-prompt skeletons and placeholder examples, not only to live runtime output.
+
+**Why:** prospect-demo carried the word "closer" inside its generated system-prompt template — in a `<ROLE_BOUNDARIES — e.g. "...not a closer.">` placeholder. It's still generated copy, so it still violated CLAUDE.md hard rule 4 and the skill's own rule 3, even framed as a negative example. kit-audit caught it; it had shipped unnoticed.
+
+**How to apply:** When auditing or writing a skill, grep its prompt-template blocks (the skeleton the skill emits) for "closer" and the platform name the same way you'd check runtime copy. Placeholder examples count.
+
+---
+
+### LEADLOCK_API_URL is canonical; LEADLOCK_API_BASE is a deliberate alias, not drift
+
+Date: 2026-05-31
+Tags: type:pattern
+Evidence: this session (.env standardized; a2a harness.py L86, build-agent SKILL.md L99)
+
+**Rule:** Standardize `.env` and new skills on `LEADLOCK_API_URL`. The a2a harness and build-agent additionally accept `LEADLOCK_API_BASE` as a fallback — that's defensive, not an inconsistency. Don't flag it as drift.
+
+**Why:** The kit's `.env` shipped with the minority name `LEADLOCK_API_BASE` while 11 skills read `LEADLOCK_API_URL`; it only worked because both fall back to the same default host. Two skills read `_BASE` first then `_URL`, which is exactly what kept a stale `.env` from breaking them. Standardizing on `_URL` (the name CLAUDE.md documents) while keeping the alias is the robust resolution.
+
+**How to apply:** New skills read `env.get("LEADLOCK_API_URL", env.get("LEADLOCK_API_BASE", "<default-host>"))`. A bare `.env` missing the key, or a skill reading ONLY a non-standard name, is a real finding; `_BASE` present as a fallback is not.
+
+---
+
+### Optional-integration skills carry their own key inline, not in the base .env
+
+Date: 2026-05-31
+Tags: skill:retell-to-leadlock, type:pattern
+Evidence: commit 194c229
+
+**Rule:** A skill that needs a third-party key most kit users will never have (e.g. retell-to-leadlock → RETELL_API_KEY) should fail fast at its own setup step with an inline "add this key" one-liner, not force the key into everyone's base `.env` or bounce to setup-check.
+
+**Why:** Retell is a niche skill. Putting RETELL_API_KEY in the base `.env`/setup-check as if it were required would confuse the majority who never port from Retell. The skill owns its dependency: on a missing key it now hands the user `echo 'RETELL_API_KEY=...' >> ./.env` plus where to find it. A missing Leadlock (base) key still routes to setup-check — that's a different problem.
+
+**How to apply:** For any future optional-integration skill, keep its key out of the base config, mark it optional in setup-check/welcome, and have the skill's own setup step give the add-it-now instruction inline.

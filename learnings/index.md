@@ -22,6 +22,10 @@ Content lives in the category files, not here. To add a new entry, invoke `/add-
 
 ## Best practices
 
+- 2026-05-31 — Dogfood a new lint/audit skill on the real repo; first-run false positives are the suppression-list spec — [best-practices.md](best-practices.md)
+- 2026-05-31 — Content rules (no "closer", no platform name) apply to prompt TEMPLATES, not just runtime output — [best-practices.md](best-practices.md)
+- 2026-05-31 — LEADLOCK_API_URL is canonical; _BASE is a deliberate fallback alias, not drift — [best-practices.md](best-practices.md)
+- 2026-05-31 — Optional-integration skills carry their own key inline (RETELL_API_KEY), not in base .env — [best-practices.md](best-practices.md)
 - 2026-05-31 - A skill isn't shipped until it's in README + welcome + setup-check + .env.example - [best-practices.md](best-practices.md)
 - 2026-05-31 - Helper-script artifacts go to ./output/, never /tmp/ - [best-practices.md](best-practices.md)
 - 2026-05-23 — `openai_vad_eagerness: high` for outbound 1:1 demo agents (refines the earlier `auto` rule) — [best-practices.md](best-practices.md)
