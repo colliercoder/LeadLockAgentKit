@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Leadlock Voice Agent SaaS API",
-    "description": "Multi-tenant voice agent platform API.\n\n## LLM-friendly prose docs\n\nLooking for a single-page Markdown reference? [**llms-full.txt**](/llms-full.txt) (~270 KB) has every endpoint with descriptions, request/response shapes, all component schemas, and the Demo Customization Reference appendix. Designed for LLM context windows.\n\n## Authentication\n\nEvery endpoint accepts either `X-API-Key: <your_key>` or `Authorization: Bearer <your_key>`. Get a key from [app.leadlock.ai/dashboard/settings/api-keys](https://app.leadlock.ai/dashboard/settings/api-keys).\n\n## Demo customization\n\nThe `demo.config` object accepts well-known keys like `phone_caller_image`, `phone_accent_color`, `avatar_url`, `landing_heading`, and more. See the **Demo Customization Reference** section at the bottom of [llms-full.txt](/llms-full.txt) for the full per-channel inventory + copy-paste recipes (including the `?embed=true` flag for white-surround iframe embedding).",
+    "description": "Multi-tenant voice agent platform API",
     "version": "0.1.0"
   },
   "paths": {
@@ -229,7 +229,7 @@
           "Authentication"
         ],
         "summary": "Embed Sso",
-        "description": "Embedded SSO \u2014 authenticate via partner platform iframe integration.\n\nAccepts an encrypted payload from the partner postMessage protocol,\ndecrypts it, maps the user to a Leadlock account, and returns\nJWT tokens for the session.\n\nPublic endpoint - no auth required (SSO replaces login).",
+        "description": "Embedded SSO — authenticate via partner platform iframe integration.\n\nAccepts an encrypted payload from the partner postMessage protocol,\ndecrypts it, maps the user to a Leadlock account, and returns\nJWT tokens for the session.\n\nPublic endpoint - no auth required (SSO replaces login).",
         "operationId": "embed_sso_auth_embed_sso_post",
         "requestBody": {
           "content": {
@@ -568,7 +568,7 @@
           "Authentication"
         ],
         "summary": "Create Api Key",
-        "description": "Create a new API key for webhook authentication.\n\nRequires owner or admin role.\nUses sub-account context so agency users create keys for the sub-account they're operating as.\nThe plaintext key is only returned ONCE - store it securely!",
+        "description": "Create a new API key for webhook authentication.\n\nRequires owner or admin role. Requires an Agency or Pro plan.\nUses sub-account context so agency users create keys for the sub-account they're operating as.\nThe plaintext key is only returned ONCE - store it securely!",
         "operationId": "create_api_key_auth_api_keys_post",
         "requestBody": {
           "content": {
@@ -1863,7 +1863,7 @@
           "Webhooks"
         ],
         "summary": "Handle App Install",
-        "description": "Handle GHL AppInstall webhook (marketplace lifecycle).\n\nNOTE: GHL marketplace lifecycle webhooks do NOT include signature headers,\nso this endpoint does not use verify_ghl_signature. This is expected\nGHL behavior \u2014 only conversation/message webhooks are signed.\n\nLogs the install event and reactivates existing integrations if found.\nNew integrations are NOT created here \u2014 the existing OAuth flow handles\ncreating the integration record with proper tenant_id and tokens.\n\nAlways returns 200 to prevent GHL retries.",
+        "description": "Handle GHL AppInstall webhook (marketplace lifecycle).\n\nNOTE: GHL marketplace lifecycle webhooks do NOT include signature headers,\nso this endpoint does not use verify_ghl_signature. This is expected\nGHL behavior — only conversation/message webhooks are signed.\n\nLogs the install event and reactivates existing integrations if found.\nNew integrations are NOT created here — the existing OAuth flow handles\ncreating the integration record with proper tenant_id and tokens.\n\nAlways returns 200 to prevent GHL retries.",
         "operationId": "handle_app_install_webhooks_ghl_app_install_post",
         "responses": {
           "200": {
@@ -1890,7 +1890,7 @@
           "Webhooks"
         ],
         "summary": "Handle App Uninstall",
-        "description": "Handle GHL AppUninstall webhook (marketplace lifecycle).\n\nNOTE: GHL marketplace lifecycle webhooks do NOT include signature headers,\nso this endpoint does not use verify_ghl_signature. This is expected\nGHL behavior \u2014 only conversation/message webhooks are signed.\n\nDeactivates the integration for the uninstalled location.\n\nAlways returns 200 to prevent GHL retries.",
+        "description": "Handle GHL AppUninstall webhook (marketplace lifecycle).\n\nNOTE: GHL marketplace lifecycle webhooks do NOT include signature headers,\nso this endpoint does not use verify_ghl_signature. This is expected\nGHL behavior — only conversation/message webhooks are signed.\n\nDeactivates the integration for the uninstalled location.\n\nAlways returns 200 to prevent GHL retries.",
         "operationId": "handle_app_uninstall_webhooks_ghl_app_uninstall_post",
         "responses": {
           "200": {
@@ -2434,6 +2434,53 @@
         }
       }
     },
+    "/agents/{agent_id}/deletion-impact": {
+      "get": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "Get Agent Deletion Impact",
+        "description": "Report what deleting this agent will affect, so the UI can confirm first.\n\nSequences that reference the agent will be paused (their agent_id is set to\nNULL) and must have an agent reassigned to resume. Linked text assistants\nare deleted. Returns the affected sequences by name plus the text-assistant\ncount so the delete dialog can warn the user before the destructive action.",
+        "operationId": "get_agent_deletion_impact_agents__agent_id__deletion_impact_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/agents/{agent_id}/toggle": {
       "post": {
         "tags": [
@@ -2467,6 +2514,53 @@
                 "schema": {
                   "$ref": "#/components/schemas/AgentResponse"
                 }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agents/{agent_id}/inbound-webhook-test": {
+      "post": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "Test Inbound Webhook",
+        "description": "Send a sample call_inbound payload to the agent's configured URL; report result.\n\nScoped by both agent id AND tenant_id so a caller cannot test another\ntenant's agent. Re-validates the URL (SSRF) before firing.",
+        "operationId": "test_inbound_webhook_agents__agent_id__inbound_webhook_test_post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
@@ -5065,7 +5159,7 @@
           "Phone Numbers"
         ],
         "summary": "Send Test Sms",
-        "description": "Send a test SMS message using the specified phone number.\n\nThis endpoint:\n- Validates phone number is SMS-capable\n- Validates A2P registration (required for US numbers)\n- Routes to Twilio or GoHighLevel based on phone number source\n- Returns delivery status\n\nRequirements:\n- Phone number must be sms_capable = true\n- Phone number must have messaging_enabled = true (A2P verified)\n- Recipient number must be in E.164 format (+14155551234)\n\nNOTE: Uses get_effective_tenant_id so sub-account users (or agency users\nimpersonating a sub-account) are correctly attributed in text metering\n(FORGE text-agent-metering Step 9, 2026-04-08 \u2014 Site #10 / Issue #148 pattern).\n\nArgs:\n    phone_number_id: UUID of phone number to send from\n    to: Recipient phone number (E.164 format)\n    message: Message text (optional, defaults to test message)\n\nReturns:\n    SMSResult with delivery status and provider details",
+        "description": "Send a test SMS message using the specified phone number.\n\nThis endpoint:\n- Validates phone number is SMS-capable\n- Validates A2P registration (required for US numbers)\n- Routes to Twilio or GoHighLevel based on phone number source\n- Returns delivery status\n\nRequirements:\n- Phone number must be sms_capable = true\n- Phone number must have messaging_enabled = true (A2P verified)\n- Recipient number must be in E.164 format (+14155551234)\n\nNOTE: Uses get_effective_tenant_id so sub-account users (or agency users\nimpersonating a sub-account) are correctly attributed in text metering\n(FORGE text-agent-metering Step 9, 2026-04-08 — Site #10 / Issue #148 pattern).\n\nArgs:\n    phone_number_id: UUID of phone number to send from\n    to: Recipient phone number (E.164 format)\n    message: Message text (optional, defaults to test message)\n\nReturns:\n    SMSResult with delivery status and provider details",
         "operationId": "send_test_sms_phone_numbers__phone_number_id__test_sms_post",
         "security": [
           {
@@ -5296,7 +5390,7 @@
           "sms-pools"
         ],
         "summary": "Delete Pool",
-        "description": "Soft-delete the pool (Twilio MS remains untouched \u2014 customer owns it).",
+        "description": "Soft-delete the pool (Twilio MS remains untouched — customer owns it).",
         "operationId": "delete_pool_sms_pools__pool_id__delete",
         "security": [
           {
@@ -5904,16 +5998,6 @@
         "summary": "Trigger Outbound Call",
         "description": "Trigger an outbound call via webhook (for GHL, Zapier, etc.).\n\nAuthentication: API Key (X-API-Key header) or JWT Bearer token.\n\nThis endpoint is designed for external automation triggers like:\n- GoHighLevel workflow webhooks\n- Zapier/Make integrations\n- Custom automation scripts\n\nArgs:\n    request: Webhook payload with agent_id, to_number, and optional context\n\nReturns:\n    Call details including call_sid for tracking\n\nExample cURL:\n```\ncurl -X POST https://leadlock-app.onrender.com/outbound/trigger \\\n  -H \"X-API-Key: sk_live_xxx\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"agent_id\": \"uuid-here\",\n    \"to_number\": \"+14155551234\",\n    \"context\": {\n      \"first_name\": \"John\",\n      \"source\": \"GHL New Lead\"\n    }\n  }'\n```",
         "operationId": "trigger_outbound_call_outbound_trigger_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/WebhookTriggerRequest"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -5921,16 +6005,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OutboundCallResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -5950,7 +6024,7 @@
           "Webhooks"
         ],
         "summary": "Handle Sms Status Callback",
-        "description": "Twilio status callback for SMS pool sends.\n\nPool sends include a per-message status_callback URL that routes Twilio's\nqueued \u2192 sent \u2192 delivered/failed transitions back to us. Each callback\ncarries the pool_member_id in the query string so we can attribute stats\nto the right pool member without secondary lookups.\n\nReturns 204 on success (or duplicate); 403 on bad signature (handled by\nthe validate_twilio_signature dependency).",
+        "description": "Twilio status callback for SMS pool sends.\n\nPool sends include a per-message status_callback URL that routes Twilio's\nqueued → sent → delivered/failed transitions back to us. Each callback\ncarries the pool_member_id in the query string so we can attribute stats\nto the right pool member without secondary lookups.\n\nReturns 204 on success (or duplicate); 403 on bad signature (handled by\nthe validate_twilio_signature dependency).",
         "operationId": "handle_sms_status_callback_webhooks_twilio__tenant_id__sms_status_post",
         "parameters": [
           {
@@ -6885,7 +6959,7 @@
           "Integrations"
         ],
         "summary": "List Ghl Timezones",
-        "description": "Return the IANA timezones GHL supports for the current tenant's sub-account.\n\nPicks any active GHL integration on the tenant (or assigned to this sub-account)\nand calls GET /locations/:locationId/timezones. Result is cached in-process for\n7 days since GHL's list is effectively static.\n\nReturns an empty list if no active GHL integration exists \u2014 frontend falls back\nto the full IANA set via Intl.supportedValuesOf('timeZone').",
+        "description": "Return the IANA timezones GHL supports for the current tenant's sub-account.\n\nPicks any active GHL integration on the tenant (or assigned to this sub-account)\nand calls GET /locations/:locationId/timezones. Result is cached in-process for\n7 days since GHL's list is effectively static.\n\nReturns an empty list if no active GHL integration exists — frontend falls back\nto the full IANA set via Intl.supportedValuesOf('timeZone').",
         "operationId": "list_ghl_timezones_integrations_ghl_timezones_get",
         "responses": {
           "200": {
@@ -8961,7 +9035,7 @@
           "Agency Management"
         ],
         "summary": "Copy Agent Between Sub Accounts",
-        "description": "Copy an agent from one sub-account to another (agency-only).\n\nVerifies the agency owns both source and target sub-accounts.\nCreates a disabled copy with \" (Copy)\" suffix.\n\nNote: Returns the raw agent dict from the database insert, not AgentResponse.\nAgentResponse has computed fields (phone_count, text_assistants) that aren't\npresent in the raw insert result. The frontend doesn't use this response body\nfor rendering \u2014 it invalidates the query cache after a successful copy.",
+        "description": "Copy an agent from one sub-account to another (agency-only).\n\nVerifies the agency owns both source and target sub-accounts.\nCreates a disabled copy with \" (Copy)\" suffix.\n\nNote: Returns the raw agent dict from the database insert, not AgentResponse.\nAgentResponse has computed fields (phone_count, text_assistants) that aren't\npresent in the raw insert result. The frontend doesn't use this response body\nfor rendering — it invalidates the query cache after a successful copy.",
         "operationId": "copy_agent_between_sub_accounts_agency_agents__agent_id__copy_post",
         "security": [
           {
@@ -9433,7 +9507,7 @@
           "Stats"
         ],
         "summary": "Get Analytics",
-        "description": "Get analytics data for the interactive dashboard.\n\nReturns summary stats, daily call volume trends, status/direction\nbreakdowns, and per-agent performance \u2014 all in one response.",
+        "description": "Get analytics data for the interactive dashboard.\n\nReturns summary stats, daily call volume trends, status/direction\nbreakdowns, and per-agent performance — all in one response.",
         "operationId": "get_analytics_stats_analytics_get",
         "security": [
           {
@@ -10908,7 +10982,7 @@
           "Public Demos"
         ],
         "summary": "Public Demo Chat",
-        "description": "Public text chat endpoint for demo pages.\nUses the agent's system prompt + tools to generate AI text responses.\nNo auth required \u2014 authenticates via active demo config slug.",
+        "description": "Public text chat endpoint for demo pages.\nUses the agent's system prompt + tools to generate AI text responses.\nNo auth required — authenticates via active demo config slug.",
         "operationId": "public_demo_chat_d__slug__chat_post",
         "parameters": [
           {
@@ -10961,7 +11035,7 @@
           "Public Demos"
         ],
         "summary": "Get Showcase",
-        "description": "Public endpoint: Get all active demos for a showcase page.\nThe slug here is any demo slug \u2014 we find the agent and return all demos for it.",
+        "description": "Public endpoint: Get all active demos for a showcase page.\nThe slug here is any demo slug — we find the agent and return all demos for it.",
         "operationId": "get_showcase_d_showcase__slug__get",
         "parameters": [
           {
@@ -11582,7 +11656,7 @@
           "Contacts"
         ],
         "summary": "Patch Contact",
-        "description": "Update a GHL contact: add/remove tags, update custom fields, update pipeline stage.\n\nEach field is independently optional \u2014 partial success is OK.",
+        "description": "Update a GHL contact: add/remove tags, update custom fields, update pipeline stage.\n\nEach field is independently optional — partial success is OK.",
         "operationId": "patch_contact_contacts__phone__patch",
         "security": [
           {
@@ -11641,7 +11715,7 @@
           "Contacts"
         ],
         "summary": "Get Conversation Timeline",
-        "description": "Get merged call + SMS conversation timeline for a contact.\n\nReturns chronological list merging call_logs and text_messages.\nGracefully degrades to voice-only if GHL lookup fails (sms_included=false).\nNever returns 404 \u2014 empty timeline is valid.",
+        "description": "Get merged call + SMS conversation timeline for a contact.\n\nReturns chronological list merging call_logs and text_messages.\nGracefully degrades to voice-only if GHL lookup fails (sms_included=false).\nNever returns 404 — empty timeline is valid.",
         "operationId": "get_conversation_timeline_contacts__phone__conversations_get",
         "security": [
           {
@@ -12488,7 +12562,7 @@
           "Admin"
         ],
         "summary": "Get Voice Model Adoption",
-        "description": "Count OpenAI voice agents grouped by openai_voice_model.\n\nUsed to inform the Phase 2 backfill decision \u2014 when v2 adoption is\nmeaningful, support can switch from manual sub-attach to auto-attach on\nsignup.",
+        "description": "Count OpenAI voice agents grouped by openai_voice_model.\n\nUsed to inform the Phase 2 backfill decision — when v2 adoption is\nmeaningful, support can switch from manual sub-attach to auto-attach on\nsignup.",
         "operationId": "get_voice_model_adoption_admin_voice_model_adoption_get",
         "responses": {
           "200": {
@@ -17522,7 +17596,7 @@
             "minimum": 0.0,
             "title": "Vad Threshold",
             "description": "VAD sensitivity (0.0-1.0, higher = less sensitive)",
-            "default": 0.65
+            "default": 0.85
           },
           "vad_silence_duration_ms": {
             "type": "integer",
@@ -17614,7 +17688,7 @@
           "finish_greeting_before_listening": {
             "type": "boolean",
             "title": "Finish Greeting Before Listening",
-            "description": "If true, caller cannot interrupt the agent's first response (inbound). Ignored if ai_speaks_first is false \u2014 validator will reject the combo.",
+            "description": "If true, caller cannot interrupt the agent's first response (inbound). Ignored if ai_speaks_first is false — validator will reject the combo.",
             "default": false
           },
           "finish_greeting_before_listening_outbound": {
@@ -17732,8 +17806,8 @@
             "type": "string",
             "pattern": "^(low|medium|high|auto)$",
             "title": "Openai Vad Eagerness",
-            "description": "OpenAI semantic VAD eagerness: low (patient) to high (responsive)",
-            "default": "low"
+            "description": "OpenAI semantic VAD eagerness: low (patient) to high (responsive). Default medium (~4s max wait) — low waited up to ~8s and felt sluggish.",
+            "default": "medium"
           },
           "openai_noise_reduction": {
             "type": "string",
@@ -17940,6 +18014,33 @@
             "title": "Amd Voicemail Audio Url",
             "description": "Audio file URL to play as voicemail (alternative to TTS)"
           },
+          "inbound_webhook_enabled": {
+            "type": "boolean",
+            "title": "Inbound Webhook Enabled",
+            "description": "Fire a pre-answer webhook on inbound calls to enrich/screen the call",
+            "default": false
+          },
+          "inbound_webhook_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2048
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inbound Webhook Url",
+            "description": "HTTPS endpoint called before the agent answers"
+          },
+          "inbound_webhook_timeout_ms": {
+            "type": "integer",
+            "maximum": 10000.0,
+            "minimum": 1000.0,
+            "title": "Inbound Webhook Timeout Ms",
+            "description": "Max wait for the webhook response (1000-10000ms, capped under Twilio's TwiML ceiling)",
+            "default": 5000
+          },
           "transfer_targets": {
             "anyOf": [
               {
@@ -17955,6 +18056,22 @@
             ],
             "title": "Transfer Targets",
             "description": "Transfer targets: [{name, number, reason}]"
+          },
+          "transfer_to_agents": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transfer To Agents",
+            "description": "Agent-to-agent transfer targets: [{agent_id, name, when}]. Each target must share this agent's tenant and voice_provider."
           },
           "whisper_enabled": {
             "type": "boolean",
@@ -18758,7 +18875,7 @@
               }
             ],
             "title": "Openai Vad Eagerness",
-            "default": "low"
+            "default": "medium"
           },
           "openai_noise_reduction": {
             "anyOf": [
@@ -19026,6 +19143,52 @@
             ],
             "title": "Amd Voicemail Audio Url"
           },
+          "inbound_webhook_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inbound Webhook Enabled",
+            "default": false
+          },
+          "inbound_webhook_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inbound Webhook Url"
+          },
+          "inbound_webhook_timeout_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inbound Webhook Timeout Ms",
+            "default": 5000
+          },
+          "inbound_webhook_secret": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inbound Webhook Secret"
+          },
           "transfer_targets": {
             "anyOf": [
               {
@@ -19040,6 +19203,21 @@
               }
             ],
             "title": "Transfer Targets"
+          },
+          "transfer_to_agents": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transfer To Agents"
           },
           "whisper_enabled": {
             "anyOf": [
@@ -20100,6 +20278,42 @@
             ],
             "title": "Amd Voicemail Audio Url"
           },
+          "inbound_webhook_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inbound Webhook Enabled"
+          },
+          "inbound_webhook_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2048
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inbound Webhook Url"
+          },
+          "inbound_webhook_timeout_ms": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10000.0,
+                "minimum": 1000.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inbound Webhook Timeout Ms"
+          },
           "transfer_targets": {
             "anyOf": [
               {
@@ -20114,6 +20328,21 @@
               }
             ],
             "title": "Transfer Targets"
+          },
+          "transfer_to_agents": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transfer To Agents"
           },
           "whisper_enabled": {
             "anyOf": [
@@ -21462,7 +21691,7 @@
             },
             "type": "object",
             "title": "Field Mapping",
-            "description": "CSV column \u2192 schema field mapping"
+            "description": "CSV column → schema field mapping"
           }
         },
         "type": "object",
@@ -21721,7 +21950,8 @@
               "inbound",
               "outbound",
               "test",
-              "demo"
+              "demo",
+              "web"
             ],
             "title": "Direction"
           },
@@ -25570,7 +25800,7 @@
           "contact_id": {
             "type": "string",
             "title": "Contact Id",
-            "description": "GHL contact ID \u2014 always present via Contact Intelligence",
+            "description": "GHL contact ID — always present via Contact Intelligence",
             "default": "test-contact-id"
           }
         },
@@ -27148,7 +27378,7 @@
           "integration_id"
         ],
         "title": "MSImportRequest",
-        "description": "Body for POST /sms-pools/ \u2014 import an existing Twilio MS as a pool."
+        "description": "Body for POST /sms-pools/ — import an existing Twilio MS as a pool."
       },
       "MSListItem": {
         "properties": {
@@ -30608,8 +30838,15 @@
             "title": "Description"
           },
           "agent_id": {
-            "type": "string",
-            "format": "uuid",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Agent Id"
           },
           "phone_number_id": {
@@ -30783,7 +31020,6 @@
           "id",
           "tenant_id",
           "name",
-          "agent_id",
           "steps",
           "max_attempts",
           "stop_on_booking",
@@ -33666,6 +33902,11 @@
             "title": "Demo Suite Available",
             "default": false
           },
+          "api_access": {
+            "type": "boolean",
+            "title": "Api Access",
+            "default": false
+          },
           "voice_rate_cents": {
             "type": "integer",
             "title": "Voice Rate Cents",
@@ -35169,98 +35410,6 @@
         "title": "WebCrawlerScheduleUpdate",
         "description": "Update the recrawl schedule for a web crawler."
       },
-      "WebhookCallContext": {
-        "properties": {
-          "first_name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "First Name",
-            "description": "Contact's first name"
-          },
-          "last_name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Last Name",
-            "description": "Contact's last name"
-          },
-          "email": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Email",
-            "description": "Contact's email"
-          },
-          "company": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Company",
-            "description": "Contact's company"
-          },
-          "source": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Source",
-            "description": "Lead source (e.g., 'GHL Workflow', 'Website Form')"
-          },
-          "notes": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Notes",
-            "description": "Additional context for the agent"
-          },
-          "custom_fields": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Custom Fields",
-            "description": "Custom key-value pairs"
-          }
-        },
-        "type": "object",
-        "title": "WebhookCallContext",
-        "description": "Optional context to pass to the agent for personalization."
-      },
       "WebhookSettingsResponse": {
         "properties": {
           "webhook_url": {
@@ -35487,80 +35636,6 @@
         "title": "WebhookTestRequest",
         "description": "Request body for testing a webhook URL before creating a function."
       },
-      "WebhookTriggerRequest": {
-        "properties": {
-          "agent_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Agent Id",
-            "description": "Agent ID to handle the call"
-          },
-          "to_number": {
-            "type": "string",
-            "pattern": "^\\+[1-9]\\d{1,14}$",
-            "title": "To Number",
-            "description": "Recipient phone number in E.164 format"
-          },
-          "from_phone_number_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "From Phone Number Id",
-            "description": "Specific phone number to call from"
-          },
-          "ghl_contact_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Ghl Contact Id",
-            "description": "GHL contact ID for pre-flight conversation checks"
-          },
-          "context": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/WebhookCallContext"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Context to personalize the call (injected into agent prompt)"
-          },
-          "dynamic_variables": {
-            "anyOf": [
-              {
-                "additionalProperties": {
-                  "type": "string"
-                },
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Dynamic Variables",
-            "description": "Variables to substitute in prompt: {'customer_name': 'John', 'order_id': '12345'}. All values must be strings."
-          }
-        },
-        "type": "object",
-        "required": [
-          "agent_id",
-          "to_number"
-        ],
-        "title": "WebhookTriggerRequest",
-        "description": "Request body for webhook-triggered outbound calls.\n\nSupports two formats:\n- Direct: {\"agent_id\": \"...\", \"to_number\": \"...\"}  (n8n, Zapier, cURL)\n- GHL:    {\"customData\": {\"agent_id\": \"...\", \"to_number\": \"...\"}, ...}"
-      },
       "WebhookUrlTestRequest": {
         "properties": {
           "webhook_url": {
@@ -35691,7 +35766,7 @@
             "type": "string",
             "pattern": "^(inbound|outbound|both)$",
             "title": "Agent Mode",
-            "description": "Agent mode \u2014 outbound routes 'team' to objections generator",
+            "description": "Agent mode — outbound routes 'team' to objections generator",
             "default": "inbound"
           }
         },
@@ -35740,7 +35815,7 @@
             "type": "string",
             "pattern": "^(inbound|outbound|both)$",
             "title": "Agent Mode",
-            "description": "Agent mode \u2014 outbound routes 'team' to objections generator",
+            "description": "Agent mode — outbound routes 'team' to objections generator",
             "default": "inbound"
           }
         },
