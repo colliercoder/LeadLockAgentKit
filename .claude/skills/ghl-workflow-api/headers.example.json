@@ -1,0 +1,10 @@
+{
+  "authorization": "Bearer PASTE_YOUR_AUTHTOKEN_HERE",
+  "token-id": "PASTE_YOUR_FIREBASE_TOKEN_ID_HERE",
+  "channel": "APP",
+  "source": "WEB_USER",
+  "accept": "application/json, text/plain, */*",
+  "referer": "https://app.gohighlevel.com/",
+  "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+  "content-type": "application/json"
+}

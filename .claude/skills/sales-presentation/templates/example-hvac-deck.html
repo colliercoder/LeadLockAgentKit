@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<!--
+  WORKED EXAMPLE - fictional client "Summit Air" (HVAC).
+  This is what a filled deck-template.html looks like.
+
+  Branding swap proof: this deck uses a warm orange accent set
+  (--primary #E0651A / --accent #C23B22), NOT the Leadlock blue
+  defaults. Everything in the body recolored from one place: :root.
+  Content is rewritten for HVAC (after-hours capture, estimates, etc.).
+
+  Summit Air and all numbers below are fictional and for illustration only.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Summit Air - AI Voice Agent System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ===== BRAND KNOBS - Summit Air warm orange (different from default blue) ===== */
+  --primary: #E0651A;
+  --accent:  #C23B22;
+  /* ============================================================================= */
+
+  --bg:   #07080a;
+  --card: #0e1116;
+  --card2:#12161d;
+  --line: color-mix(in srgb, var(--primary) 25%, transparent);
+  --text: #e8edf2;
+  --dim:  #9fb0bd;
+  --green:#4ade80;
+  --amber:#fbbf24;
+  --red:  #f87171;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Poppins',sans-serif;line-height:1.6}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px 120px}
+
+.hero{padding:70px 0 50px;text-align:center;background:radial-gradient(ellipse at top,color-mix(in srgb,var(--primary) 18%,transparent) 0%,rgba(7,8,10,1) 60%)}
+.hero img{height:54px;margin-bottom:34px}
+.hero h1{font-size:44px;font-weight:800;line-height:1.15}
+.hero h1 span{background:linear-gradient(115deg,var(--primary) 20%,var(--accent) 90%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{max-width:720px;margin:18px auto 0;color:var(--dim);font-size:17px}
+.badges{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:30px}
+.badge{border:1px solid var(--line);border-radius:999px;padding:7px 18px;font-size:13px;color:var(--primary);background:color-mix(in srgb,var(--primary) 7%,transparent)}
+
+section{margin-top:84px}
+h2{font-size:28px;font-weight:800;margin-bottom:8px}
+h2 .num{color:var(--primary);font-weight:800;margin-right:10px}
+.sub{color:var(--dim);margin-bottom:28px;max-width:840px}
+h3{font-size:18px;font-weight:700;margin:28px 0 12px;color:var(--primary)}
+.rule{height:1px;background:linear-gradient(to right,transparent,color-mix(in srgb,var(--primary) 60%,transparent),transparent);margin-top:84px}
+
+.grid{display:grid;gap:16px}
+.grid.c2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.grid.c3{grid-template-columns:repeat(3,1fr)}
+@media (max-width:900px){.grid.c3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}}
+.card{background:linear-gradient(35deg,color-mix(in srgb,var(--primary) 12%,transparent),rgba(7,8,10,.4));border:1px solid var(--line);border-radius:14px;padding:22px}
+.card h4{font-size:15px;font-weight:700;margin-bottom:8px}
+.card p{font-size:13.5px;color:var(--dim)}
+.card .tag{display:inline-block;font-size:11px;font-weight:600;border-radius:6px;padding:2px 9px;margin-bottom:10px;background:color-mix(in srgb,var(--primary) 15%,transparent);color:var(--primary)}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center}
+.stat .v{font-size:30px;font-weight:800;color:var(--primary)}
+.stat .l{font-size:12px;color:var(--dim);margin-top:4px}
+
+.flow{display:flex;flex-direction:column;align-items:center;gap:0;margin:26px 0}
+.fnode{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:15px 24px;text-align:center;min-width:320px;max-width:600px}
+.fnode b{font-size:14.5px;display:block;margin-bottom:3px}
+.fnode span{font-size:12px;color:var(--dim)}
+.fnode.hl{border-color:var(--primary);box-shadow:0 0 18px color-mix(in srgb,var(--primary) 25%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--primary) 18%,transparent),var(--card2))}
+.fnode.good{border-color:rgba(74,222,128,.5)}
+.fnode.warn{border-color:rgba(251,191,36,.45)}
+.fnode.stop{border-color:rgba(248,113,113,.5)}
+.arrow{color:var(--primary);font-size:19px;line-height:1;padding:10px 0}
+.arrow small{display:block;font-size:11px;color:var(--dim);font-style:italic;margin-top:3px}
+.split{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;align-items:stretch;width:100%;margin:4px 0}
+.branch{display:flex;flex-direction:column;align-items:center;flex:1 1 220px;min-width:220px;max-width:340px}
+.branch .lbl{font-size:11.5px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.06em;padding:6px 0}
+.split .fnode{min-width:0;width:100%;max-width:none;flex:1;padding:15px 16px}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:14px}
+th{text-align:left;color:var(--primary);font-weight:700;padding:10px 12px;border-bottom:1px solid var(--line);font-size:12.5px;text-transform:uppercase;letter-spacing:.05em}
+td{padding:10px 12px;border-bottom:1px solid color-mix(in srgb,var(--primary) 10%,transparent);color:var(--text);vertical-align:top}
+td.dim{color:var(--dim)}
+tr:hover td{background:color-mix(in srgb,var(--primary) 4%,transparent)}
+.ok{color:var(--green);font-weight:600}
+.warn-t{color:var(--amber);font-weight:600}
+.pill{display:inline-block;border-radius:6px;padding:1px 9px;font-size:11.5px;font-weight:600}
+.pill.b{background:color-mix(in srgb,var(--primary) 15%,transparent);color:var(--primary)}
+.pill.g{background:rgba(74,222,128,.12);color:var(--green)}
+.pill.a{background:rgba(251,191,36,.12);color:var(--amber)}
+.pill.r{background:rgba(248,113,113,.12);color:var(--red)}
+
+code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:color-mix(in srgb,var(--primary) 12%,transparent);border-radius:5px;padding:1px 7px;color:var(--primary)}
+.note{border-left:3px solid var(--primary);background:color-mix(in srgb,var(--primary) 7%,transparent);border-radius:0 10px 10px 0;padding:14px 18px;font-size:13.5px;color:var(--dim);margin:18px 0}
+
+.cta{margin-top:100px;text-align:center;padding:54px 28px;border:1px solid var(--line);border-radius:18px;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--primary) 12%,transparent) 0%,rgba(7,8,10,0) 70%)}
+.cta h2{font-size:30px;border:0;margin-bottom:12px}
+.cta p{color:var(--dim);max-width:620px;margin:0 auto 26px;font-size:15px}
+.cta a{display:inline-block;text-decoration:none;font-weight:700;font-size:15px;color:#07080a;background:linear-gradient(115deg,var(--primary),var(--accent));padding:14px 34px;border-radius:999px}
+footer{margin-top:60px;text-align:center;color:var(--dim);font-size:12.5px}
+footer b{color:var(--primary)}
+@media (max-width:760px){.hero h1{font-size:30px}.split{flex-direction:column;align-items:center}}
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<div class="hero">
+  <!-- Example logo placeholder. In a real deck, swap for the client's hosted logo. -->
+  <img src="https://placehold.co/220x54/07080a/E0651A?text=SUMMIT+AIR" alt="Summit Air">
+  <div class="wrap">
+    <h1>Never Miss <span>Another Service Call</span></h1>
+    <p>Summit Air books jobs around the clock. When a homeowner calls about a dead furnace at 9pm, an AI receptionist answers in your voice, troubleshoots the basics, and drops them straight onto your dispatch calendar. The calls you used to lose to voicemail now turn into booked estimates while you sleep.</p>
+    <div class="badges">
+      <div class="badge">24/7 Call Answering</div>
+      <div class="badge">Live Estimate Booking</div>
+      <div class="badge">Missed-Call Text Back</div>
+      <div class="badge">After-Hours Capture</div>
+      <div class="badge">Voice + SMS</div>
+      <div class="badge">Every Call Recorded</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ============ 1. WHAT IT IS ============ -->
+<section>
+  <h2><span class="num">01</span>What This System Is</h2>
+  <p class="sub">A 24/7 AI receptionist built for HVAC. It answers every call Summit Air gets, day or night, in a natural voice. It handles the routine questions, sorts the emergency no-heat calls from the routine tune-ups, and <b>books the appointment live</b> on your calendar. No after-hours service, no overflow voicemail, no lead left waiting until morning.</p>
+
+  <div class="stats">
+    <div class="stat"><div class="v">Under 2 rings</div><div class="l">average time to answer, any hour</div></div>
+    <div class="stat"><div class="v">24/7</div><div class="l">coverage including nights, weekends, holidays</div></div>
+    <div class="stat"><div class="v">100%</div><div class="l">of inbound calls answered, never a voicemail</div></div>
+    <div class="stat"><div class="v">~$9</div><div class="l">est. cost per booked estimate</div></div>
+  </div>
+
+  <div class="grid c2" style="margin-top:22px">
+    <div class="card"><div class="tag">The Channels</div><h4>How homeowners reach the AI</h4>
+      <p>Every inbound call to the main line rolls to the AI when the office is closed or the team is on a job. Any call you miss triggers an instant text back, so the homeowner gets a reply in seconds instead of calling the next contractor in the search results.</p></div>
+    <div class="card"><div class="tag">The Outcome</div><h4>What the AI delivers</h4>
+      <p>A booked service visit or estimate on the Summit Air calendar, with the homeowner's name, address, system type, and the problem in their own words, all written into the CRM and texted to dispatch before the AI even hangs up.</p></div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ============ 2. THE LEAD JOURNEY ============ -->
+<section>
+  <h2><span class="num">02</span>The Lead Journey</h2>
+  <p class="sub">From a homeowner with no heat to a job on the board: how a single after-hours call moves through the system.</p>
+
+  <div class="flow">
+    <div class="fnode hl"><b>Homeowner calls Summit Air</b><span>9:14pm, furnace is dead, the office is closed. The AI picks up before the second ring.</span></div>
+    <div class="arrow">▼ <small>seconds later</small></div>
+    <div class="fnode"><b>The AI takes the call</b><span>greets them warmly, asks what is going on with the system, gets the address and whether anyone is without heat in the cold</span></div>
+    <div class="arrow">▼ <small>it triages: emergency or routine?</small></div>
+    <div class="split">
+      <div class="branch"><div class="lbl">no heat, emergency</div>
+        <div class="fnode good"><b>Same-night dispatch slot</b><span>the AI books the earliest emergency window and texts the on-call tech the address and the fault</span></div>
+      </div>
+      <div class="branch"><div class="lbl">routine tune-up or quote</div>
+        <div class="fnode warn"><b>Next-day estimate booked</b><span>the AI offers morning and afternoon windows and locks in the visit on the calendar</span></div>
+      </div>
+    </div>
+    <div class="arrow">▼ <small>if they did not pick a time</small></div>
+    <div class="fnode"><b>Follow-up by text the next morning</b><span>a friendly daytime nudge with two open slots, so a homeowner who hung up to think it over still gets booked</span></div>
+    <div class="arrow">▼ <small>any time</small></div>
+    <div class="fnode stop"><b>"Take me off your list"</b><span>the AI confirms once, marks do-not-contact, and stops every call and text immediately</span></div>
+  </div>
+  <div class="note">The win for Summit Air: the 9pm no-heat call that used to hit voicemail and go to the competitor by 9am is now a booked, dispatched emergency job before the homeowner finishes their coffee.</div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ============ 3. CAPABILITIES ============ -->
+<section>
+  <h2><span class="num">03</span>What the AI Can Do</h2>
+  <p class="sub">Everything a great front-desk coordinator does, on every call, without a day off.</p>
+  <div class="grid c3">
+    <div class="card"><div class="tag">Answer</div><h4>Picks up every call</h4><p>Nights, weekends, holidays, and overflow when the team is already on the phone. The homeowner always reaches a real, natural-sounding voice.</p></div>
+    <div class="card"><div class="tag">Triage</div><h4>Sorts emergencies first</h4><p>Asks the right HVAC questions, recognizes a no-heat or no-cool emergency, and routes it to a same-day slot ahead of routine work.</p></div>
+    <div class="card"><div class="tag">Book</div><h4>Schedules live on the call</h4><p>Reads the real Summit Air calendar, offers open windows, and confirms the service visit or estimate before the call ends.</p></div>
+    <div class="card"><div class="tag">Capture</div><h4>Logs the whole job</h4><p>Name, address, phone, system type, and the symptom in the homeowner's own words, written straight into the CRM for dispatch.</p></div>
+    <div class="card"><div class="tag">Follow up</div><h4>Chases the maybes</h4><p>If a caller hangs up undecided, the AI follows up by text the next morning with open slots, on a compliant daytime schedule.</p></div>
+    <div class="card"><div class="tag">Report</div><h4>Records every call</h4><p>Each call is recorded, transcribed, and summarized so the Summit Air team can see exactly what was promised and to whom.</p></div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ============ 4. COMPLIANCE ============ -->
+<section>
+  <h2><span class="num">04</span>Compliance and Safety Rails</h2>
+  <p class="sub">Built to keep Summit Air on the right side of the rules on every call and text.</p>
+  <div class="grid c2">
+    <div class="card"><h4>⏰ Quiet hours on outbound</h4><p>The AI answers inbound calls any hour, but every outbound follow-up text and call is gated to daytime windows. A homeowner never gets a sales text at midnight.</p></div>
+    <div class="card"><h4>🛑 Honors opt-out instantly</h4><p>Any "stop", "take me off your list", or "leave me alone" in any wording ends contact at once across calls and texts. Carrier-level STOP is respected too.</p></div>
+    <div class="card"><h4>🔁 Hard caps on follow-up</h4><p>Follow-up stops after a set number of touches. There is no path to endless messaging, and a booked job stops all nurture immediately.</p></div>
+    <div class="card"><h4>🧾 Full audit trail</h4><p>Every call recorded and transcribed, every text logged in the CRM, every booking stamped on the calendar. Nothing happens off the record.</p></div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ============ 5. UNIT ECONOMICS ============ -->
+<section>
+  <h2><span class="num">05</span>Unit Economics</h2>
+  <p class="sub">What the system costs to run, against what one captured job is worth. All cost figures are estimates until measured against Summit Air's real call volume.</p>
+  <div class="stats">
+    <div class="stat"><div class="v">~$3</div><div class="l">est. cost per call the AI handles</div></div>
+    <div class="stat"><div class="v">~$9</div><div class="l">est. cost per booked estimate</div></div>
+    <div class="stat"><div class="v">~$320</div><div class="l">est. monthly cost at typical volume</div></div>
+    <div class="stat"><div class="v">$6,000+</div><div class="l">value of one system replacement won</div></div>
+  </div>
+  <table>
+    <tr><th>What the AI handles</th><th>Typical monthly volume</th><th>Outcome</th></tr>
+    <tr><td>After-hours no-heat / no-cool calls</td><td class="dim">~40 calls</td><td><span class="pill g">booked same-day</span></td></tr>
+    <tr><td>Daytime overflow and tune-up requests</td><td class="dim">~70 calls</td><td><span class="pill g">booked estimate</span></td></tr>
+    <tr><td>Undecided callers who hang up to think</td><td class="dim">~25 calls</td><td><span class="pill a">nurtured to booking</span></td></tr>
+    <tr><td>Price-shoppers and general questions</td><td class="dim">~30 calls</td><td><span class="pill b">captured lead</span></td></tr>
+  </table>
+  <div class="note">Even if the AI only saved one after-hours system replacement a month, it would pay for itself many times over. Every figure above is an estimate and gets dialed in once we measure a full month of Summit Air's real calls.</div>
+</section>
+
+</div>
+
+<!-- ============ CTA FOOTER ============ -->
+<div class="wrap">
+  <div class="cta">
+    <h2>Ready to stop losing after-hours calls?</h2>
+    <p>Let's turn on the AI receptionist for Summit Air, point it at your calendar, and watch the missed 9pm calls become booked morning jobs. We can have it live in days.</p>
+    <a href="#">Book the kickoff call</a>
+  </div>
+  <footer>
+    Prepared by <b>Your Agency</b> for Summit Air · AI voice agent system for HVAC · fictional example deck
+  </footer>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<!--
+  SALES PRESENTATION TEMPLATE
+  ===========================
+  Fill this template to build a branded, client-facing pitch deck for an
+  AI voice-agent system. Two things change, nothing else:
+
+    1. BRANDING  -> the :root block below (two colors) + the logo <img src>
+                    in the hero. That is the ONLY place colors live.
+    2. CONTENT   -> every {{PLACEHOLDER}} token and the marked placeholder
+                    copy, rewritten for the client's industry. Keep all the
+                    CSS classes and the component structure exactly as-is.
+
+  Placeholder tokens used below:
+    {{CLIENT_NAME}}      {{AGENCY_NAME}}      {{INDUSTRY}}
+    {{LOGO_URL}}         {{PRIMARY_COLOR}}    {{ACCENT_COLOR}}
+    {{HERO_HEADLINE}}    {{HERO_HEADLINE_ACCENT}}   {{HERO_SUBHEAD}}
+    {{BADGE_1..6}}       {{CTA_HEADLINE}}    {{CTA_LINE}}    {{CTA_BUTTON}}
+
+  No em-dashes anywhere. No external JS. Renders standalone.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{CLIENT_NAME}} - AI Voice Agent System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ===== BRAND KNOBS - the only place to change colors ===== */
+  --primary: {{PRIMARY_COLOR}};   /* default Leadlock blue #6298B6 */
+  --accent:  {{ACCENT_COLOR}};    /* default Leadlock navy #2C5570 */
+  /* ======================================================== */
+
+  --bg:   #07080a;          /* page background (keep dark) */
+  --card: #0e1116;
+  --card2:#12161d;
+  --line: color-mix(in srgb, var(--primary) 25%, transparent);
+  --text: #e8edf2;
+  --dim:  #9fb0bd;
+  --green:#4ade80;
+  --amber:#fbbf24;
+  --red:  #f87171;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Poppins',sans-serif;line-height:1.6}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px 120px}
+
+/* hero */
+.hero{padding:70px 0 50px;text-align:center;background:radial-gradient(ellipse at top,color-mix(in srgb,var(--primary) 18%,transparent) 0%,rgba(7,8,10,1) 60%)}
+.hero img{height:54px;margin-bottom:34px}
+.hero h1{font-size:44px;font-weight:800;line-height:1.15}
+.hero h1 span{background:linear-gradient(115deg,var(--primary) 20%,var(--accent) 90%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{max-width:720px;margin:18px auto 0;color:var(--dim);font-size:17px}
+.badges{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:30px}
+.badge{border:1px solid var(--line);border-radius:999px;padding:7px 18px;font-size:13px;color:var(--primary);background:color-mix(in srgb,var(--primary) 7%,transparent)}
+
+/* sections */
+section{margin-top:84px}
+h2{font-size:28px;font-weight:800;margin-bottom:8px}
+h2 .num{color:var(--primary);font-weight:800;margin-right:10px}
+.sub{color:var(--dim);margin-bottom:28px;max-width:840px}
+h3{font-size:18px;font-weight:700;margin:28px 0 12px;color:var(--primary)}
+.rule{height:1px;background:linear-gradient(to right,transparent,color-mix(in srgb,var(--primary) 60%,transparent),transparent);margin-top:84px}
+
+/* cards */
+.grid{display:grid;gap:16px}
+.grid.c2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.grid.c3{grid-template-columns:repeat(3,1fr)}
+@media (max-width:900px){.grid.c3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}}
+.card{background:linear-gradient(35deg,color-mix(in srgb,var(--primary) 12%,transparent),rgba(7,8,10,.4));border:1px solid var(--line);border-radius:14px;padding:22px}
+.card h4{font-size:15px;font-weight:700;margin-bottom:8px}
+.card p{font-size:13.5px;color:var(--dim)}
+.card .tag{display:inline-block;font-size:11px;font-weight:600;border-radius:6px;padding:2px 9px;margin-bottom:10px;background:color-mix(in srgb,var(--primary) 15%,transparent);color:var(--primary)}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center}
+.stat .v{font-size:30px;font-weight:800;color:var(--primary)}
+.stat .l{font-size:12px;color:var(--dim);margin-top:4px}
+
+/* flowchart */
+.flow{display:flex;flex-direction:column;align-items:center;gap:0;margin:26px 0}
+.fnode{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:15px 24px;text-align:center;min-width:320px;max-width:600px}
+.fnode b{font-size:14.5px;display:block;margin-bottom:3px}
+.fnode span{font-size:12px;color:var(--dim)}
+.fnode.hl{border-color:var(--primary);box-shadow:0 0 18px color-mix(in srgb,var(--primary) 25%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--primary) 18%,transparent),var(--card2))}
+.fnode.good{border-color:rgba(74,222,128,.5)}
+.fnode.warn{border-color:rgba(251,191,36,.45)}
+.fnode.stop{border-color:rgba(248,113,113,.5)}
+.arrow{color:var(--primary);font-size:19px;line-height:1;padding:10px 0}
+.arrow small{display:block;font-size:11px;color:var(--dim);font-style:italic;margin-top:3px}
+.split{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;align-items:stretch;width:100%;margin:4px 0}
+.branch{display:flex;flex-direction:column;align-items:center;flex:1 1 220px;min-width:220px;max-width:340px}
+.branch .lbl{font-size:11.5px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.06em;padding:6px 0}
+.split .fnode{min-width:0;width:100%;max-width:none;flex:1;padding:15px 16px}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:14px}
+th{text-align:left;color:var(--primary);font-weight:700;padding:10px 12px;border-bottom:1px solid var(--line);font-size:12.5px;text-transform:uppercase;letter-spacing:.05em}
+td{padding:10px 12px;border-bottom:1px solid color-mix(in srgb,var(--primary) 10%,transparent);color:var(--text);vertical-align:top}
+td.dim{color:var(--dim)}
+tr:hover td{background:color-mix(in srgb,var(--primary) 4%,transparent)}
+.ok{color:var(--green);font-weight:600}
+.warn-t{color:var(--amber);font-weight:600}
+.pill{display:inline-block;border-radius:6px;padding:1px 9px;font-size:11.5px;font-weight:600}
+.pill.b{background:color-mix(in srgb,var(--primary) 15%,transparent);color:var(--primary)}
+.pill.g{background:rgba(74,222,128,.12);color:var(--green)}
+.pill.a{background:rgba(251,191,36,.12);color:var(--amber)}
+.pill.r{background:rgba(248,113,113,.12);color:var(--red)}
+
+code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:color-mix(in srgb,var(--primary) 12%,transparent);border-radius:5px;padding:1px 7px;color:var(--primary)}
+.note{border-left:3px solid var(--primary);background:color-mix(in srgb,var(--primary) 7%,transparent);border-radius:0 10px 10px 0;padding:14px 18px;font-size:13.5px;color:var(--dim);margin:18px 0}
+
+/* CTA footer */
+.cta{margin-top:100px;text-align:center;padding:54px 28px;border:1px solid var(--line);border-radius:18px;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--primary) 12%,transparent) 0%,rgba(7,8,10,0) 70%)}
+.cta h2{font-size:30px;border:0;margin-bottom:12px}
+.cta p{color:var(--dim);max-width:620px;margin:0 auto 26px;font-size:15px}
+.cta a{display:inline-block;text-decoration:none;font-weight:700;font-size:15px;color:#07080a;background:linear-gradient(115deg,var(--primary),var(--accent));padding:14px 34px;border-radius:999px}
+footer{margin-top:60px;text-align:center;color:var(--dim);font-size:12.5px}
+footer b{color:var(--primary)}
+@media (max-width:760px){.hero h1{font-size:30px}.split{flex-direction:column;align-items:center}}
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<div class="hero">
+  <!-- BRAND: swap this src for the agency/client logo. Horizontal, light-on-dark looks best. -->
+  <img src="{{LOGO_URL}}" alt="{{AGENCY_NAME}}">
+  <div class="wrap">
+    <h1>{{HERO_HEADLINE}} <span>{{HERO_HEADLINE_ACCENT}}</span></h1>
+    <!-- CONTENT: one-paragraph pitch, rewritten for the client's industry. -->
+    <p>{{HERO_SUBHEAD}}</p>
+    <div class="badges">
+      <div class="badge">{{BADGE_1}}</div>
+      <div class="badge">{{BADGE_2}}</div>
+      <div class="badge">{{BADGE_3}}</div>
+      <div class="badge">{{BADGE_4}}</div>
+      <div class="badge">{{BADGE_5}}</div>
+      <div class="badge">{{BADGE_6}}</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ============ 1. WHAT IT IS ============ -->
+<section>
+  <h2><span class="num">01</span>What This System Is</h2>
+  <p class="sub">CONTENT: one or two sentences describing the AI voice-agent system for {{CLIENT_NAME}} in plain language. Say what it does for {{INDUSTRY}} and why it matters. Bold the key idea.</p>
+
+  <div class="stats">
+    <div class="stat"><div class="v">PLACEHOLDER</div><div class="l">a headline number, e.g. speed to first response</div></div>
+    <div class="stat"><div class="v">PLACEHOLDER</div><div class="l">a volume number, e.g. calls handled per month</div></div>
+    <div class="stat"><div class="v">PLACEHOLDER</div><div class="l">a coverage number, e.g. hours of availability</div></div>
+    <div class="stat"><div class="v">PLACEHOLDER</div><div class="l">a value number, e.g. cost per booked job</div></div>
+  </div>
+
+  <div class="grid c2" style="margin-top:22px">
+    <div class="card"><div class="tag">The Channels</div><h4>How leads reach the AI</h4>
+      <p>PLACEHOLDER: describe the inbound channels for this {{INDUSTRY}} business (after-hours calls, missed-call text-back, web form follow-up, etc.) and what the AI does on each.</p></div>
+    <div class="card"><div class="tag">The Outcome</div><h4>What the AI delivers</h4>
+      <p>PLACEHOLDER: describe the conversion the AI drives (booked estimate, scheduled appointment, captured lead) and where it lands (the calendar, the CRM, a notification to the team).</p></div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ============ 2. THE LEAD JOURNEY ============ -->
+<section>
+  <h2><span class="num">02</span>The Lead Journey</h2>
+  <p class="sub">CONTENT: one line setting up the flow for {{INDUSTRY}} - from first contact to one of a few outcomes (booked, nurture, or stop).</p>
+
+  <div class="flow">
+    <div class="fnode hl"><b>A lead reaches out</b><span>PLACEHOLDER: the trigger for {{INDUSTRY}} - a call comes in, a form is filled, a missed call is detected</span></div>
+    <div class="arrow">▼ <small>seconds later</small></div>
+    <div class="fnode"><b>The AI engages instantly</b><span>PLACEHOLDER: greets the caller, learns what they need, answers common questions for this vertical</span></div>
+    <div class="arrow">▼</div>
+    <div class="split">
+      <div class="branch"><div class="lbl">ready to book</div>
+        <div class="fnode good"><b>Booked on the spot</b><span>PLACEHOLDER: the AI schedules the appointment or estimate live and confirms it</span></div>
+      </div>
+      <div class="branch"><div class="lbl">needs follow-up</div>
+        <div class="fnode warn"><b>Timed nurture</b><span>PLACEHOLDER: the AI follows up by call and text on a schedule until they book or decline</span></div>
+      </div>
+    </div>
+    <div class="arrow">▼ <small>any time, any channel</small></div>
+    <div class="fnode stop"><b>"Stop contacting me"</b><span>PLACEHOLDER: opt-out is honored instantly and the lead is removed from every sequence</span></div>
+  </div>
+  <div class="note">PLACEHOLDER: a callout that highlights the smartest part of the flow for {{INDUSTRY}} - for example, that the AI never lets a lead fall through the cracks after hours.</div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ============ 3. CAPABILITIES ============ -->
+<section>
+  <h2><span class="num">03</span>What the AI Can Do</h2>
+  <p class="sub">CONTENT: one line framing the capabilities for {{CLIENT_NAME}}.</p>
+  <div class="grid c3">
+    <div class="card"><div class="tag">Answer</div><h4>PLACEHOLDER capability</h4><p>PLACEHOLDER: e.g. answers every inbound call, day or night, in a natural voice.</p></div>
+    <div class="card"><div class="tag">Book</div><h4>PLACEHOLDER capability</h4><p>PLACEHOLDER: e.g. checks the live calendar and books the appointment during the call.</p></div>
+    <div class="card"><div class="tag">Qualify</div><h4>PLACEHOLDER capability</h4><p>PLACEHOLDER: e.g. asks the right questions for {{INDUSTRY}} and routes urgent jobs first.</p></div>
+    <div class="card"><div class="tag">Follow up</div><h4>PLACEHOLDER capability</h4><p>PLACEHOLDER: e.g. texts and calls leads who did not answer, on a compliant schedule.</p></div>
+    <div class="card"><div class="tag">Capture</div><h4>PLACEHOLDER capability</h4><p>PLACEHOLDER: e.g. writes every name, number, and detail straight into the CRM.</p></div>
+    <div class="card"><div class="tag">Report</div><h4>PLACEHOLDER capability</h4><p>PLACEHOLDER: e.g. records and summarizes every call so the team sees what happened.</p></div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ============ 4. COMPLIANCE ============ -->
+<section>
+  <h2><span class="num">04</span>Compliance and Safety Rails</h2>
+  <p class="sub">CONTENT: one line reassuring {{CLIENT_NAME}} that the system is built to stay within the rules.</p>
+  <div class="grid c2">
+    <div class="card"><h4>⏰ Quiet hours</h4><p>PLACEHOLDER: every call and text is gated to an allowed daytime window.</p></div>
+    <div class="card"><h4>🛑 Honors opt-out</h4><p>PLACEHOLDER: any "stop" in any wording ends contact at once across every channel.</p></div>
+    <div class="card"><h4>🔁 Hard caps</h4><p>PLACEHOLDER: follow-up stops after a set number of touches. No path to endless messaging.</p></div>
+    <div class="card"><h4>🧾 Full audit trail</h4><p>PLACEHOLDER: every call recorded and transcribed, every message logged in the CRM.</p></div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ============ 5. UNIT ECONOMICS ============ -->
+<section>
+  <h2><span class="num">05</span>Unit Economics</h2>
+  <p class="sub">CONTENT: one line on the cost model for {{CLIENT_NAME}}. Mark every figure as an estimate unless the client gave you real numbers.</p>
+  <div class="stats">
+    <div class="stat"><div class="v">PLACEHOLDER</div><div class="l">est. cost per lead the AI engages</div></div>
+    <div class="stat"><div class="v">PLACEHOLDER</div><div class="l">est. cost per booked appointment</div></div>
+    <div class="stat"><div class="v">PLACEHOLDER</div><div class="l">est. monthly cost at typical volume</div></div>
+    <div class="stat"><div class="v">PLACEHOLDER</div><div class="l">value of one job won (client's number)</div></div>
+  </div>
+  <table>
+    <tr><th>What the AI handles</th><th>Volume</th><th>Outcome</th></tr>
+    <tr><td>PLACEHOLDER call type for {{INDUSTRY}}</td><td class="dim">PLACEHOLDER</td><td><span class="pill g">booked</span></td></tr>
+    <tr><td>PLACEHOLDER call type</td><td class="dim">PLACEHOLDER</td><td><span class="pill a">nurtured</span></td></tr>
+    <tr><td>PLACEHOLDER call type</td><td class="dim">PLACEHOLDER</td><td><span class="pill b">captured</span></td></tr>
+  </table>
+  <div class="note">PLACEHOLDER: an honest note about the cost model. All figures here are estimates until measured against {{CLIENT_NAME}}'s real call volume.</div>
+</section>
+
+</div>
+
+<!-- ============ CTA FOOTER ============ -->
+<div class="wrap">
+  <div class="cta">
+    <h2>{{CTA_HEADLINE}}</h2>
+    <p>{{CTA_LINE}}</p>
+    <a href="#">{{CTA_BUTTON}}</a>
+  </div>
+  <footer>
+    Prepared by <b>{{AGENCY_NAME}}</b> for {{CLIENT_NAME}} · AI voice agent system for {{INDUSTRY}}
+  </footer>
+</div>
+
+</body>
+</html>

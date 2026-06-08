@@ -22,3 +22,9 @@ __pycache__/
 
 # Skill outputs
 output/
+
+# A2P skill: user-filled answer sheets contain real brand data
+.claude/skills/a2p-registration/my-a2p-answers.md
+
+# ghl-workflow-api skill: headers.json holds a real captured GHL session token
+.claude/skills/ghl-workflow-api/headers.json
