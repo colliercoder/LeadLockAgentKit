@@ -28,3 +28,6 @@ output/
 
 # ghl-workflow-api skill: headers.json holds a real captured GHL session token
 .claude/skills/ghl-workflow-api/headers.json
+
+# self-selling-setup: agency's filled config holds their API key + PIT
+.claude/skills/self-selling-setup/scripts/values.json

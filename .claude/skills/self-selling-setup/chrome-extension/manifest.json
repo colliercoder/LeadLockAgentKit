@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Leadlock GHL Token Grabber",
+  "version": "1.0",
+  "description": "Grab the Firebase refresh token from GoHighLevel so the Leadlock setup scripts can use the internal API.",
+  "permissions": ["activeTab", "scripting", "clipboardWrite"],
+  "host_permissions": [
+    "https://app.gohighlevel.com/*",
+    "https://*.leadconnectorhq.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

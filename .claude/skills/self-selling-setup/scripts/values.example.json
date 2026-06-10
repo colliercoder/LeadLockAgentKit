@@ -1,0 +1,24 @@
+{
+  "_note": "GHL_LOCATION_ID and GHL_PIT come from .env, not here. This file is just the custom-value answers. Copy to values.json and fill in.",
+  "values": {
+    "your_business_name": "Your Agency Name",
+    "your_name": "Your Name",
+    "your_email": "you@youragency.com",
+    "ai_assistant_name": "Maya",
+    "setup_fee": "$1,000",
+    "monthly_retainer": "$1,200",
+    "frequently_asked_questions": "Q: What is this? A: ... (your demo FAQ for the AI)",
+    "intake_form_link": "PASTE_LINK_HERE",
+    "agreement_link": "PASTE_LINK_HERE",
+    "orb_link": "PASTE_LINK_HERE",
+    "leadlock_api_key": "PASTE_HERE",
+    "leadlock_agent_id": "PASTE_HERE",
+    "leadlock_reminder_agent_id": "PASTE_HERE",
+
+    "_optional_branding": "These exist in the snapshot and brand the funnel + orb pages. Optional - leave as-is to skip, or fill to brand. Not checked by verify.py.",
+    "logo": "PASTE_LINK_HERE",
+    "primary_color": "PASTE_HERE",
+    "secondary_color": "PASTE_HERE",
+    "orb_thank_you_page_link": "PASTE_LINK_HERE"
+  }
+}

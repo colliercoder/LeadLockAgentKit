@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    body { font-family: -apple-system, system-ui, sans-serif; width: 320px; padding: 14px; color: #1a2533; }
+    h1 { font-size: 15px; margin: 0 0 4px; color: #2C5570; }
+    p { font-size: 12px; color: #5a6b7a; margin: 0 0 12px; }
+    button { width: 100%; padding: 9px; border: 0; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: 8px; }
+    #grabBtn { background: #6298B6; color: #fff; }
+    #copyBtn { background: #eef3f6; color: #2C5570; }
+    button:disabled { opacity: 0.5; cursor: default; }
+    #status { font-size: 12px; margin-top: 6px; min-height: 16px; }
+    #status.success { color: #1f9d57; }
+    #status.error { color: #c23b22; }
+    #status.info { color: #5a6b7a; }
+    #preview { display: none; font-family: ui-monospace, monospace; font-size: 11px; background: #f3f6f8; border-radius: 6px; padding: 8px; margin-top: 8px; word-break: break-all; color: #2C5570; }
+  </style>
+</head>
+<body>
+  <h1>Leadlock GHL Token Grabber</h1>
+  <p>On an app.gohighlevel.com tab, grab your Firebase refresh token for the Leadlock setup scripts.</p>
+  <button id="grabBtn">Grab Refresh Token</button>
+  <button id="copyBtn" disabled>Copy to Clipboard</button>
+  <div id="status"></div>
+  <div id="preview"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
