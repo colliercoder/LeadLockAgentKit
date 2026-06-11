@@ -14,6 +14,9 @@ from pathlib import Path
 
 API = "https://services.leadconnectorhq.com"
 PLACEHOLDERS = {"", "PASTE_HERE", "PASTE_LINK_HERE", "FILL_ME", "TBD"}
+# GHL's edge (Cloudflare) blocks urllib's default UA with error 1010 — send a browser UA.
+UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 
 
 def load_env():
@@ -56,7 +59,8 @@ REQUIRED = [
 
 def call(url, pit):
     req = urllib.request.Request(url, headers={
-        "Authorization": f"Bearer {pit}", "Version": "2021-07-28", "Accept": "application/json"})
+        "Authorization": f"Bearer {pit}", "Version": "2021-07-28", "Accept": "application/json",
+        "User-Agent": UA})
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
             return r.status, json.loads(r.read().decode() or "{}")

@@ -20,6 +20,9 @@ from pathlib import Path
 
 API = "https://services.leadconnectorhq.com"
 PLACEHOLDERS = {"", "PASTE_HERE", "PASTE_LINK_HERE", "FILL_ME", "TBD"}
+# GHL's edge (Cloudflare) blocks urllib's default UA with error 1010 — send a browser UA.
+UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 
 
 def load_env():
@@ -56,7 +59,7 @@ def fieldkey(cv):
 
 def hdrs(pit):
     return {"Authorization": f"Bearer {pit}", "Version": "2021-07-28",
-            "Accept": "application/json", "Content-Type": "application/json"}
+            "Accept": "application/json", "Content-Type": "application/json", "User-Agent": UA}
 
 
 def call(url, pit, method="GET", body=None):
