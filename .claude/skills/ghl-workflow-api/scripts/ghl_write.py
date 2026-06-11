@@ -100,28 +100,43 @@ def auto_save(loc, wfid, templates, version, headers):
 
     Returns (status, response). Use this to stage changes, then publish().
     """
+    # The server reads the node list from workflowData.templates. Sending only a
+    # top-level "templates" key is accepted (HTTP 200) but stores an EMPTY
+    # workflow - silently wiping every node. Always nest under workflowData.
     body = {
         "templates": templates,
+        "workflowData": {"templates": templates},
         "version": version,
     }
     return _put(f"{BACKEND}/workflow/{loc}/{wfid}/auto-save", body, headers)
 
 
-def publish(loc, wfid, templates, version, headers):
+def publish(loc, wfid, templates, version, headers, allow_multiple=None):
     """PUBLISH the workflow live. version must be the CURRENT version.
 
     Sends status=published and autoSaveSession=null (clears any pending draft
     session so the publish is not rejected as conflicting). The server
     increments the version itself; do not pre-increment it.
 
+    Pass allow_multiple (read from the workflow meta) to PRESERVE re-entry -
+    publish defaults it to false otherwise, breaking dunning-style re-entry.
+
+    NOTE: publish VALIDATES nodes. Snapshot-imported workflows often have nodes
+    missing required config (internal_notification with no user, emails pointing
+    at the old location). Those fail publish with 400 MISSING_REQUIRED_FIELDS -
+    finish/publish them in the GHL UI. auto_save (draft) does not validate.
+
     Returns (status, response).
     """
     body = {
         "templates": templates,
+        "workflowData": {"templates": templates},
         "version": version,
         "status": "published",
         "autoSaveSession": None,
     }
+    if allow_multiple is not None:
+        body["allowMultiple"] = allow_multiple
     return _put(f"{BACKEND}/workflow/{loc}/{wfid}", body, headers)
 
 

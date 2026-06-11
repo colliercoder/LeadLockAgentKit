@@ -34,20 +34,38 @@ tells you to re-read the version.
 
 ## Publish
 
+> **The node list MUST go in `workflowData.templates`, NOT a top-level
+> `templates` key.** A PUT with only top-level `templates` returns HTTP 200 but
+> stores an EMPTY workflow - silently wiping every node. Send
+> `workflowData: {"templates": [...]}` (mirroring it top-level too is harmless).
+
 ```
 PUT /workflow/{loc}/{workflowId}
 body:
 {
-  "templates":  <the full node list>,
-  "version":    <CURRENT version>,
-  "status":     "published",
-  "autoSaveSession": null
+  "workflowData": { "templates": <the full node list> },
+  "templates":    <same list, mirror>,
+  "version":      <CURRENT version>,
+  "status":       "published",
+  "autoSaveSession": null,
+  "allowMultiple": <preserve the meta value - else re-entry resets to false>
 }
 ```
 
 `autoSaveSession: null` clears any pending draft session so the publish is not
 rejected as conflicting with an open auto-save. The server increments the
-version; do not pre-increment.
+version; do not pre-increment. **Pass `allowMultiple`** from the meta or publish
+resets it to false (breaks dunning-style re-entry).
+
+### Publish validates - snapshot-imported drafts will fail
+Publish runs node validation. Snapshot-imported workflows commonly have nodes
+missing required config - an `internal_notification` whose user didn't transfer
+(`selectedUser: []`), or `email` nodes whose `template_id` points at the source
+location. These return `400 MISSING_REQUIRED_FIELDS`, and the remap can't be
+done cleanly via this API - **finish and publish those workflows in the GHL UI.**
+To revert a workflow you accidentally published-empty back to a draft, PUT with
+`status: "draft"` and the restored `workflowData.templates` (draft saves skip
+validation).
 
 ## Draft save (auto-save)
 
@@ -55,12 +73,15 @@ version; do not pre-increment.
 PUT /workflow/{loc}/{workflowId}/auto-save
 body:
 {
-  "templates": <the full node list>,
-  "version":   <CURRENT version>
+  "workflowData": { "templates": <the full node list> },
+  "templates":    <same list, mirror>,
+  "version":      <CURRENT version>
 }
 ```
 
-Use this to stage changes without publishing. Then `publish(...)` when ready.
+Stage changes without publishing. Only works while the workflow is a **draft**
+(else 422 "Cannot auto save workflow which is not draft"). Then `publish(...)`,
+or publish in the UI if nodes fail validation.
 
 ## What is writable this way
 
