@@ -106,3 +106,17 @@ Evidence: During the Big Dawg live build, the initial `POST /agents` payload set
 - First action in a build-agent / prospect-demo / any agent-mutation session: `cat learnings/index.md learnings/bugs.md` (or read both via the Read tool). Skim for entries tagged with the surfaces you're about to touch (agent-create, voice config, system prompt, phone assignment).
 - Apply known workarounds proactively. Example: when creating an agent with `openai_voice_model: "gpt-realtime-2"`, plan for a follow-up PATCH to actually pin it. Don't be surprised by it mid-build.
 - When a learning contradicts a SKILL.md rule, the learning wins until the skill is updated (CLAUDE.md rule).
+
+---
+
+### `collect_contact` is not a functional tool, do not enable or reference it
+
+Date: 2026-07-16
+Tags: skill:prospect-demo, type:anti-pattern, surface:tools_enabled
+Evidence: prospect-demo's default tool set includes `collect_contact` (Rule 21 and the Step 4 payload), and it round-trips into `tools_enabled` on create with no error. During the Northern Mister Sparky build the operator (platform owner) flagged it as "a function that doesn't exist" and removed it from the agent's prompt. The kit's own `build-agent` tool catalog does not list it; `LEADLOCKDOCS.json` does not enumerate tool names at all (even real tools like `check_availability` are absent), so the docs neither confirm nor deny it, the operator's word is the authority.
+
+**Rule:** Do not put `collect_contact` in `tools_enabled` or reference it in a system prompt. The working default demo tool set is `end_call`, `book_appointment`, `check_availability`. For "caller will not book but wants a callback", use a real capture path (`schedule_callback` if enabled, or have the agent take details conversationally and rely on the transcript / CRM).
+
+**Why:** `tools_enabled` is a free-form string array, so the API accepts any name without validation and a phantom tool sits in the list doing nothing. A prompt that tells the model to "call collect_contact" primes it to invoke a no-op, which can stall or confuse the turn.
+
+**How to apply:** Drop `collect_contact` from prospect-demo's default `tools_enabled` and from its `## Tools` skeleton guidance. Big Dawg's `bin/bd-make-demo` already ships without it. When adding any tool, confirm it against a known-real list before enabling, and never invent tool names.

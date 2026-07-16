@@ -12,6 +12,7 @@ Content lives in the category files, not here. To add a new entry, invoke `/add-
 
 ## Anti-patterns
 
+- 2026-07-16 - `collect_contact` is not a functional tool; do not enable it or name it in a prompt - [anti-patterns.md](anti-patterns.md)
 - 2026-05-23 — Building a new agent without skimming `learnings/index.md` + `bugs.md` first — [anti-patterns.md](anti-patterns.md)
 - 2026-05-23 — `agent_mode` not inferred from intent; must set `outbound` explicitly at create — [anti-patterns.md](anti-patterns.md)
 - 2026-05-23 — Framing system prompt as "performing to a room" for an outbound demo (it's a 1:1 on speaker) — [anti-patterns.md](anti-patterns.md)
@@ -22,6 +23,7 @@ Content lives in the category files, not here. To add a new entry, invoke `/add-
 
 ## Best practices
 
+- 2026-07-16 - `POST /demos/import-from-url` is slow (Jina + AI extraction); use a 120s timeout - [best-practices.md](best-practices.md)
 - 2026-05-31 — Dogfood a new lint/audit skill on the real repo; first-run false positives are the suppression-list spec — [best-practices.md](best-practices.md)
 - 2026-05-31 — Content rules (no "closer", no platform name) apply to prompt TEMPLATES, not just runtime output — [best-practices.md](best-practices.md)
 - 2026-05-31 — LEADLOCK_API_URL is canonical; _BASE is a deliberate fallback alias, not drift — [best-practices.md](best-practices.md)
@@ -40,6 +42,7 @@ Content lives in the category files, not here. To add a new entry, invoke `/add-
 
 ## Bugs
 
+- 2026-07-16 - `POST /agents` ignores `max_call_duration_minutes`, forces plan default (30); PATCH works - [bugs.md](bugs.md)
 - 2026-05-19 — `POST /agents` silently ignores `openai_voice_model`; defaults to gpt-realtime-1.5. PATCH works — [bugs.md](bugs.md)
 - 2026-05-13 — `PATCH /demos/{id}/` (trailing slash) drops body via 307 redirect — [bugs.md#patch-demosid-trailing-slash-silently-drops-the-body-via-307-redirect](bugs.md#patch-demosid-trailing-slash-silently-drops-the-body-via-307-redirect)
 

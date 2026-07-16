@@ -304,3 +304,17 @@ Evidence: commit 194c229
 **Why:** Retell is a niche skill. Putting RETELL_API_KEY in the base `.env`/setup-check as if it were required would confuse the majority who never port from Retell. The skill owns its dependency: on a missing key it now hands the user `echo 'RETELL_API_KEY=...' >> ./.env` plus where to find it. A missing Leadlock (base) key still routes to setup-check — that's a different problem.
 
 **How to apply:** For any future optional-integration skill, keep its key out of the base config, mark it optional in setup-check/welcome, and have the skill's own setup step give the add-it-now instruction inline.
+
+---
+
+### `POST /demos/import-from-url` is slow, give it a 120s timeout
+
+Date: 2026-07-16
+Tags: api:demos, skill:prospect-demo, type:pattern, http:timeout
+Evidence: `POST /demos/import-from-url` for `northernmistersparky.com` timed out at a 30s HTTP client timeout twice, then succeeded at ~150s. The endpoint runs the Jina Reader scrape plus an xAI extraction pass across multiple pages (homepage + /about + several /areas-we-serve/*), so wall-clock routinely exceeds 30s.
+
+**Rule:** When calling `POST /demos/import-from-url` (or `/agents/wizard/import-website`), set the HTTP client timeout to at least 120s. The common 30s default times out on real multi-page sites, and a naive retry just times out again.
+
+**Why:** The scrape endpoint fans out to several pages then runs an LLM extraction, so it takes tens of seconds to two minutes depending on the site. A 30s timeout fails on anything non-trivial and the operator sees "read operation timed out", which reads like the site is unreachable when it is really just slow.
+
+**How to apply:** In new code, do the scrape POST with an explicit long timeout (Big Dawg's `bin/bd-make-demo scrape` uses `--timeout 120` via a direct `urlopen` rather than the shared 30s client). If the scrape still fails, fall back to reading the homepage plus key pages directly to author the prompt, rather than blocking the whole demo on the extraction endpoint.
