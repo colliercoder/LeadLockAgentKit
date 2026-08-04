@@ -56,6 +56,19 @@ FILLER_RES = [
 
 REDUNDANT_CONFIRM_RE = re.compile(r"\bis that (?:correct|right)\b|\bdid I get that right\b", re.I)
 
+# A call should not end on a bare acknowledgement. Observed 2026-08-04: the last
+# field of an intake was an optional email, the caller said "she doesn't have
+# one", and the agent said "No problem" and fired end_call in the same turn,
+# skipping the entire closing including the callback number.
+FAREWELL_RE = re.compile(
+    r"\b(goodbye|good bye|bye|take care|have a (?:good|great|nice)|talk soon|"
+    r"watch for it|reach(?:ing)? out|be in touch|call you|thanks for calling|"
+    r"you did the right thing)\b",
+    re.I,
+)
+ABRUPT_END_MAX_WORDS = 8
+PHONE_RE = re.compile(r"\b\d{3}[\s\-.]\d{3}[\s\-.]\d{4}\b")
+
 SELF_ANSWER_RE = re.compile(
     r"\?\s*(?:No|Yes|Nope|Yeah|Nah)\b[^?]{0,45}?\b(?:you|you're|youre|it's|its|that's)\b",
     re.I,
@@ -103,8 +116,21 @@ CAUSE_MAP = {
     ),
     "corporate-filler": (
         [r"professional", r"courteous", r"assist"],
-        "Replace adjective-style personality with audible behaviours and reaction triggers. "
-        "Acknowledge what they SAID, not what you are doing with it.",
+        "Replace adjective-style personality with audible behaviours and reaction "
+        "triggers. Acknowledge what they SAID, not what you are doing with it.",
+    ),
+    "abrupt-ending": (
+        [r"once you have what you need", r"when you have (?:it |what)", r"then end the call",
+         r"if not, that'?s fine"],
+        "Separate the closing SPEECH from the hangup. The trigger phrase makes the "
+        "model jump straight to the tool once the last field is answered, and end_call "
+        "terminates before the closing is spoken. Say the closing, wait for them to "
+        "respond, and make the hangup a separate last act gated on what they must hear.",
+    ),
+    "closing-skipped": (
+        [r"once you have what you need", r"then end the call", r"when you have everything"],
+        "The closing never ran. Gate the hangup on the caller having heard the thing "
+        "that matters (the callback number), not on the field list being complete.",
     ),
 }
 
@@ -196,10 +222,55 @@ def _normalize_q(q: str) -> str:
     return re.sub(r"\s+", " ", q).strip()
 
 
-def audit(transcript: str) -> list[Issue]:
+def _closing_issues(agent_turns: list[Turn], prompt: str | None) -> list[Issue]:
+    """Did the call actually close, or did the agent just stop?"""
+    out: list[Issue] = []
+    if not agent_turns:
+        return out
+    last = agent_turns[-1]
+    words = len(last.text.split())
+    # A transcript whose final agent turn is a QUESTION was cut off mid-flow, or is
+    # an excerpt. Either way it is not a botched closing, which is what this checks.
+    ended_on_question = last.text.rstrip().endswith("?")
+    if (not ended_on_question and words <= ABRUPT_END_MAX_WORDS
+            and not FAREWELL_RE.search(last.text)):
+        out.append(Issue(
+            "abrupt-ending",
+            f"The call ends on a {words}-word acknowledgement with no farewell. "
+            f"A closing that the caller never heard did not happen.",
+            last.index, last.text[:150],
+        ))
+
+    # If the prompt's closing scripts a callback number, it must have been said.
+    if prompt:
+        closing = ""
+        grab = False
+        for line in prompt.splitlines():
+            if re.match(r"^#+\s*clos", line, re.I):
+                grab = True
+                continue
+            if grab and line.startswith("#"):
+                break
+            if grab:
+                closing += " " + line
+        spoken = " ".join(t.text for t in agent_turns)
+        for num in set(PHONE_RE.findall(closing)):
+            digits = re.sub(r"\D", "", num)
+            spoken_digits = re.sub(r"\D", "", spoken)
+            if digits and digits not in spoken_digits:
+                out.append(Issue(
+                    "closing-skipped",
+                    f"The prompt's closing gives the caller {num}, and it was never "
+                    f"said on this call. The close did not run.",
+                    agent_turns[-1].index, agent_turns[-1].text[:150],
+                ))
+    return out
+
+
+def audit(transcript: str, *, prompt: str | None = None) -> list[Issue]:
     turns = parse_transcript(transcript)
     agent_turns = [t for t in turns if t.speaker == "agent"]
-    issues: list[Issue] = []
+    issues: list[Issue] = list(_closing_issues(agent_turns, prompt))
 
     seen_questions: dict[str, int] = {}
     sentence_counts: dict[str, int] = {}
@@ -248,8 +319,11 @@ def audit(transcript: str) -> list[Issue]:
             iss.subject = asked or m.group(0)
             issues.append(iss)
 
+        # A closing legitimately runs long: it carries the callback number and the
+        # goodbye. Only flag long turns that are not the closing.
         words = len(text.split())
-        if words > LONG_TURN_WORDS:
+        is_closing = t is agent_turns[-1] and FAREWELL_RE.search(text)
+        if words > LONG_TURN_WORDS and not is_closing:
             issues.append(Issue(
                 "long-turn", f"{words} words in one turn (over {LONG_TURN_WORDS}).",
                 t.index, text[:150],
