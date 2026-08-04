@@ -61,7 +61,42 @@ VARIETY_PATTERNS = [
 ]
 
 # Sections where absolutes are legitimate and expected.
-ABSOLUTE_SAFE_HEADERS = ("guardrail", "reminder", "never", "hard rule", "boundaries")
+ABSOLUTE_SAFE_HEADERS = ("guardrail", "reminder", "never", "hard rule", "hard limit",
+                         "boundaries", "limits")
+
+# Prompting profiles.
+#
+# xAI's own migration guidance for grok-voice-think-fast (the model Leadlock runs)
+# is explicit: "Simplify your system prompt... your prompt should be much shorter"
+# and "Remove workaround prompting. Prompt hacks and edge-case fixes needed for GPT
+# models are unnecessary." leadlock-app's migration doc calls this out as THE risk:
+# "Our prompts are engineered against 1.0's quirks... it is prompt-quality, not code."
+#
+# So the structural scaffolding (six-section anatomy, explicit re-ask guard, split
+# message handling, variety rule) is GPT-era patching. It is required under the
+# `gpt-realtime` profile and dropped under `think-fast`.
+SCAFFOLDING_CHECKS = {"missing-section", "no-reask-guard",
+                      "no-split-message-handling", "no-variety-rule"}
+
+PROFILES = {
+    "think-fast": {"skip": SCAFFOLDING_CHECKS, "flag_scaffolding": True},
+    "gpt-realtime": {"skip": set(), "flag_scaffolding": False},
+}
+DEFAULT_PROFILE = "think-fast"
+
+# Instructions that exist only to patch older-model behaviour. On think-fast these
+# consume the prompt without earning their place.
+WORKAROUND_RES = [
+    (re.compile(r"ask (?:exactly )?one question", re.I), "one-question-at-a-time rule"),
+    (re.compile(r"then stop talking", re.I), "stop-talking rule"),
+    (re.compile(r"last thing you say|ends on the question", re.I), "turn-ends-on-question rule"),
+    (re.compile(r"do not repeat the same sentence", re.I), "variety rule"),
+    (re.compile(r"\buh huh\b", re.I), "split-message handling"),
+    (re.compile(r"rotate your acknowledge|do not lean on one phrase", re.I),
+     "acknowledgement rotation"),
+    (re.compile(r"spelled [A-Z](?:\s*-\s*[A-Z]){2,}", re.I), "read-back format template"),
+    (re.compile(r"one line of the sheet is one turn", re.I), "one-field-per-turn rule"),
+]
 
 # Only IMPERATIVE absolutes matter. "Never end the call with fields blank" is the
 # failure mode; "always on the caller's side" is a style descriptor and is fine.
@@ -127,8 +162,16 @@ def lint(
     *,
     variable_defaults: dict | None = None,
     greeting: str | None = None,
+    profile: str = DEFAULT_PROFILE,
 ) -> list[Finding]:
-    """Return findings, most severe first. Empty list means clean."""
+    """Return findings, most severe first. Empty list means clean.
+
+    `profile` selects which checks apply. See PROFILES: `think-fast` (default,
+    what Leadlock runs) drops the GPT-era structural scaffolding and instead
+    flags it, per xAI's migration guidance. `gpt-realtime` keeps it.
+    """
+    cfg = PROFILES.get(profile, PROFILES[DEFAULT_PROFILE])
+    skip = cfg["skip"]
     findings: list[Finding] = []
     lines = _lines(text)
     headers = _headers(text)
@@ -168,23 +211,24 @@ def lint(
                 ))
                 break
 
-    # 4. Required sections.
-    header_blob = " | ".join(h for _, h in headers)
-    for name, keywords in REQUIRED_SECTIONS.items():
-        if not any(k in header_blob for k in keywords):
-            findings.append(Finding(
-                FAIL, "missing-section",
-                f"No '{name}' section. The six-section anatomy is Role and "
-                f"Objective / Personality / Context / Instructions / Stages / "
-                f"Example interactions.",
-            ))
-    for name, keywords in RECOMMENDED_SECTIONS.items():
-        if not any(k in header_blob for k in keywords):
-            findings.append(Finding(
-                WARN, "missing-section",
-                f"No '{name}' section. Short varied sample phrases teach style "
-                f"better than adjectives.",
-            ))
+    # 4. Required sections. GPT-era scaffolding; skipped on think-fast.
+    if "missing-section" not in skip:
+        header_blob = " | ".join(h for _, h in headers)
+        for name, keywords in REQUIRED_SECTIONS.items():
+            if not any(k in header_blob for k in keywords):
+                findings.append(Finding(
+                    FAIL, "missing-section",
+                    f"No '{name}' section. The six-section anatomy is Role and "
+                    f"Objective / Personality / Context / Instructions / Stages / "
+                    f"Example interactions.",
+                ))
+        for name, keywords in RECOMMENDED_SECTIONS.items():
+            if not any(k in header_blob for k in keywords):
+                findings.append(Finding(
+                    WARN, "missing-section",
+                    f"No '{name}' section. Short varied sample phrases teach style "
+                    f"better than adjectives.",
+                ))
 
     # 5. Unfilled dynamic variables get spoken out loud.
     defaults = {k.lower() for k in (variable_defaults or {}) if variable_defaults[k]}
@@ -201,8 +245,8 @@ def lint(
             line=text[: m.start()].count("\n") + 1,
         ))
 
-    # 6. Re-ask guard.
-    if not any(re.search(p, low) for p in REASK_PATTERNS):
+    # 6. Re-ask guard. GPT-era scaffolding; skipped on think-fast.
+    if "no-reask-guard" not in skip and not any(re.search(p, low) for p in REASK_PATTERNS):
         findings.append(Finding(
             FAIL, "no-reask-guard",
             "No re-ask guard. Add: 'keep track of what the caller has already "
@@ -210,8 +254,9 @@ def lint(
             "constantly without it.",
         ))
 
-    # 7. Split-message / voice-lag handling.
-    if not any(re.search(p, low) for p in SPLIT_MESSAGE_PATTERNS):
+    # 7. Split-message / voice-lag handling. Skipped on think-fast.
+    if ("no-split-message-handling" not in skip
+            and not any(re.search(p, low) for p in SPLIT_MESSAGE_PATTERNS)):
         findings.append(Finding(
             WARN, "no-split-message-handling",
             "No split-message handling. Voice lag delivers one sentence as two "
@@ -219,13 +264,32 @@ def lint(
             "with 'uh huh' so the caller keeps going.",
         ))
 
-    # 8. Variety.
-    if not any(re.search(p, low) for p in VARIETY_PATTERNS):
+    # 8. Variety. Skipped on think-fast.
+    if "no-variety-rule" not in skip and not any(re.search(p, low) for p in VARIETY_PATTERNS):
         findings.append(Finding(
             WARN, "no-variety-rule",
             "No variety instruction. Sample phrases make agents repetitive "
             "without one. Add: 'do not repeat the same sentence twice.'",
         ))
+
+    # 8b. Workaround prompting carried over from GPT-era models. xAI advises
+    # stripping these on think-fast, where they cost prompt budget for nothing.
+    if cfg["flag_scaffolding"]:
+        found = []
+        for rx, name in WORKAROUND_RES:
+            m = rx.search(text)
+            if m:
+                found.append((name, text[: m.start()].count("\n") + 1))
+        if len(found) >= 3:
+            names = ", ".join(n for n, _ in found[:5])
+            findings.append(Finding(
+                WARN, "workaround-prompting",
+                f"{len(found)} GPT-era workaround instructions ({names}). xAI's "
+                f"think-fast guidance is to strip prompt hacks written for weaker "
+                f"models: the reasoning handles turn-taking and tone natively, and "
+                f"these crowd out the content only you can supply.",
+                line=found[0][1],
+            ))
 
     # 9. Blanket absolutes outside a guardrails/reminders section.
     for i, line in enumerate(lines, 1):
@@ -265,14 +329,19 @@ def lint(
         ))
         break
 
-    # 11. Greeting must appear in the prompt so stage 1 matches what is spoken.
+    # 11. If the prompt scripts an opening, it must match the configured greeting.
+    # A prompt that scripts no opening at all (fine on think-fast, where the
+    # greeting field stands alone) has nothing to contradict, so there is no finding.
     if greeting:
+        header_blob_all = " | ".join(h for _, h in headers)
+        scripts_opening = any(k in header_blob_all for k in ("stage", "flow", "script")) \
+            or "greeting" in low
         head = greeting.strip().rstrip("?.!")[:40]
-        if head and head.lower() not in low:
+        if scripts_opening and head and head.lower() not in low:
             findings.append(Finding(
                 WARN, "greeting-mismatch",
-                "The configured greeting does not appear in the prompt. Stage 1 "
-                "should match the spoken greeting verbatim.",
+                "This prompt scripts an opening, but the configured greeting does "
+                "not appear in it. The two will contradict each other.",
             ))
 
     # 12. A field described as derived must not also sit in a question list.
