@@ -72,6 +72,13 @@ IMPERATIVE_ABSOLUTE_RE = re.compile(
 )
 
 SPEAKER_TURN_RE = re.compile(r"^\s*>?\s*\*\*[A-Z][A-Za-z ]{1,20}:\*\*", re.M)
+
+# "bad phrasing" -> "good phrasing" pairs. Useful on cascaded pipelines, but on a
+# realtime model the BAD string is just another quotable phrase sitting in
+# context, and it gets imitated. Confirmed 2026-08-04: a prompt containing
+#   "G - A - U - E - R - K - E. Is that correct?" -> "G - A - U - E - R - K - E."
+# produced an agent that said "Is that right?" after every read-back.
+BAD_GOOD_PAIR_RE = re.compile(r'"[^"\n]{6,}"\s*(?:->|→)\s*"', re.M)
 VARIABLE_RE = re.compile(r"\{\{\s*([A-Za-z0-9_]+)\s*\}\}")
 HEADER_RE = re.compile(r"^\s{0,3}(#{1,6})\s+(.*)$", re.M)
 
@@ -246,6 +253,17 @@ def lint(
             f"varied sample phrases better than multi-turn transcripts, which "
             f"get imitated literally.",
         ))
+
+    # 10b. Bad/good phrasing pairs prime the bad phrasing on realtime models.
+    for m in BAD_GOOD_PAIR_RE.finditer(text):
+        findings.append(Finding(
+            WARN, "bad-good-pair",
+            "A 'bad phrasing' -> 'good phrasing' pair. On realtime models the BAD "
+            "string is quotable context and gets imitated. Show only the phrasing "
+            "you want.",
+            line=text[: m.start()].count("\n") + 1,
+        ))
+        break
 
     # 11. Greeting must appear in the prompt so stage 1 matches what is spoken.
     if greeting:

@@ -103,8 +103,8 @@ CAUSE_MAP = {
     ),
     "corporate-filler": (
         [r"professional", r"courteous", r"assist"],
-        "Replace adjective-style personality with audible behaviours and bad/good pairs. "
-        "'Thank you for providing that information' -> 'Got it.'",
+        "Replace adjective-style personality with audible behaviours and reaction triggers. "
+        "Acknowledge what they SAID, not what you are doing with it.",
     ),
 }
 
