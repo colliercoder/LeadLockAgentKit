@@ -32,6 +32,17 @@ Before doing anything, confirm `.env` exists and has `LEADLOCK_API_KEY` + `LEADL
 
    **Pauses come from config, not markup.** `vad_silence_duration_ms` 400 is snappy and right for sales demos; use 700-900 for intake, legal, medical, and care lines where callers pause mid-sentence. `xai_speaking_speed` 0.9 reads as unhurried.
 
+   **After every test call, audit the transcript before touching the prompt.** `voice_transcript_audit.py` detects the failures that actually recur (two questions in one turn, narrating the next step, "is that correct?" after a read-back, re-asking, self-answered questions, robotic repetition) and then names the prompt line that caused each one:
+
+   ```bash
+   python3 -c "import sys;sys.path.insert(0,'.claude/skills/prospect-demo');\
+   from voice_transcript_audit import audit,attach_causes,format_report;\
+   t=open('call.txt').read();p=open('prompt.md').read();\
+   print(format_report(attach_causes(audit(t),p),have_prompt=True))"
+   ```
+
+   **Fix or remove the causing line before adding anything new.** Every misbehaviour on a real build traced back to an instruction already in the prompt: two-questions-per-turn came from "group the questions so they land like conversation"; a spoken "I'll spell it back" came from a `(spell it back)` field annotation being read as dialogue; a self-answered "over fifty?" came from that field sitting in the question list AND in a do-not-ask note, which the model resolved by doing both. Adding one rule per observed failure is what pushes a prompt past the token ceiling, at which point none of the rules are followed.
+
    Sources: OpenAI's realtime prompting guide, Alejo (Amplify Voice AI), Tommy Chryst (Rose AI).
 
 1. **Never name the platform in any agent output.** The system prompt must keep "Leadlock" confidential. Use "our system" / "the platform we use". Platform name OK in the outgoing email to the prospect.
