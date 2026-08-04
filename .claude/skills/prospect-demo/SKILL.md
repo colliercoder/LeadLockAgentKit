@@ -20,6 +20,20 @@ Before doing anything, confirm `.env` exists and has `LEADLOCK_API_KEY` + `LEADL
 
 ## Rules
 
+0. **Start from `templates/voice-prompt.md`, and lint before you POST.** That template is the canonical six-section anatomy (Role and Objective / Personality / Context / Instructions / Stages / Example interactions) with four COPY-VERBATIM blocks: communication, read-back formats, voice-lag handling, and the re-ask guard. Those four are byte-identical for every agent; re-deriving them per agent is where the mistakes come from. Validate with the bundled linter before creating anything:
+
+   ```bash
+   python3 -c "import sys;sys.path.insert(0,'.claude/skills/prospect-demo');\
+   from voice_prompt_lint import lint,format_report;\
+   t=open('prompt.md').read();print(format_report(lint(t)))"
+   ```
+
+   It FAILs on: over 2,000 tokens, em dashes, speech markup (`<break>` / `[pause]` / `<emotion>` are inert on realtime speech-to-speech and get read aloud literally), missing sections, unfilled `{{variables}}` (they get spoken: "Is this tier patient_ame?"), and a missing re-ask guard. It WARNs on blanket always/never (realtime models take absolutes literally and produce bad edge behaviour), multi-turn example transcripts (they eat the attention budget and get imitated), and missing split-message handling.
+
+   **Pauses come from config, not markup.** `vad_silence_duration_ms` 400 is snappy and right for sales demos; use 700-900 for intake, legal, medical, and care lines where callers pause mid-sentence. `xai_speaking_speed` 0.9 reads as unhurried.
+
+   Sources: OpenAI's realtime prompting guide, Alejo (Amplify Voice AI), Tommy Chryst (Rose AI).
+
 1. **Never name the platform in any agent output.** The system prompt must keep "Leadlock" confidential. Use "our system" / "the platform we use". Platform name OK in the outgoing email to the prospect.
 2. **Positive framing.** Tell the agent what TO do, not what NOT to do. Quarantine negatives in a single `## Guardrails` section at the bottom.
 3. **Never use the word "closer"** anywhere in prompts or copy. Use "team member" / "specialist" / "funding specialist" (MCA only).
