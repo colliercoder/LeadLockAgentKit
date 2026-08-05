@@ -320,9 +320,13 @@ def audit(transcript: str, *, prompt: str | None = None) -> list[Issue]:
             issues.append(iss)
 
         # A closing legitimately runs long: it carries the callback number and the
-        # goodbye. Only flag long turns that are not the closing.
+        # next step. It is NOT always the final turn, because a goodbye exchange
+        # usually follows it, so exempt any closing-shaped turn in the last quarter
+        # of the call rather than only the last one.
         words = len(text.split())
-        is_closing = t is agent_turns[-1] and FAREWELL_RE.search(text)
+        tail_starts = len(agent_turns) - max(1, len(agent_turns) // 4)
+        in_tail = agent_turns.index(t) >= tail_starts
+        is_closing = in_tail and FAREWELL_RE.search(text)
         if words > LONG_TURN_WORDS and not is_closing:
             issues.append(Issue(
                 "long-turn", f"{words} words in one turn (over {LONG_TURN_WORDS}).",
