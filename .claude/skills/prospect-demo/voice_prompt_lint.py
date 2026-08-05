@@ -192,8 +192,12 @@ def lint(
         if EM_DASH in line:
             findings.append(Finding(
                 FAIL, "em-dash",
-                "Em dash (U+2014) makes voice agents sound wrong when spoken. "
-                "Use a hyphen, a colon, or split the sentence.",
+                "Em dash (U+2014). House style bans it, and on a CASCADED "
+                "pipeline it makes the TTS sound wrong (Chryst). NOTE: on true "
+                "speech-to-speech there is no TTS reading the text, and em dashes "
+                "in the agent's own transcript were confirmed inaudible on "
+                "grok-voice-think-fast-2.0 (2026-08-04). Kept as a FAIL because it "
+                "is free to fix, not because it is proven harmful on this stack.",
                 line=i,
             ))
 
