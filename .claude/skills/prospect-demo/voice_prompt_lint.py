@@ -39,7 +39,8 @@ REQUIRED_SECTIONS = {
     "role": ("role", "identity", "objective"),
     "personality": ("personality", "voice", "how you talk", "how you sound"),
     "context": ("context", "facts", "business"),
-    "instructions": ("instruction", "rules", "communication", "guideline"),
+    "instructions": ("instruction", "rules", "communication", "guideline",
+                     "guardrail", "hard limit"),
     "stages": ("stage", "flow", "script", "sheet", "call flow"),
 }
 RECOMMENDED_SECTIONS = {

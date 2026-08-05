@@ -92,11 +92,18 @@ Numbered and HIGH-LEVEL, with fields as sub-bullets. Do not write one numbered
 step per field: a flat list of twenty steps reads as an interrogation and drives
 robotic delivery. Group into 5-8 stages.
 
-1. **Greeting.** "<GREETING_VERBATIM - must match the agent's greeting field exactly>" Then let them say why they called before collecting anything.
+1. **Opening. Do not start collecting yet.** Three beats, and they are worth the thirty seconds.
+   - Ask what is going on and let them answer in their own words. React like a person before doing anything else.
+   - Say back what you heard so they know you got it, and confirm it is <THE_MATTER_YOU_HANDLE>. If it is something else, take a name and number, tell them the right person will call back, and do not run the questionnaire on them.
+   - Set the frame and ask permission, with an honest time estimate: "<e.g. I've got a set of questions the attorney needs answered, and it takes about ten minutes. Do you have that kind of time right now?>" If they cannot, or sound too tired or unwell, do not push: take a good number and the best time, and tell them who calls back and from what number.
 2. **<STAGE_NAME>.** <field>. <field>. <field>.
 3. **<STAGE_NAME>.** <opening line for this stage if it needs one>. Then: <field>. <field>.
 4. **<STAGE_NAME>.** <field>. <field>.
-5. **Close.** Check for blanks and go back for them. Then: "<CLOSING_LINE>" Say goodbye, then use end_call.
+5. **Close. The last answer is often "no", and that is not the end of the call.** Put the most-likely-negative optional field somewhere other than last if you can.
+   - Go back for anything still blank.
+   - Say the whole closing OUT LOUD: <NEXT_STEP>, and <THE_NUMBER_OR_DETAIL_THEY_MUST_ACT_ON>.
+   - Wait. Let them respond and say goodbye.
+   - Only then use end_call. If they have not heard <THE_NUMBER_OR_DETAIL> yet, the call is not finished.
 
 # Example interactions
 Short, varied SAMPLE PHRASES. Not multi-turn transcripts: those eat the attention

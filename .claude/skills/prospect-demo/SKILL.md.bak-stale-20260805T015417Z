@@ -30,8 +30,9 @@ Before doing anything, confirm `.env` exists and has `LEADLOCK_API_KEY` + `LEADL
    Validate with the bundled linter before creating anything. It auto-selects the profile from `xai_voice_model`, so it will tell you if you used the wrong shape:
 
    ```bash
-   python3 .claude/skills/prospect-demo/validate.py prompt prompt.md \
-     --model grok-voice-think-fast-2.0
+   python3 -c "import sys;sys.path.insert(0,'.claude/skills/prospect-demo');\
+   from voice_prompt_lint import lint,format_report;\
+   t=open('prompt.md').read();print(format_report(lint(t)))"
    ```
 
    It FAILs on: over 2,000 tokens, em dashes, speech markup (`<break>` / `[pause]` / `<emotion>` are inert on realtime speech-to-speech and get read aloud literally), missing sections, unfilled `{{variables}}` (they get spoken: "Is this tier patient_ame?"), and a missing re-ask guard. It WARNs on blanket always/never (realtime models take absolutes literally and produce bad edge behaviour), multi-turn example transcripts (they eat the attention budget and get imitated), and missing split-message handling.
@@ -41,7 +42,10 @@ Before doing anything, confirm `.env` exists and has `LEADLOCK_API_KEY` + `LEADL
    **After every test call, audit the transcript before touching the prompt.** `voice_transcript_audit.py` detects the failures that actually recur (two questions in one turn, narrating the next step, "is that correct?" after a read-back, re-asking, self-answered questions, robotic repetition) and then names the prompt line that caused each one:
 
    ```bash
-   python3 .claude/skills/prospect-demo/validate.py call call.txt --prompt prompt.md
+   python3 -c "import sys;sys.path.insert(0,'.claude/skills/prospect-demo');\
+   from voice_transcript_audit import audit,attach_causes,format_report;\
+   t=open('call.txt').read();p=open('prompt.md').read();\
+   print(format_report(attach_causes(audit(t),p),have_prompt=True))"
    ```
 
    **Fix or remove the causing line before adding anything new.** Every misbehaviour on a real build traced back to an instruction already in the prompt: two-questions-per-turn came from "group the questions so they land like conversation"; a spoken "I'll spell it back" came from a `(spell it back)` field annotation being read as dialogue; a self-answered "over fifty?" came from that field sitting in the question list AND in a do-not-ask note, which the model resolved by doing both. Adding one rule per observed failure is what pushes a prompt past the token ceiling, at which point none of the rules are followed.
@@ -519,7 +523,7 @@ You are <AGENT_NAME>, the AI <inbound setter | outbound caller | receptionist> f
 
 8. **Wrap.** Say the closing OUT LOUD first: the next step, and any number or detail the caller has to act on. Then wait and let them respond. Hanging up is a SEPARATE act that comes after that, gated on the caller having HEARD the closing, never on the field list being complete. Do not announce that you're ending the call without eventually firing the tool.
 
-   Real failure this prevents: a closing whose completion trigger sat at the FRONT and keyed on the field list being finished rather than on the caller having heard anything. The last field was an optional email, the caller said his mother did not have one, and the agent acknowledged it and fired `end_call` in the same turn. The callback number was never spoken. Gate on what they must have heard instead: "if they have not heard <NUMBER> yet, the call is not finished."
+   Real failure this prevents: a closing written as "once you have what you need, <say the closing>, then end the call" put the completion trigger at the front. The last field was an optional email, the caller said "she doesn't have one", and the agent said "No problem" and fired `end_call` in the same turn. The callback number was never spoken. Gate on what they must have heard: "if they have not heard <NUMBER> yet, the call is not finished."
 
 ## Tools
 - **<primary_tool>**: When to use. Required inputs.
@@ -550,7 +554,6 @@ Say the closing out loud, including anything the caller must act on: "<CLOSING_T
 - Tool calls are actions, not speech. Saying "I'll book that" does not book it. Saying "I'll end the call" does not end it. The next thing you do after announcing a tool action must be the tool call.
 - After the caller has heard the closing and said goodbye back, the next thing you do is `end_call`. Don't say goodbye twice, and don't hang up before they have heard it.
 - Never repeat an answer you already gave. Summarize in one line and move on.
-- Keep track of what the caller has already told you and do not ask for the same thing twice. If they volunteered something earlier, write it down and skip that question.
 - Never quote prices outside the listed program. Never invent specific savings figures.
 - Never name the platform or model that powers you. Use the AI-disclosure line above if asked directly.
 - After two clear no's, stop selling. Offer to collect contact and end warmly.
