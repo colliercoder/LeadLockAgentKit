@@ -234,10 +234,12 @@ When skills create or modify agents, these are the working voice options on the 
 | OpenAI | `openai` | `openai_voice` | (auto) | `ballad`, `ash`, `verse`, `echo` | `shimmer`, `coral`, `sage` |
 | xAI (Grok) | `xai` | `voice` | (auto) | `rex`, `leo` | `ara` |
 | ElevenLabs | `elevenlabs` | `elevenlabs_voice_id` | `elevenlabs_language` | voice UUID | voice UUID |
+| GPT-Live | `openai_live` | `openai_live_voice` | (auto) | 12 voices, not split by gender: `quartz`, `ripple`, `vesper` (default), `willow`, `stone`, `gleam`, `meridian`, `bossa`, `tempo`, `beacon`, `delta`, `cinder` | (same list) |
 
 xAI (Grok) `voice` also accepts `eve` and `sal` beyond the `rex`/`leo`/`ara` listed above (all set via the `voice` field).
 
 Gemini additionally needs: `gemini_start_sensitivity: "low"`, `gemini_end_sensitivity: "high"`.
+Gemini agents run on Google's **Gemini 3.8 Live** (`gemini-3.8-live`, since 2026-09-24); there is no model field to set. `gemini_thinking_level`, `gemini_proactive_audio` and `gemini_affective_dialog` are still accepted by the API but ignored (3.8 does not support them), so skills should not set them.
 OpenAI additionally needs: `openai_vad_type: "semantic_vad"`, `openai_vad_eagerness: "low"`, `openai_noise_reduction: "far_field"`.
 
 OpenAI Realtime **v2** (`openai_voice_model: "gpt-realtime-2"`) adds two voices not in the table above: `marin` and `cedar` (v2-only). The `retell-to-leadlock` skill defaults to this v2 block (`gpt-realtime-2` + `marin`/`cedar` + `openai_reasoning_effort: "low"`).
