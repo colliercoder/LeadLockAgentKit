@@ -12,7 +12,7 @@ Each entry: date, tags, evidence, rule, why, how to apply.
 
 Date: 2026-05-30
 Tags: skill:agent-to-agent-call-testing, type:best-practice, surface:call-metadata
-Evidence: user-sim `+14129101786` called agent-under-test `+14024486711`; the inbound call_log recorded `from_number = +14129101786` and the agent spoke it: "Hi there! I can see you're calling from (412) 910-1786." Confirmed in the transcript via `GET /calls/{id}`.
+Evidence: user-sim `+15555550100` called agent-under-test `+15555550101`; the inbound call_log recorded `from_number = +15555550100` and the agent spoke it: "Hi there! I can see you're calling from (555) 555-0100." Confirmed in the transcript via `GET /calls/{id}`.
 
 **Rule:** A real agent-to-agent call DOES produce an inbound `call_log` with a real
 `from_number`, so `{{caller_phone}}` (and contact intelligence / outbound context)

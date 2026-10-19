@@ -157,9 +157,9 @@ judge.** Read that file and for each case:
 3. Render **PASS** or **FAIL** with a one- or two-line transcript excerpt as proof.
 
 Example proof for `caller_phone`:
-> assistant: "Hi there! I can see you're calling from (412) 910-1786…"
+> assistant: "Hi there! I can see you're calling from (555) 555-0100…"
 > user: "what phone number am I calling from?"
-> assistant: "You're calling from (412) 910-1786." → **PASS**
+> assistant: "You're calling from (555) 555-0100." → **PASS**
 
 ---
 

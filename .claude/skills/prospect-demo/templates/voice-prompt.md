@@ -57,7 +57,7 @@ where the mistakes come from.
 COPY VERBATIM, then edit only the field list on the first line.
 
 - These get read back: <FIELDS_NEEDING_CONFIRMATION>.
-- Names: "Gauerke, spelled G - A - U - E - R - K - E."
+- Names: "Kowalski, spelled K - O - W - A - L - S - K - I."
 - Phone and account numbers in groups: "six one eight, five five five, zero one three four."
 - Say symbols as words: "at" not the @ sign.
 - Times as "one p.m.", not "1:00 PM". State the timezone once, not every time.

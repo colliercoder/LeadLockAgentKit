@@ -36,7 +36,7 @@ You don't need to memorize commands — just describe what you want.
     "Take this filled intake form and build a demo"
 
   prompt-tuner
-    "Tune my Sparky agent based on the last 20 calls"
+    "Tune my plumbing agent based on the last 20 calls"
     "Improve the prompt on [agent name]"
     "Why is my agent not booking?"
     "Run a rewrite on [agent]"

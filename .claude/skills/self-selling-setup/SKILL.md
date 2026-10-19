@@ -1,6 +1,6 @@
 ---
 name: self-selling-setup
-description: Walk an agency step-by-step through standing up the Leadlock self-selling GHL snapshot for their own business - from imported snapshot to a live, paying, hands-off system. Claude runs an intake interview, auto-fills every GHL custom value via the public API, hands over an ordered checklist for the GHL-UI-only steps (Stripe, products, contract, triggers, publishing), and verifies there are no gaps. Ships the token-grabber Chrome extension and the API scripts. Triggers on /self-selling-setup, set up the self-selling snapshot, configure the snapshot, get the snapshot ready, stand up the self-selling system, set up the AI receptionist snapshot, onboard our agency onto the snapshot, configure the imported snapshot, finish setting up the snapshot.
+description: Walk an agency step-by-step through standing up the Leadlock self-selling GHL snapshot for their own business - from imported snapshot to a live, paying, hands-off system. Claude runs an intake interview, auto-fills every GHL custom value via the public API, hands over an ordered checklist for the GHL-UI-only steps (Stripe, products, contract, triggers, publishing), and verifies there are no gaps. Ships the intake, the checklist and the API scripts. Triggers on /self-selling-setup, set up the self-selling snapshot, configure the snapshot, get the snapshot ready, stand up the self-selling system, set up the AI receptionist snapshot, onboard our agency onto the snapshot, configure the imported snapshot, finish setting up the snapshot.
 ---
 
 # Self-Selling Snapshot Setup
@@ -59,14 +59,15 @@ qa-passed -> live, confirming each field/tag/stage flips. Then go live for real 
 - `scripts/setup_values.py` - auto-fills custom values (GHL public API + your PIT, non-expiring)
 - `scripts/verify.py` - confirms no config gaps
 - `scripts/values.example.json` - the config template
-- `chrome-extension/` - a token-grabber for the **advanced** path: GHL's internal API (workflow edits)
-  needs a Firebase refresh token, not a PIT. Load `chrome-extension/` as an unpacked Chrome extension,
-  grab the token on an app.gohighlevel.com tab. For editing workflow nodes via that internal API, use
-  the **`ghl-workflow-api`** skill - this setup skill only needs the PIT for the normal config.
+- Leadlock extension (coming soon) - for the **advanced** path: GHL's internal API (workflow edits)
+  needs a session token, not a PIT. Big Dawg, our in-house agent, is building our own Leadlock
+  extension to capture it. Until it ships, capture the token by hand with the DevTools steps in the
+  **`ghl-workflow-api`** skill (`reference/token-capture.md`), and use that skill for workflow-node
+  edits - this setup skill only needs the PIT for the normal config.
 
 ## Notes
 - The PIT + public API path is the reliable, documented, non-expiring way to fill custom values - use it
-  for setup. The Chrome extension / internal API is only for advanced workflow-node edits (rarely needed
+  for setup. The internal API (Leadlock extension coming soon) is only for advanced workflow-node edits (rarely needed
   on a fresh snapshot).
 - Triggers and the contract's publish state are **UI-only** - the checklist flags every one, because a
   forgotten trigger or an unpublished contract silently breaks the flow.

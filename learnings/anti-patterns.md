@@ -10,7 +10,7 @@ Each entry includes: date, tags, evidence link, rule, why, how to apply.
 
 Date: 2026-05-13
 Tags: skill:prospect-demo, type:anti-pattern, surface:agent-config, integration:gohighlevel
-Evidence: Northern Mister Sparky build (Twin Cities, set correctly to `America/Chicago`); user surfaced the gotcha while testing a 1:30 booking
+Evidence: Brightline Electric build (Central time, set correctly to `America/Chicago`); user surfaced the gotcha while testing a 1:30 booking
 
 **Rule:** When building or editing an agent for a prospect, set `agent.timezone` to the **prospect's** local timezone, not the operator's. Infer it from the scrape (the city/state on the contact page). When ambiguous, stop and ask.
 
@@ -27,7 +27,7 @@ Evidence: Northern Mister Sparky build (Twin Cities, set correctly to `America/C
 
 Date: 2026-05-19
 Tags: skill:build-agent, type:anti-pattern, model:gpt-realtime-2, surface:system-prompt
-Evidence: agent `baef6000-6707-40c6-91d4-45086c7514cf`, call `74f62ec4-4982-4b66-a703-f14a07ced784` — transcript shows `end_call({"reason":"completed"})` fired at 24.45s, ~1.5s after a one-word misheard user utterance ("Biosite"). The prompt's scripted reaction was `"Thank you, I'll be here all week — well, until end_call fires."` and the greeting punchline ended `"AI ends call. Greatest exit of all time."` Both contained the literal tool name. After rewriting to remove all spoken references to tool names, the next test call held the line.
+Evidence: a demo agent test call — transcript shows `end_call({"reason":"completed"})` fired at 24.45s, ~1.5s after a one-word misheard user utterance ("Biosite"). The prompt's scripted reaction was `"Thank you, I'll be here all week — well, until end_call fires."` and the greeting punchline ended `"AI ends call. Greatest exit of all time."` Both contained the literal tool name. After rewriting to remove all spoken references to tool names, the next test call held the line.
 
 **Rule:** Never write the literal name of any tool (`end_call`, `transfer_call`, `book_appointment`, `search_knowledge_base`, `send_sms`, etc.) into ANY line of scripted dialogue in a system prompt — greetings, scripted responses, example reactions, closing lines, the lot. Tool names belong only in the `## Tools` section and in the policy/guardrail clauses, never in anything the agent is expected to say out loud.
 
@@ -45,7 +45,7 @@ Evidence: agent `baef6000-6707-40c6-91d4-45086c7514cf`, call `74f62ec4-4982-4b66
 
 Date: 2026-05-19
 Tags: skill:build-agent, type:anti-pattern, model:gpt-realtime-2, surface:greeting
-Evidence: same call as above (`74f62ec4-4982-4b66-a703-f14a07ced784`). The greeting was the "AI walks into a bar / AI ends call / greatest exit of all time" bit. Even rephrased away from the literal `end_call` tool name, the narrative verb "ends call" sits dangerously close to the tool invocation surface for V2 reasoning models. Subsequent rewrite changed the punchline to `"AI leaves. Greatest exit of all time."` — same comedic shape, no call-control verb.
+Evidence: same call as above. The greeting was the "AI walks into a bar / AI ends call / greatest exit of all time" bit. Even rephrased away from the literal `end_call` tool name, the narrative verb "ends call" sits dangerously close to the tool invocation surface for V2 reasoning models. Subsequent rewrite changed the punchline to `"AI leaves. Greatest exit of all time."` — same comedic shape, no call-control verb.
 
 **Rule:** Greetings and other scripted dialogue should avoid narrative phrasing that names call-control actions ("ends the call", "hangs up", "transfers you", "books the appointment"), even when phrased as story content rather than instruction. Use neutral synonyms ("walks out", "leaves", "wraps", "handing off") that don't map onto a tool the agent has.
 
@@ -62,7 +62,7 @@ Evidence: same call as above (`74f62ec4-4982-4b66-a703-f14a07ced784`). The greet
 
 Date: 2026-05-23
 Tags: skill:build-agent, type:anti-pattern, surface:system-prompt, context:live-demo
-Evidence: Big Dawg agent `cbdfa5b7-dfc6-4b50-b958-ff8eb0fed22e` built live during a Medellin meetup. First prompt draft told the agent "You are NOT on a phone call with one person, you are PERFORMING FOR A ROOM." Operator corrected: the agent is on an outbound 1:1 call, the room only hears it because the human picker-upper is on speakerphone. Rewrote with hybrid framing (1:1 conversation that's also being broadcast to a live audience) and operator approved.
+Evidence: a demo agent built live during an in-person meetup. First prompt draft told the agent "You are NOT on a phone call with one person, you are PERFORMING FOR A ROOM." Operator corrected: the agent is on an outbound 1:1 call, the room only hears it because the human picker-upper is on speakerphone. Rewrote with hybrid framing (1:1 conversation that's also being broadcast to a live audience) and operator approved.
 
 **Rule:** When building a voice agent for a live demo, do not write the system prompt as if the agent is addressing a room. Most live demos are outbound calls played on speaker. The agent IS in a 1:1 conversation; the audience is ambient. Use hybrid framing: "you're on a call with one person, but that phone is on speaker in front of an audience — engage the human directly, throw the occasional line to the room."
 
@@ -113,7 +113,7 @@ Evidence: During the Big Dawg live build, the initial `POST /agents` payload set
 
 Date: 2026-07-16
 Tags: skill:prospect-demo, type:anti-pattern, surface:tools_enabled
-Evidence: prospect-demo's default tool set includes `collect_contact` (Rule 21 and the Step 4 payload), and it round-trips into `tools_enabled` on create with no error. During the Northern Mister Sparky build the operator (platform owner) flagged it as "a function that doesn't exist" and removed it from the agent's prompt. The kit's own `build-agent` tool catalog does not list it; `LEADLOCKDOCS.json` does not enumerate tool names at all (even real tools like `check_availability` are absent), so the docs neither confirm nor deny it, the operator's word is the authority.
+Evidence: prospect-demo's default tool set includes `collect_contact` (Rule 21 and the Step 4 payload), and it round-trips into `tools_enabled` on create with no error. During the Brightline Electric build the operator (platform owner) flagged it as "a function that doesn't exist" and removed it from the agent's prompt. The kit's own `build-agent` tool catalog does not list it; `LEADLOCKDOCS.json` does not enumerate tool names at all (even real tools like `check_availability` are absent), so the docs neither confirm nor deny it, the operator's word is the authority.
 
 **Rule:** Do not put `collect_contact` in `tools_enabled` or reference it in a system prompt. The working default demo tool set is `end_call`, `book_appointment`, `check_availability`. For "caller will not book but wants a callback", use a real capture path (`schedule_callback` if enabled, or have the agent take details conversationally and rely on the transcript / CRM).
 

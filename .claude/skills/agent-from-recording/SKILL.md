@@ -1,11 +1,11 @@
 ---
 name: agent-from-recording
-description: Clone a real salesperson's call patterns into a voice AI agent. Takes a transcript (or audio file you've already transcribed), extracts the call flow, objection responses, personality, and closing patterns, then writes a Trejon-style prompt and creates the agent(s). Triggers on /agent-from-recording, build an agent from this call, build an agent from this recording, build an agent from this transcript, clone my best closer, clone my best salesperson, clone my best setter, clone my top SDR, turn this recording into an agent, turn this call into an agent, agent from transcript, agent from recording, mimic this salesperson, copy this rep's style, model an agent after this human.
+description: Clone a real salesperson's call patterns into a voice AI agent. Takes a transcript (or audio file you've already transcribed), extracts the call flow, objection responses, personality, and closing patterns, then writes a house-style prompt and creates the agent(s). Triggers on /agent-from-recording, build an agent from this call, build an agent from this recording, build an agent from this transcript, clone my best closer, clone my best salesperson, clone my best setter, clone my top SDR, turn this recording into an agent, turn this call into an agent, agent from transcript, agent from recording, mimic this salesperson, copy this rep's style, model an agent after this human.
 ---
 
 # Agent From Recording
 
-"Take my best salesperson's call and make an AI that sounds like them." Input: a call transcript (or text you've already transcribed). Output: a Trejon-style system prompt + 1-to-N agents that mirror the human's patterns.
+"Take my best salesperson's call and make an AI that sounds like them." Input: a call transcript (or text you've already transcribed). Output: a house-style system prompt + 1-to-N agents that mirror the human's patterns.
 
 The kit doesn't do speech-to-text itself — bring a transcript. If you need to transcribe an audio file first, use a tool like ElevenLabs Scribe v2, OpenAI Whisper, or paste into your platform's STT and bring the text here.
 
@@ -26,7 +26,7 @@ Confirm `./.env` has `LEADLOCK_API_KEY` and `LEADLOCK_API_URL`.
 2. **Strip personally identifying details** from the transcript before reusing. Names, phone numbers, full addresses, specific dollar amounts the human quoted. Generalize them in the prompt.
 3. **Don't mirror tactics the human shouldn't have done.** If the recording shows the salesperson dodging questions, using deceptive framing, or making unauthorized claims, do NOT bake those patterns in. Flag them to the user and ask before proceeding.
 4. **Preserve hard rules.** The generated prompt MUST have: one-question-at-a-time, end-call discipline, speak-numbers-as-words, AI-disclosure handler. Even if the human did 5-question stacks, the agent doesn't.
-5. **Trejon-style structure exactly.** Same skeleton as `prospect-demo`. No "CRITICAL RULES" header at the top. Guardrails section at the bottom only.
+5. **House-style structure exactly.** Same skeleton as `prospect-demo`. No "CRITICAL RULES" header at the top. Guardrails section at the bottom only.
 6. **Target 5K-9K chars.** Trim aggressive humor or context-specific banter that doesn't generalize.
 7. **Never name the platform** in the generated prompt. Use "our system."
 8. **Branch discipline: stay on main.** No `git checkout -b`.
@@ -97,7 +97,7 @@ GET /agents?limit=50
 
 Find one with `calendar_integration_id` set. Copy the calendar fields. If none, ask the user (A) wire a calendar first or (B) build without book_appointment.
 
-### Step 5 — Write the Trejon-style prompt
+### Step 5 — Write the house-style prompt
 
 Map the extracted patterns into the skeleton:
 

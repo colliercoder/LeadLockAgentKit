@@ -1,6 +1,6 @@
 """Audit a real voice-agent call transcript, then point at the prompt line that caused it.
 
-The lesson from the Drummond Law build (2026-08-03): every misbehaviour the
+The lesson from a law-firm demo build (2026-08-03): every misbehaviour the
 operator saw on a call was caused by a specific line already in the system
 prompt, not by the model being unruly. The instinct to ADD a rule naming the
 failure is backwards and grows the prompt past the point where a realtime model
