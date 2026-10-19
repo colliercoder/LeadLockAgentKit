@@ -59,15 +59,15 @@ qa-passed -> live, confirming each field/tag/stage flips. Then go live for real 
 - `scripts/setup_values.py` - auto-fills custom values (GHL public API + your PIT, non-expiring)
 - `scripts/verify.py` - confirms no config gaps
 - `scripts/values.example.json` - the config template
-- Leadlock extension (coming soon) - for the **advanced** path: GHL's internal API (workflow edits)
-  needs a session token, not a PIT. Big Dawg, our in-house agent, is building our own Leadlock
-  extension to capture it. Until it ships, capture the token by hand with the DevTools steps in the
-  **`ghl-workflow-api`** skill (`reference/token-capture.md`), and use that skill for workflow-node
-  edits - this setup skill only needs the PIT for the normal config.
+- Leadlock extension - for the **advanced** path: GHL's internal API (workflow edits) needs a session
+  token, not a PIT. The Leadlock extension is included in the Leadlock Launch Bundle. Without it,
+  capture the token by hand with the DevTools steps in the **`ghl-workflow-api`** skill
+  (`reference/token-capture.md`), and use that skill for workflow-node edits - this setup skill only
+  needs the PIT for the normal config.
 
 ## Notes
 - The PIT + public API path is the reliable, documented, non-expiring way to fill custom values - use it
-  for setup. The internal API (Leadlock extension coming soon) is only for advanced workflow-node edits (rarely needed
+  for setup. The internal API (Leadlock extension, in the Leadlock Launch Bundle) is only for advanced workflow-node edits (rarely needed
   on a fresh snapshot).
 - Triggers and the contract's publish state are **UI-only** - the checklist flags every one, because a
   forgotten trigger or an unpublished contract silently breaks the flow.
