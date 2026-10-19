@@ -24,7 +24,7 @@ Evidence: `PATCH https://leadlock-app.onrender.com/demos/{id}/` returned 307; fo
 
 Date: 2026-05-19
 Tags: api:agents, skill:build-agent, type:bug, model:openai-realtime
-Evidence: agent `baef6000-6707-40c6-91d4-45086c7514cf` — POSTed with `"openai_voice_model": "gpt-realtime-2"`; response returned `"gpt-realtime-1.5"`. Subsequent `PATCH /agents/{id}` with the same field returned `"gpt-realtime-2"` and a follow-up GET confirmed it stuck. Verified twice in one session.
+Evidence: a demo agent — POSTed with `"openai_voice_model": "gpt-realtime-2"`; response returned `"gpt-realtime-1.5"`. Subsequent `PATCH /agents/{id}` with the same field returned `"gpt-realtime-2"` and a follow-up GET confirmed it stuck. Verified twice in one session.
 
 **Rule:** When creating an agent that needs `openai_voice_model=gpt-realtime-2`, POST the agent first and then immediately PATCH `openai_voice_model` (and `openai_reasoning_effort` if non-default) in a second call. Do NOT trust the POST response — verify with a follow-up GET.
 
@@ -38,7 +38,7 @@ Evidence: agent `baef6000-6707-40c6-91d4-45086c7514cf` — POSTed with `"openai_
 
 Date: 2026-07-16
 Tags: api:agents, skill:build-agent, skill:prospect-demo, type:bug
-Evidence: agent `a2136520-df7f-4276-8dc9-a02388cda11e` (Northern Mister Sparky demo, Self Selling tenant). `POST /agents` sent `"max_call_duration_minutes": 10`; the create response AND a follow-up GET both returned `30`. `PATCH /agents/{id}` with `max_call_duration_minutes=10` returned 10 and a GET confirmed it stuck. Verified before/after in one session.
+Evidence: a demo agent (Brightline Electric demo, test tenant). `POST /agents` sent `"max_call_duration_minutes": 10`; the create response AND a follow-up GET both returned `30`. `PATCH /agents/{id}` with `max_call_duration_minutes=10` returned 10 and a GET confirmed it stuck. Verified before/after in one session.
 
 **Rule:** When you need a `max_call_duration_minutes` other than the plan default, POST the agent, then immediately PATCH `max_call_duration_minutes`. Do NOT trust the create response, GET-verify. This is the exact twin of the `openai_voice_model` bug above: `POST /agents` writes a default and silently ignores the create-body value, while `PATCH` honors it.
 

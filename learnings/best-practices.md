@@ -40,7 +40,7 @@ Evidence: `agent-to-agent-call-testing/harness.py` + `team_harness.py` defaulted
 
 Date: 2026-05-13
 Tags: skill:prospect-demo, type:pattern, helper-script
-Evidence: `.claude/skills/prospect-demo/find_logo.py`; verified working against `northernmistersparky.com` (Cloudflare-protected) — picked the 192×192 apple-touch-icon as avatar
+Evidence: `.claude/skills/prospect-demo/find_logo.py`; verified working against `brightlineelectric.example` (Cloudflare-protected) — picked the 192×192 apple-touch-icon as avatar
 
 **Rule:** When you need a prospect's logo, run `python3 .claude/skills/prospect-demo/find_logo.py <url> --download ./output/<slug>` instead of hand-grepping the HTML. The helper handles Cloudflare's basic block (browser User-Agent), parses `<link rel="apple-touch-icon">`, `<link rel="icon">`, og:image, and `<img class="logo">`, dedupes by URL, and returns two best-fit candidates — `avatar` (square) and `header` (rectangular).
 
@@ -60,7 +60,7 @@ Evidence: deployed bundle `https://app.leadlock.ai/assets/_slug_-DnMHePt3.js` re
 - `phone_caller_image` — URL to the avatar image (PNG/JPG, square). Replaces the agent-initials fallback.
 - `phone_accent_color` — hex color string (e.g. `"#FFC72C"`). Drives the call-arc ring color, the accept-button glow, and other accents. Defaults to `#3b82f6` (blue) when absent.
 
-Recipe (Northern Mister Sparky example):
+Recipe (Brightline Electric example):
 ```bash
 # 1. Find and download the logo
 python3 .claude/skills/prospect-demo/find_logo.py https://prospect.com --download ./output/<slug>
@@ -77,8 +77,8 @@ curl -X PATCH $API_URL/demos/$DEMO_ID \
   -d '{"config": {
         "phone_caller_image": "<url from step 2>",
         "phone_accent_color": "#FFC72C",
-        "display_name": "Northern Mister Sparky",
-        "landing_heading": "Talk to Maya — Northern Mister Sparky",
+        "display_name": "Brightline Electric",
+        "landing_heading": "Talk to Maya — Brightline Electric",
         "landing_subheading": "Tap to call: ...",
         "landing_instructions": "..."
       }}'
@@ -159,7 +159,7 @@ curl -s https://app.leadlock.ai/assets/_slug_-<hash>.js | grep -oE '\.[a-z][a-z_
 
 Date: 2026-05-19
 Tags: skill:build-agent, type:pattern, model:gpt-realtime-2, provider:openai
-Evidence: live YouTube demo agent `baef6000-6707-40c6-91d4-45086c7514cf` — switched from `ash` (legacy v1 voice) to `cedar` (V2-native voice) once the user pointed it out; the V2-native voice noticeably improved prosody and expressiveness on the test call.
+Evidence: a live YouTube demo agent — switched from `ash` (legacy v1 voice) to `cedar` (V2-native voice) once the user pointed it out; the V2-native voice noticeably improved prosody and expressiveness on the test call.
 
 **Rule:** When creating an agent with `voice_provider=openai` and `openai_voice_model=gpt-realtime-2`, default to a V2-native voice (currently `cedar` or `marin`) rather than the legacy v1 voices (`alloy`, `ash`, `ballad`, `coral`, `echo`, `sage`, `shimmer`, `verse`). Only fall back to a legacy voice if the user explicitly requests one or if voice continuity with an existing V1.5 agent matters.
 
@@ -176,7 +176,7 @@ Evidence: live YouTube demo agent `baef6000-6707-40c6-91d4-45086c7514cf` — swi
 
 Date: 2026-05-19
 Tags: skill:build-agent, type:pattern, model:gpt-realtime-2, surface:vad
-Evidence: live YouTube demo agent `baef6000-6707-40c6-91d4-45086c7514cf` — the user manually changed `openai_vad_eagerness` from `low` (the kit's default) to `auto` after the first test call felt awkwardly paced. The follow-up call held conversational rhythm better.
+Evidence: a live YouTube demo agent — the user manually changed `openai_vad_eagerness` from `low` (the kit's default) to `auto` after the first test call felt awkwardly paced. The follow-up call held conversational rhythm better.
 
 **Rule:** For conversational demo or receptionist agents where the human user may pause, laugh, react slowly, or talk to someone off-mic mid-call, set `openai_vad_eagerness=auto` rather than the kit's `low` default. `low` is meant for production qualifying agents where being extra patient is safer; `auto` lets the model decide based on context.
 
@@ -194,7 +194,7 @@ Evidence: live YouTube demo agent `baef6000-6707-40c6-91d4-45086c7514cf` — the
 
 Date: 2026-05-19
 Tags: skill:build-agent, skill:call-audit, skill:prompt-tuner, type:debug-pattern, surface:transcript
-Evidence: call `74f62ec4-4982-4b66-a703-f14a07ced784` — `transcript` field contained an ordered list of `{role, content, timestamp}` entries (plus `tool_args`/`tool_result` for tool roles), which pinpointed `end_call` firing at 24.45s, ~1.5s after a one-word misheard user utterance. Without the transcript, we'd have been guessing at AMD vs silence vs prompt issue. With it, the root cause was immediate.
+Evidence: a test call — `transcript` field contained an ordered list of `{role, content, timestamp}` entries (plus `tool_args`/`tool_result` for tool roles), which pinpointed `end_call` firing at 24.45s, ~1.5s after a one-word misheard user utterance. Without the transcript, we'd have been guessing at AMD vs silence vs prompt issue. With it, the root cause was immediate.
 
 **Rule:** Whenever a call ends unexpectedly (too soon, too late, dropped, weird tool firing, missed booking), the FIRST diagnostic step is `GET /calls/{id}` and read the `transcript` array. The transcript shows role (`assistant` / `user` / `tool` / `tool_result`), content, timestamp (seconds from start), and for tool roles also `tool_name`, `tool_args`, and `tool_result`. Scan for the exact moment things went wrong and the immediate preceding turn — that's almost always the cause.
 
@@ -221,7 +221,7 @@ Date: 2026-05-19
 Tags: type:docs-meta, file:LEADLOCKDOCS.json, kit-rule
 Evidence: User explicitly designated `LEADLOCKDOCS.json` as the canonical reference (2026-05-19). During this session, the file was updated twice mid-session by the user (adding `openai_voice_model`, then updating `openai_voice` description to enumerate cedar/marin) — both updates landed in `LEADLOCKDOCS.json`, neither in `openapi-spec.json` or `leadlock-docs.md`. The latter two files at the kit root were not refreshed and are now drifted.
 
-**Rule:** When referencing the Leadlock API docs from any skill, helper script, or new code in this kit, point at `/Users/danielgauerke/Projects/LeadLockAgentKit/LEADLOCKDOCS.json` (or just `LEADLOCKDOCS.json` if working from the kit root). Do not reference `leadlock-docs.md` or `openapi-spec.json` in new content. The latter two are kept on disk for now but are slightly older snapshots — drift will accumulate.
+**Rule:** When referencing the Leadlock API docs from any skill, helper script, or new code in this kit, point at `LEADLOCKDOCS.json` at the kit root. Do not reference `leadlock-docs.md` or `openapi-spec.json` in new content. The latter two are kept on disk for now but are slightly older snapshots — drift will accumulate.
 
 **Why:** The user maintains `LEADLOCKDOCS.json` as the live export from the platform. The other two files were earlier exports and don't get updated when fields are added or descriptions are corrected. Skills that reference the stale files will give wrong answers about new fields (e.g. `openai_voice_model`, `openai_reasoning_effort`, V2-only voices). The user has also stated they will refresh `LEADLOCKDOCS.json` as the platform changes — so it's the live contract.
 
@@ -237,7 +237,7 @@ Evidence: User explicitly designated `LEADLOCKDOCS.json` as the canonical refere
 
 Date: 2026-05-23
 Tags: skill:build-agent, type:pattern, model:gpt-realtime-2, surface:vad
-Evidence: Big Dawg outbound demo (agent `cbdfa5b7-dfc6-4b50-b958-ff8eb0fed22e`). Initial config set `openai_vad_eagerness: "low"` (under the false assumption the agent would be "performing to a room" and need to ride audience laughter). Operator changed to `high` for the live outbound call to a single picker-upper. Existing learning (2026-05-19) said "use `auto` for conversational/demo agents" — that was for inbound web-widget demos with potentially ambient noise. Outbound 1:1 is different.
+Evidence: an outbound demo agent. Initial config set `openai_vad_eagerness: "low"` (under the false assumption the agent would be "performing to a room" and need to ride audience laughter). Operator changed to `high` for the live outbound call to a single picker-upper. Existing learning (2026-05-19) said "use `auto` for conversational/demo agents" — that was for inbound web-widget demos with potentially ambient noise. Outbound 1:1 is different.
 
 **Rule:** For outbound voice agents on `gpt-realtime-2` calling a single human (including live demos played on speaker), set `openai_vad_eagerness: "high"`. The agent needs snappy turn-taking with one person on a phone line. Reserve `auto` for inbound conversational demos and `low` only when the agent genuinely needs to ride extended pauses (long-form storytelling, multi-party crowd interaction directly).
 
@@ -311,7 +311,7 @@ Evidence: commit 194c229
 
 Date: 2026-07-16
 Tags: api:demos, skill:prospect-demo, type:pattern, http:timeout
-Evidence: `POST /demos/import-from-url` for `northernmistersparky.com` timed out at a 30s HTTP client timeout twice, then succeeded at ~150s. The endpoint runs the Jina Reader scrape plus an xAI extraction pass across multiple pages (homepage + /about + several /areas-we-serve/*), so wall-clock routinely exceeds 30s.
+Evidence: `POST /demos/import-from-url` for `brightlineelectric.example` timed out at a 30s HTTP client timeout twice, then succeeded at ~150s. The endpoint runs the Jina Reader scrape plus an xAI extraction pass across multiple pages (homepage + /about + several /areas-we-serve/*), so wall-clock routinely exceeds 30s.
 
 **Rule:** When calling `POST /demos/import-from-url` (or `/agents/wizard/import-website`), set the HTTP client timeout to at least 120s. The common 30s default times out on real multi-page sites, and a naive retry just times out again.
 

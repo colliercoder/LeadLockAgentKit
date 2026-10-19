@@ -6,20 +6,20 @@ A growing library of Claude Code skills for Leadlock agency owners. Run them wit
 
 | Skill | What it does |
 |---|---|
-| `build-agent` | Guided end-to-end builder for a single voice agent. Discovers your phones + GHL calendars on the account, asks the ~10 questions that actually matter, picks smart defaults for the rest, generates a Trejon-style prompt, creates the agent, optionally assigns a phone, and offers a test call. |
+| `build-agent` | Guided end-to-end builder for a single voice agent. Discovers your phones + GHL calendars on the account, asks the ~10 questions that actually matter, picks smart defaults for the rest, generates a house-style prompt, creates the agent, optionally assigns a phone, and offers a test call. |
 | `prospect-demo` | Build voice agent demos for a prospect from a URL or a filled intake form. Scrapes the site, writes the prompt, creates 1-to-N agents across voice models (Gemini, OpenAI, Grok, ElevenLabs) for A/B, returns live shareable URLs that embed in any GoHighLevel site. Ships with 12 intake email templates (generic + 11 verticals) you can send to prospects. |
 | `prompt-tuner` | Tune an agent's system prompt based on real call performance. Pulls recent calls, runs AI analysis, surfaces failure patterns, proposes revisions, and applies them on confirmation. The iteration loop after demos go live. |
 | `call-audit` | Score recent calls, identify patterns, generate a coaching plan. Read-only weekly review. Outputs a Markdown scorecard you can share with the team. |
 | `knowledge-base-builder` | Build a searchable KB for an agent from URLs (auto-crawled), FAQ documents (auto-generated into Q&A), CSVs (parsed into rows), or markdown. Attaches to agents and enables the `search_knowledge_base` tool. |
 | `subaccount-onboarding` | **Agency-tier only.** Onboard a new client end-to-end: create the sub-account, set pricing economics, assign integrations, copy a template agent, send the welcome invite. Collapses the 30-minute UI workflow into one command. |
-| `agent-from-recording` | Clone a real salesperson into a voice AI. Paste a call transcript, the skill extracts the call flow, objection responses, and closing patterns, then writes a Trejon-style prompt and creates 1-to-N A/B agents. |
+| `agent-from-recording` | Clone a real salesperson into a voice AI. Paste a call transcript, the skill extracts the call flow, objection responses, and closing patterns, then writes a house-style prompt and creates 1-to-N A/B agents. |
 | `agent-to-agent-call-testing` | Verify your agents on a **real call** — two of your agents call each other over Twilio so call-time features (the caller's-phone-number variable, greetings, end-call, agent-team transfers) are proven against the true production path, not faked by a simulator. Guided wizard: pick two numbers, pick a test, place the call, get a PASS/FAIL with the transcript as proof. Also benchmarks voice latency per provider. |
 | `retell-to-leadlock` | Port a Retell AI agent into Leadlock. Pulls the Retell LLM definitions, consolidates an orchestrator + its `agent_swap` sub-agents into ONE Leadlock prompt (Leadlock has no agent-to-agent transfer yet), recreates every custom HTTP tool as a Leadlock custom function (bridging the webhook-envelope difference when needed), maps phone transfers + end-call, and verifies booking/transfer/end-call live. Needs `RETELL_API_KEY` in `.env` alongside your Leadlock key. |
 | `talking-website` | Turn any website into a talking website. Creates a voice agent the visitor clicks and speaks to that **controls the page** (navigate, scroll, jump to a section, spotlight, fill, click), **books on the calendar**, **captures the lead to the CRM**, and logs every call in Leadlock — minutes bill to the account. Ships a drop-in `voice-agent.js` (vanilla, works on WordPress / GHL / any framework) + a `provision.py` helper. Grok/OpenAI only for page control. |
 | `a2p-registration` | Get your business registered for **A2P 10DLC** so US carriers deliver your SMS instead of silently filtering it. Walks all three layers in order (Customer Profile, Brand, Campaign) and fills every field for a **one-shot approval** using templates from a campaign that passed after three real rejections (30896, then 30886, then 30891). Ships the full Twilio reference library (use cases, every error code, consent rules, throughput, prohibited content) plus a stdlib generator that turns your brand details into a copy-paste answer sheet. Triggers when texts aren't delivering or a campaign/brand gets rejected. |
 | `sales-presentation` | Build a branded, client-facing **sales deck** that pitches an AI voice-agent system to any business in any industry. One standalone dark-themed HTML page (single-scroll, not a slideshow) built from a reusable component library: hero, lead-journey flowcharts, stat grids, capability and compliance cards, unit economics, CTA. Give a logo, two brand colors, the client name, and the use-case; the deck rebrands in one place (the `:root` block) and the copy is rewritten for that industry. Ships a fill-in template plus a worked HVAC example. |
 | `ghl-workflow-api` | Read and write **GoHighLevel workflows** through GHL's private backend API with a captured browser session token, no clicking through the builder. List workflows, dump any workflow node-by-node, audit every workflow for broken references (bad pipeline/stage, dead sub-workflow links, empty webhook samples, missing email templates), and bulk-edit action-node attributes then publish. Stdlib-only Python. Ships the token-capture guide, endpoint + JSON-anatomy reference, and four scripts (core helper, writer, auditor, tracer). Unofficial API: tokens expire hourly and triggers stay UI-only. |
-| `self-selling-setup` | Walk an agency step-by-step through standing up the **self-selling GHL snapshot** for their own business: from an imported snapshot to a live, paying, hands-off system. Claude runs an intake interview, **auto-fills every GHL custom value** via the public API + a Private Integration Token, hands over an ordered checklist for the GHL-UI-only steps (Stripe, products, contract, triggers, publishing) with all the gotchas baked in, and verifies there are no config gaps. Ships the intake, the checklist, a token-grabber Chrome extension, and stdlib setup/verify scripts. |
+| `self-selling-setup` | Walk an agency step-by-step through standing up the **self-selling GHL snapshot** for their own business: from an imported snapshot to a live, paying, hands-off system. Claude runs an intake interview, **auto-fills every GHL custom value** via the public API + a Private Integration Token, hands over an ordered checklist for the GHL-UI-only steps (Stripe, products, contract, triggers, publishing) with all the gotchas baked in, and verifies there are no config gaps. Ships the intake, the checklist, and stdlib setup/verify scripts. The Leadlock extension for the advanced workflow-edit path is coming soon. |
 
 **Setup helpers** (auto-fire when needed):
 
@@ -82,7 +82,7 @@ check my setup                              → verifies your API key works
 "Make a voice agent demo for [business name]"
     → prospect-demo
 
-"Tune my Sparky agent based on the last 20 calls"
+"Tune my plumbing agent based on the last 20 calls"
 "Why is my agent not booking?"
     → prompt-tuner
 
@@ -145,3 +145,7 @@ Then write the skill body the way you'd brief a colleague. Claude reads it on in
 - **`401 Unauthorized`** — Your `LEADLOCK_API_KEY` is wrong or expired. Regenerate it in the dashboard.
 - **`Connection refused`** — Check `LEADLOCK_API_URL` matches the host in `.env.example`.
 - **Skill doesn't trigger** — Make sure you ran `claude` from inside the kit directory so `.claude/skills/` is in scope.
+
+## License
+
+Copyright (c) 2026 Leadlock LLC. Free to use and modify to build agents on the Leadlock platform. Redistribution or resale of this kit, in whole or in part, is not permitted. See [LICENSE](LICENSE).

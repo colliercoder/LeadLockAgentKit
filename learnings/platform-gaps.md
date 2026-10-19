@@ -69,7 +69,7 @@ Evidence: `openapi-spec.json` (492KB, 283 paths) and `LEADLOCKDOCS.json` (910KB,
 
 Date: 2026-05-19
 Tags: skill:build-agent, type:platform-gap, file:LEADLOCKDOCS.json, model:gpt-realtime-2
-Evidence: `LEADLOCKDOCS.json` → `AgentCreate.properties.openai_voice.description` reads `"OpenAI voice ID (alloy, ash, ballad, coral, echo, sage, shimmer, verse)"`. Field schema is `{"type": "string"}` with no pattern restriction. Setting `openai_voice: "cedar"` via PATCH on agent `baef6000-6707-40c6-91d4-45086c7514cf` returned 200 and the value persisted; a follow-up GET confirmed `openai_voice: "cedar"`. The user named `marin` as a second V2-only voice but it wasn't probed in this session.
+Evidence: `LEADLOCKDOCS.json` → `AgentCreate.properties.openai_voice.description` reads `"OpenAI voice ID (alloy, ash, ballad, coral, echo, sage, shimmer, verse)"`. Field schema is `{"type": "string"}` with no pattern restriction. Setting `openai_voice: "cedar"` via PATCH on a demo agent returned 200 and the value persisted; a follow-up GET confirmed `openai_voice: "cedar"`. The user named `marin` as a second V2-only voice but it wasn't probed in this session.
 
 **Rule:** When building an agent with `openai_voice_model=gpt-realtime-2`, prefer the V2-native voices (`cedar`, `marin`, and likely others) over the legacy v1 voices listed in the schema description. The schema description is wrong by omission; treat the documented list as a non-exhaustive sample, not a closed enum.
 

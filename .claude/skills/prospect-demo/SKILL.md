@@ -57,7 +57,7 @@ Before doing anything, confirm `.env` exists and has `LEADLOCK_API_KEY` + `LEADL
 7. **Demo channel defaults to `orb`** for showpiece voice demos. Only use `web`, `phone`, `fb_lead`, or `messenger` when the intake explicitly asks for that surface.
 8. **Recording disclosure off by default on demos** (`enable_recording_disclosure=false`, `recording_enabled=false`). Flip back on when shipping to a real outbound line.
 9. **Confirm ambiguous names with the user before building.** Intake forms often contradict themselves. Stop and ask.
-10. **Use the Trejon-style template structure exactly** (see `## Shared prompt skeleton`). Don't invent your own structure. Don't hoist a "CRITICAL RULES" section to the top - it duplicates Guardrails.
+10. **Use the house-style template structure exactly** (see `## Shared prompt skeleton`). Don't invent your own structure. Don't hoist a "CRITICAL RULES" section to the top - it duplicates Guardrails.
 11. **Length target depends on the model.** On `grok-voice-think-fast-*`: aim UNDER 2,000 tokens (~8,000 chars) and prefer the low end. A validated 39-field legal intake is about 1,300 tokens; there is no "too short" floor on think-fast, because anything you cut is scaffolding the model does not need. On GPT realtime / `grok-voice-fast-1.0`: 5K-9K chars, under 3K usually means missing context, over 10K is bloat.
 12. **No dynamic variables (`{{...}}`) for cold inbound prospects.** Reserve for stateful agents that pull per-session data.
 13. **Numbered Call Flow with concrete quoted phrases.** Each stage has the actual opening line in quotes the agent can speak. Don't write `"ask about their needs"` - write the actual question in quotes.
@@ -196,7 +196,7 @@ BASE = {
     "recording_enabled": False,
     "max_call_duration_minutes": 10,
     "greeting": "<NATIVE_LANGUAGE_GREETING - single open question that matches Call Flow Step 1>",
-    "system_prompt": "<FILLED_TREJON_STYLE_PROMPT>",
+    "system_prompt": "<FILLED_HOUSE_STYLE_PROMPT>",
     "tools_enabled": ["end_call", "book_appointment", "check_availability"],
     "calendar_provider": "<from step 2>",
     "calendar_id": "<from step 2>",

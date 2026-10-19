@@ -7,9 +7,9 @@ while you build (survey, contract, agents) and filled in on a second pass.
 ## A. Up front (answer these first)
 | Question | Fills custom value | Example |
 |---|---|---|
-| What's your agency / business name? | `your_business_name` | Summit AI |
-| Who's the sender on emails (name)? | `your_name` | Dan at Summit AI |
-| Sender email? | `your_email` | dan@summitai.com |
+| What's your agency / business name? | `your_business_name` | Your Agency |
+| Who's the sender on emails (name)? | `your_name` | Alex at Your Agency |
+| Sender email? | `your_email` | you@youragency.com |
 | What should the AI call itself? | `ai_assistant_name` | Maya |
 | One-time setup / build fee? | `setup_fee` | $1,000 |
 | Monthly retainer? | `monthly_retainer` | $1,200 |

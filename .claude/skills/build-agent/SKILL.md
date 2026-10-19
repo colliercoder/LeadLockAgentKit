@@ -1,11 +1,11 @@
 ---
 name: build-agent
-description: Build a fully-configured voice agent end-to-end via guided Q&A. Discovers existing phone numbers and GHL calendars on the account, asks for the ~10 inputs that actually matter, picks smart defaults for everything else, generates a Trejon-style system prompt, creates the agent, optionally assigns a phone number, and offers a test call. Triggers on /build-agent, build me an agent, build an agent, create an agent, spin up a new agent, make a new agent, set up a new agent, new agent for [name], wizard for an agent, guided agent build, configure an agent, agent setup, build agent for inbound, build agent for outbound, build a receptionist, build a setter, build a qualifier.
+description: Build a fully-configured voice agent end-to-end via guided Q&A. Discovers existing phone numbers and GHL calendars on the account, asks for the ~10 inputs that actually matter, picks smart defaults for everything else, generates a house-style system prompt, creates the agent, optionally assigns a phone number, and offers a test call. Triggers on /build-agent, build me an agent, build an agent, create an agent, spin up a new agent, make a new agent, set up a new agent, new agent for [name], wizard for an agent, guided agent build, configure an agent, agent setup, build agent for inbound, build agent for outbound, build a receptionist, build a setter, build a qualifier.
 ---
 
 # Build Agent (guided)
 
-Comprehensive guided builder for a voice agent. Asks the user the ~10 questions that actually shape behavior, auto-discovers phone numbers and GHL calendars on the tenant, generates a Trejon-style system prompt, creates the agent, optionally assigns a phone number, and optionally places a test call to verify.
+Comprehensive guided builder for a voice agent. Asks the user the ~10 questions that actually shape behavior, auto-discovers phone numbers and GHL calendars on the tenant, generates a house-style system prompt, creates the agent, optionally assigns a phone number, and optionally places a test call to verify.
 
 This skill is for "I want to spin up a real agent for X." For prospect A/B demos use `prospect-demo` instead — different shape (multi-model, demo configs, shareable URLs).
 
@@ -31,7 +31,7 @@ Then probe `GET /tenants/me`. Capture `tenant_type` (sub_account vs agency) and 
 2. **Never use the word "closer"** in generated prompts or copy. Use "team member" / "specialist" / "funding specialist".
 3. **Confirmation gate before mutation.** Show the full plan (agent spec summary + phone assignment + test call intent) and require an explicit yes before `POST /agents`. Do not auto-confirm.
 4. **Smart-default heavy.** Ask the ~10 essential questions. Pick sane defaults for the other 60+ fields on `AgentCreate`. Only show advanced options if the user says "show advanced" or "I want to tune VAD/temperature/timeouts/AMD".
-5. **Trejon-style prompt template, exactly.** Mirror the section order from `prospect-demo` (`## Role`, `## Personality`, `## Context`, `## Call Flow`, `## Tools`, `## Handling Common Situations`, `## Closing Line`, `## Guardrails`). See `## Prompt skeleton` at the bottom.
+5. **House-style prompt template, exactly.** Mirror the section order from `prospect-demo` (`## Role`, `## Personality`, `## Context`, `## Call Flow`, `## Tools`, `## Handling Common Situations`, `## Closing Line`, `## Guardrails`). See `## Prompt skeleton` at the bottom.
 6. **Greeting must exactly match the agent's first spoken line in Call Flow.** Single open-ended question, no compound questions. The `greeting` and `greeting_outbound` fields are stored separately — fill the right one based on `agent_mode`.
 7. **Calendar config: discover, don't guess.** Run the GHL discovery flow (Step 3). If no integrations exist, build with `collect_contact` only and tell the user the agent has no booking capability.
 8. **Tools default depends on mode.**
