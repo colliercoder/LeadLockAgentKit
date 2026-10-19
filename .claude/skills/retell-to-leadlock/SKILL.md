@@ -7,7 +7,7 @@ description: Port a Retell AI agent (or a Retell orchestrator + its transfer/sub
 
 Recreate a Retell agent as a working Leadlock agent. Handles the common Retell pattern — an orchestrator that `agent_swap`s to specialist sub-agents — by **collapsing it into a single Leadlock prompt** (Leadlock has no agent-to-agent transfer), preserving every tool's functionality, and verifying booking/transfer/end-call end to end. All work is HTTP: Retell read-only, Leadlock create/patch.
 
-**Offline Retell reference:** a full copy of Retell's API docs ships in this skill folder as `retelldocs.md`. Consult it for any Retell endpoint, tool `type`, or field you don't recognize (`agent_swap`, `extract_dynamic_variable`, `args_at_root`, etc.). The live Retell API (Steps 1-2) remains the source of truth for the user's actual config; the file is for understanding shapes. For Leadlock shapes, use `LEADLOCKDOCS.json` at the kit root.
+**Retell reference:** Retell's public docs at https://docs.retellai.com. Consult them for any Retell endpoint, tool `type`, or field you don't recognize (`agent_swap`, `extract_dynamic_variable`, `args_at_root`, etc.). The live Retell API (Steps 1-2) remains the source of truth for the user's actual config; the docs are for understanding shapes. For Leadlock shapes, use `LEADLOCKDOCS.json` at the kit root.
 
 ## When to invoke
 
