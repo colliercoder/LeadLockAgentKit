@@ -73,6 +73,11 @@ You don't need to memorize commands — just describe what you want.
     "Benchmark voice latency across providers"
     "Test an agent-team transfer"
 
+  lead-finder   (needs APIFY_TOKEN in .env; TREG + Reoon optional)
+    "Find roofers in Austin TX"
+    "Which HVAC companies in Phoenix are running Facebook ads?"
+    "Build me a lead list with owner emails"
+
   add-to-learnings
     "/add-to-learnings"
     "Save this learning"

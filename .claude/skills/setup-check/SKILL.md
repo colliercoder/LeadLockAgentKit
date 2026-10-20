@@ -52,6 +52,7 @@ Verify both keys exist:
 - `LEADLOCK_API_KEY` — required
 - `LEADLOCK_API_URL` — required (default to `https://leadlock-app.onrender.com` if missing)
 - `RETELL_API_KEY` — optional; only the `retell-to-leadlock` skill needs it (the source platform, read-only). Ignore it if you're not porting from Retell.
+- `APIFY_TOKEN`, `TREG_TOKEN`, `TREG_ORG`, `REOON_API_KEY`: optional; only the `lead-finder` skill uses them. `APIFY_TOKEN` is the one it needs; TREG (token plus team slug) adds owner names and Reoon adds email verification. A missing or placeholder value is a warning, never a failure: report which are set (never their values) and keep going.
 
 If `LEADLOCK_API_KEY` is missing or still contains the placeholder `sk_live_paste_your_key_here`, stop with:
 
@@ -103,6 +104,7 @@ except Exception as e:
     ✓ agent-to-agent-call-testing
     <✓ or ✗> retell-to-leadlock  (requires RETELL_API_KEY in .env)
     <✓ or ✗> subaccount-onboarding  (requires agency-tier key — you are: <tenant_type>)
+    <✓ or ⚠> lead-finder  (needs APIFY_TOKEN; TREG_TOKEN + TREG_ORG and REOON_API_KEY optional, warn only)
     ✓ kit-audit  (maintainer self-check — no key needed for the static half)
 
   Try: "Build a demo for https://example.com"
