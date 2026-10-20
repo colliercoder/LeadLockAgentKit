@@ -73,6 +73,11 @@ You don't need to memorize commands — just describe what you want.
     "Benchmark voice latency across providers"
     "Test an agent-team transfer"
 
+  pick-your-offer   (no API key needed)
+    "Help me pick an offer"
+    "I sell voice agents to plumbers in Denver. Write my offer."
+    "How much should I charge my first client?"
+
   add-to-learnings
     "/add-to-learnings"
     "Save this learning"
