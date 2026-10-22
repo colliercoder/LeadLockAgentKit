@@ -104,6 +104,8 @@ except Exception as e:
     <✓ or ✗> retell-to-leadlock  (requires RETELL_API_KEY in .env)
     <✓ or ✗> subaccount-onboarding  (requires agency-tier key — you are: <tenant_type>)
     ✓ pick-your-offer  (no key needed)
+    ✓ connect-n8n  (no Leadlock key needed to connect)
+    <✓ or ✗> install-addon  (needs a paid add-on in ./addons/)
     ✓ kit-audit  (maintainer self-check — no key needed for the static half)
 
   Try: "Build a demo for https://example.com"

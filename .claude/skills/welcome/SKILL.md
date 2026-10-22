@@ -78,6 +78,13 @@ You don't need to memorize commands — just describe what you want.
     "I sell voice agents to plumbers in Denver. Write my offer."
     "How much should I charge my first client?"
 
+  connect-n8n
+    "Connect n8n" / "Set up the n8n MCP"
+    Lets Claude build n8n workflows, the backend for custom functions.
+
+  install-addon   (paid add-ons in ./addons/)
+    "Install my add-on" / "I bought the Launch Bundle"
+
   add-to-learnings
     "/add-to-learnings"
     "Save this learning"

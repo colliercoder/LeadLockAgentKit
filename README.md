@@ -21,6 +21,8 @@ A growing library of Claude Code skills for Leadlock agency owners. Run them wit
 | `ghl-workflow-api` | Read and write **GoHighLevel workflows** through GHL's private backend API with a captured browser session token, no clicking through the builder. List workflows, dump any workflow node-by-node, audit every workflow for broken references (bad pipeline/stage, dead sub-workflow links, empty webhook samples, missing email templates), and bulk-edit action-node attributes then publish. Stdlib-only Python. Ships the token-capture guide, endpoint + JSON-anatomy reference, and four scripts (core helper, writer, auditor, tracer). Unofficial API: tokens expire hourly and triggers stay UI-only. |
 | `self-selling-setup` | Walk an agency step-by-step through standing up the **self-selling GHL snapshot** for their own business: from an imported snapshot to a live, paying, hands-off system. Claude runs an intake interview, **auto-fills every GHL custom value** via the public API + a Private Integration Token, hands over an ordered checklist for the GHL-UI-only steps (Stripe, products, contract, triggers, publishing) with all the gotchas baked in, and verifies there are no config gaps. Ships the intake, the checklist, and stdlib setup/verify scripts. The Leadlock extension is included in the Leadlock Launch Bundle. |
 | `pick-your-offer` | The **pick-your-offer prompt pack** from course video 2b. Coaches you from "what should I sell?" to a **one-sentence offer, a first setup price and a monthly price** in about an hour: tests your niche, builds the offer only from what Leadlock delivers today, runs the four value-equation questions one at a time, and sets a setup-plus-monthly price ladder. Writes the finished offer to `./output/` and ships copy-paste prompts for any Claude chat. No API key needed. |
+| `connect-n8n` | Connect Claude Code to **n8n** through n8n's built-in MCP server, so Claude can build, edit and run n8n workflows in plain English. The fastest backend for Leadlock custom functions: webhook in, look anything up, short answer back to the agent. Covers n8n Cloud vs self-hosted, OAuth or token, and verifies the connection. |
+| `install-addon` | Install a **paid add-on** you dropped into `addons/` (today: the Leadlock Launch Bundle, a GHL CLI with its Claude skill plus the Leadlock GHL Connector Chrome extension). Installs it, links its skill, reuses your GHL keys, loads the extension. Add-on files stay gitignored. |
 
 **Setup helpers** (auto-fire when needed):
 
@@ -45,15 +47,53 @@ Open it in a browser. Arrow keys / spacebar to navigate. Six slides:
 5. White-label partner pitch
 6. CTA
 
+## Before you start
+
+You need three things on your computer:
+
+1. **Claude Code** (needs a paid Claude plan: Pro, Max, Team or Enterprise). On Mac or Linux, open a terminal and run:
+
+   ```bash
+   curl -fsSL https://claude.ai/install.sh | bash
+   ```
+
+   On Windows PowerShell: `irm https://claude.ai/install.ps1 | iex`. Then run `claude` once and log in through the browser. Full guide: https://code.claude.com/docs/en/setup
+2. **Git**, to download the kit. Macs prompt you to install it the first time you run `git`. Windows: https://git-scm.com/downloads/win
+3. **Orca** (optional, recommended): a free desktop app for running several Claude Code sessions side by side, each on its own copy of the repo. Download: https://www.onorca.dev/download (Mac: `brew install --cask stablyai/orca/orca`)
+
 ## Install
 
 ```bash
-git clone <this-repo> ~/Projects/LeadLockAgentKit
+git clone https://github.com/colliercoder/LeadLockAgentKit.git ~/Projects/LeadLockAgentKit
 cd ~/Projects/LeadLockAgentKit
 cp .env.example .env
 ```
 
-Open `.env`, paste in your Leadlock API key. That's it.
+In Orca: add `~/Projects/LeadLockAgentKit` as a repo and start a Claude Code session in it.
+
+## Add your keys
+
+Open `.env` and fill in:
+
+| Key | Where to get it | Needed for |
+|---|---|---|
+| `LEADLOCK_API_KEY` | Leadlock > Settings > API Keys > Create | Every skill |
+| `GHL_PIT` | GoHighLevel > Settings > Private Integrations > Create New (pick the scopes you want Claude to use) | GoHighLevel skills and add-ons |
+| `GHL_LOCATION_ID` | The long ID in your GoHighLevel sub-account URL | GoHighLevel skills and add-ons |
+
+Then say **"check my setup"** in Claude Code. `.env` is gitignored, so your keys never leave your machine.
+
+## Connect n8n (optional)
+
+n8n is the easiest backend for Leadlock **custom functions**: your agent calls an n8n webhook mid-call, n8n looks something up in any system with an API, and the agent reads back the answer. Say **"connect n8n"** and the `connect-n8n` skill walks you through n8n Cloud, turning on n8n's built-in MCP server, and connecting it so Claude can build workflows for you.
+
+## Paid add-ons (optional)
+
+The kit is free. The **Leadlock Launch Bundle** adds GoHighLevel superpowers: a GHL command-line tool with its own Claude skill, and the Leadlock GHL Connector Chrome extension, so Claude can build and edit GHL workflows for you. Get it at https://www.leadlock.ai/store, unzip it into `addons/`, and say **"install my add-on"**. Everything in `addons/` stays on your machine; it is gitignored. See [addons/README.md](addons/README.md).
+
+## The kit gets smarter
+
+`learnings/` is the kit's memory: bugs, platform gaps and recipes that worked. Claude reads it before non-trivial work, and `add-to-learnings` writes to it at the end of a session. Pull updates with `git pull`; your `.env`, `output/` and `addons/` are never touched.
 
 ## Use
 
@@ -110,6 +150,12 @@ check my setup                              → verifies your API key works
 "Test my agent on a real call"
 "Benchmark voice latency across providers"
     → agent-to-agent-call-testing
+
+"Connect n8n" / "Set up the n8n MCP"
+    → connect-n8n
+
+"Install my add-on" / "I bought the Launch Bundle"
+    → install-addon
 ```
 
 Claude picks up the matching skill, reads your `.env`, hits the Leadlock API, and hands you back the result.

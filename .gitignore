@@ -31,3 +31,11 @@ output/
 
 # self-selling-setup: agency's filled config holds their API key + PIT
 .claude/skills/self-selling-setup/scripts/values.json
+
+# Paid add-ons: dropped in by the buyer, never committed to this public repo
+addons/*
+!addons/README.md
+.claude/skills/addon-*
+
+# Per-user MCP config can hold tokens
+.mcp.json
