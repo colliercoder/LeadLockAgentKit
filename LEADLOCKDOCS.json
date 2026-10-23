@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Leadlock Voice Agent SaaS API",
-    "description": "Multi-tenant voice agent platform API.\n\n## LLM-friendly prose docs\n\nLooking for a single-page Markdown reference? [**llms-full.txt**](/llms-full.txt) (~270 KB) has every endpoint with descriptions, request/response shapes, all component schemas, and the Demo Customization Reference appendix. Designed for LLM context windows.\n\n## Authentication\n\nEvery endpoint accepts either `X-API-Key: <your_key>` or `Authorization: Bearer <your_key>`. Get a key from [app.leadlock.ai/dashboard/settings/api-keys](https://app.leadlock.ai/dashboard/settings/api-keys).\n\n## Demo customization\n\nThe `demo.config` object accepts well-known keys like `phone_caller_image`, `phone_accent_color`, `avatar_url`, `landing_heading`, and more. See the **Demo Customization Reference** section at the bottom of [llms-full.txt](/llms-full.txt) for the full per-channel inventory + copy-paste recipes (including the `?embed=true` flag for white-surround iframe embedding).",
+    "description": "Multi-tenant voice agent platform API",
     "version": "0.1.0"
   },
   "paths": {
@@ -193,7 +193,7 @@
           "Authentication"
         ],
         "summary": "Embed Sso",
-        "description": "Embedded SSO \u2014 authenticate via partner platform iframe integration.\n\nAccepts an encrypted payload from the partner postMessage protocol,\ndecrypts it, maps the user to a Leadlock account, and returns\nJWT tokens for the session.\n\nPublic endpoint - no auth required (SSO replaces login).",
+        "description": "Embedded SSO - authenticate via partner platform iframe integration.\n\nAccepts an encrypted payload from the partner postMessage protocol,\ndecrypts it, maps the user to a Leadlock account, and returns\nJWT tokens for the session.\n\nPublic endpoint - no auth required (SSO replaces login).",
         "operationId": "embed_sso_auth_embed_sso_post",
         "requestBody": {
           "content": {
@@ -532,7 +532,7 @@
           "Authentication"
         ],
         "summary": "Create Api Key",
-        "description": "Create a new API key for webhook authentication.\n\nRequires owner or admin role. Requires a Starter, Agency or Pro plan.\nUses sub-account context so agency users create keys for the sub-account they're operating as.\nThe plaintext key is only returned ONCE - store it securely!\n\nA Starter key is scoped: it can be minted here, and the runtime gate in\ndependencies.py restricts it to the outbound trigger routes. Agency and Pro\nkeys are unrestricted. Only PAYG is refused outright.",
+        "description": "Create a new API key for webhook authentication.\n\nRequires owner or admin role. Requires a Starter, Agency or Pro plan.\nUses sub-account context so agency users create keys for the sub-account they're operating as.\nThe plaintext key is only returned ONCE - store it securely!\n\nStarter, Agency and Pro keys all have the same unrestricted API access\n(DAN-177). Only PAYG is refused outright.",
         "operationId": "create_api_key_auth_api_keys_post",
         "requestBody": {
           "content": {
@@ -796,7 +796,7 @@
           "Text Assistants"
         ],
         "summary": "Update Text Assistant",
-        "description": "Update a text assistant.",
+        "description": "Update a text assistant.\n\nExactly ``{\"is_active\": false}`` is the OFF switch and is open to every plan.\nAny other body (turning it on, any settings change, even an empty body)\nneeds the Text Assistant plan feature.",
         "operationId": "update_text_assistant_text_assistants__assistant_id__patch",
         "security": [
           {
@@ -1005,7 +1005,7 @@
           "Text Assistants"
         ],
         "summary": "Toggle Text Assistant",
-        "description": "Toggle text assistant active status.",
+        "description": "Toggle text assistant active status.\n\nTurning it OFF is open to every plan. Turning it ON needs the Text Assistant\nplan feature, checked BEFORE the toggle so a denied request changes nothing.",
         "operationId": "toggle_text_assistant_text_assistants__assistant_id__toggle_post",
         "security": [
           {
@@ -5186,7 +5186,7 @@
           "Phone Numbers"
         ],
         "summary": "Send Test Sms",
-        "description": "Send a test SMS message using the specified phone number.\n\nThis endpoint:\n- Validates phone number is SMS-capable\n- Validates A2P registration (required for US numbers)\n- Routes to Twilio or GoHighLevel based on phone number source\n- Returns delivery status\n\nRequirements:\n- Phone number must be sms_capable = true\n- Phone number must have messaging_enabled = true (A2P verified)\n- Recipient number must be in E.164 format (+14155551234)\n\nNOTE: Uses get_effective_tenant_id so sub-account users (or agency users\nimpersonating a sub-account) are correctly attributed in text metering\n(FORGE text-agent-metering Step 9, 2026-04-08 \u2014 Site #10 / Issue #148 pattern).\n\nArgs:\n    phone_number_id: UUID of phone number to send from\n    to: Recipient phone number (E.164 format)\n    message: Message text (optional, defaults to test message)\n\nReturns:\n    SMSResult with delivery status and provider details",
+        "description": "Send a test SMS message using the specified phone number.\n\nThis endpoint:\n- Validates phone number is SMS-capable\n- Validates A2P registration (required for US numbers)\n- Routes to Twilio or GoHighLevel based on phone number source\n- Returns delivery status\n\nRequirements:\n- Phone number must be sms_capable = true\n- Phone number must have messaging_enabled = true (A2P verified)\n- Recipient number must be in E.164 format (+14155551234)\n\nNOTE: Uses get_effective_tenant_id so sub-account users (or agency users\nimpersonating a sub-account) are correctly attributed in text metering\n(FORGE text-agent-metering Step 9, 2026-04-08 - Site #10 / Issue #148 pattern).\n\nArgs:\n    phone_number_id: UUID of phone number to send from\n    to: Recipient phone number (E.164 format)\n    message: Message text (optional, defaults to test message)\n\nReturns:\n    SMSResult with delivery status and provider details",
         "operationId": "send_test_sms_phone_numbers__phone_number_id__test_sms_post",
         "security": [
           {
@@ -5475,7 +5475,7 @@
           "sms-pools"
         ],
         "summary": "Delete Pool",
-        "description": "Soft-delete the pool (Twilio MS remains untouched \u2014 customer owns it).",
+        "description": "Soft-delete the pool (Twilio MS remains untouched - customer owns it).",
         "operationId": "delete_pool_sms_pools__pool_id__delete",
         "security": [
           {
@@ -6280,7 +6280,7 @@
           "Outbound Calls"
         ],
         "summary": "Send Outbound Sms",
-        "description": "Send an SMS from one of your own connected numbers (CRM webhook door).\n\nAuthentication: API Key (X-API-Key header) or JWT Bearer token. Designed for\nGHL/Zapier workflow webhooks that need to text a lead from your Twilio number\nrather than your CRM-connected one. Every number is one you imported from\nyour own Twilio or GHL account; the send uses that account's credentials.\n\nBody (JSON, form-encoded or multipart):\n{to_number, message, from_phone_number_id?, media_url?}. media_url attaches a\npublic https image and sends the message as MMS. When from_phone_number_id is\nomitted an SMS-capable number is auto-resolved, PREFERRING a Twilio-source one\n\u2014 if your only SMS-capable number came from GHL the send goes out on that, so\nthe number and provider actually used come back in the response.\n\nA rejected send (opt-out, carrier failure) still returns HTTP 200 with\nsuccess=false and an error string. Branch on success, not the status code.",
+        "description": "Send an SMS from one of your own connected numbers (CRM webhook door).\n\nAuthentication: API Key (X-API-Key header) or JWT Bearer token. Designed for\nGHL/Zapier workflow webhooks that need to text a lead from your Twilio number\nrather than your CRM-connected one. Every number is one you imported from\nyour own Twilio or GHL account; the send uses that account's credentials.\n\nBody (JSON, form-encoded or multipart):\n{to_number, message, from_phone_number_id?, media_url?}. media_url attaches a\npublic https image and sends the message as MMS. When from_phone_number_id is\nomitted an SMS-capable number is auto-resolved, PREFERRING a Twilio-source one\n- if your only SMS-capable number came from GHL the send goes out on that, so\nthe number and provider actually used come back in the response.\n\nA rejected send (opt-out, carrier failure) still returns HTTP 200 with\nsuccess=false and an error string. Branch on success, not the status code.",
         "operationId": "send_outbound_sms_outbound_sms_post",
         "requestBody": {
           "description": "JSON is shown. This endpoint also accepts application/x-www-form-urlencoded and multipart/form-data. Note that a rejected send (opt-out, carrier failure) still returns HTTP 200 with `success: false` and an `error` string, so branch on `success` rather than the status code.",
@@ -6332,7 +6332,7 @@
                   "message"
                 ],
                 "title": "OutboundSMSRequest",
-                "description": "Send an SMS from one of the tenant's own numbers (X-API-Key door for CRM webhooks).\n\nLets a GHL workflow send texts through the customer's connected Twilio number\nrather than their GHL-connected one. Both belong to the customer \u2014 Leadlock\nowns no numbers and no sending account; the send uses that integration's own\ncredentials. from_phone_number_id is optional: when omitted an SMS-capable\nnumber is auto-resolved, preferring a Twilio-source one."
+                "description": "Send an SMS from one of the tenant's own numbers (X-API-Key door for CRM webhooks).\n\nLets a GHL workflow send texts through the customer's connected Twilio number\nrather than their GHL-connected one. Both belong to the customer - Leadlock\nowns no numbers and no sending account; the send uses that integration's own\ncredentials. from_phone_number_id is optional: when omitted an SMS-capable\nnumber is auto-resolved, preferring a Twilio-source one."
               }
             }
           },
@@ -6362,7 +6362,7 @@
           "Webhooks"
         ],
         "summary": "Handle Sms Status Callback",
-        "description": "Twilio status callback for ALL SMS sends.\n\nEvery send sets a per-message status_callback URL that routes Twilio's\nqueued \u2192 sent \u2192 delivered/failed transitions back to us. POOL sends\nadditionally carry pool_member_id in the query string so delivery stats can\nbe attributed to the right pool member without secondary lookups.\n\n`member_id` is OPTIONAL. It used to be mandatory, which silently dropped\nevery non-pool callback \u2014 including the 30034 (unregistered A2P) failures\nthat made +16026696955 unable to text anyone from 2026-08-04 onward with\nnobody noticing for two days. Pool-member attribution is now the only part\ngated on member_id; idempotency, bad-number flagging and config-failure\nalerting run for every callback.\n\nReturns 204 on success (or duplicate); 403 on bad signature (handled by\nthe validate_twilio_signature dependency).",
+        "description": "Twilio status callback for ALL SMS sends.\n\nEvery send sets a per-message status_callback URL that routes Twilio's\nqueued → sent → delivered/failed transitions back to us. POOL sends\nadditionally carry pool_member_id in the query string so delivery stats can\nbe attributed to the right pool member without secondary lookups.\n\n`member_id` is OPTIONAL. It used to be mandatory, which silently dropped\nevery non-pool callback - including the 30034 (unregistered A2P) failures\nthat made +16026696955 unable to text anyone from 2026-08-04 onward with\nnobody noticing for two days. Pool-member attribution is now the only part\ngated on member_id; idempotency, bad-number flagging and config-failure\nalerting run for every callback.\n\nReturns 204 on success (or duplicate); 403 on bad signature (handled by\nthe validate_twilio_signature dependency).",
         "operationId": "handle_sms_status_callback_webhooks_twilio__tenant_id__sms_status_post",
         "parameters": [
           {
@@ -6910,7 +6910,7 @@
           "Webhooks"
         ],
         "summary": "Handle Drop Cowboy Status",
-        "description": "Receive a Drop Cowboy RVM delivery-status (CDR) callback.\n\nReturns 204 on success or duplicate; 403 on bad secret. Always 200/204 on\nour own internal errors so Drop Cowboy does not retry storms us.",
+        "description": "Receive a Drop Cowboy RVM delivery-status (CDR) callback.\n\nReturns 204 on success or duplicate; 403 on a bad token. Always 204 on our\nown internal errors so a failure here never turns into a retry storm.",
         "operationId": "handle_drop_cowboy_status_webhooks_drop_cowboy__tenant_id___secret__status_post",
         "parameters": [
           {
@@ -6964,6 +6964,27 @@
         "summary": "Handle Stripe Webhook",
         "description": "Handle incoming Stripe webhook events.\n\nSecurity checks (in order):\n1. Verify signature header exists\n2. Verify webhook secret is configured\n3. Validate timestamp (CRIT-005 - replay protection)\n4. Verify signature using Stripe SDK\n5. Check deduplication (CRIT-003 - idempotency)\n6. Validate required fields (CRIT-004)\n7. Process event",
         "operationId": "handle_stripe_webhook_webhooks_stripe_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks/stripe/connect": {
+      "post": {
+        "tags": [
+          "Webhooks",
+          "Webhooks"
+        ],
+        "summary": "Handle Stripe Connect Webhook",
+        "description": "Receive an event from an agency's connected Stripe account.",
+        "operationId": "handle_stripe_connect_webhook_webhooks_stripe_connect_post",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -7349,7 +7370,7 @@
           "Integrations"
         ],
         "summary": "List Ghl Timezones",
-        "description": "Return the IANA timezones GHL supports for the current tenant's sub-account.\n\nPicks any active GHL integration on the tenant (or assigned to this sub-account)\nand calls GET /locations/:locationId/timezones. Result is cached in-process for\n7 days since GHL's list is effectively static.\n\nReturns an empty list if no active GHL integration exists \u2014 frontend falls back\nto the full IANA set via Intl.supportedValuesOf('timeZone').",
+        "description": "Return the IANA timezones GHL supports for the current tenant's sub-account.\n\nPicks any active GHL integration on the tenant (or assigned to this sub-account)\nand calls GET /locations/:locationId/timezones. Result is cached in-process for\n7 days since GHL's list is effectively static.\n\nReturns an empty list if no active GHL integration exists - frontend falls back\nto the full IANA set via Intl.supportedValuesOf('timeZone').",
         "operationId": "list_ghl_timezones_integrations_ghl_timezones_get",
         "responses": {
           "200": {
@@ -8085,6 +8106,28 @@
         ]
       }
     },
+    "/billing/offers": {
+      "get": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Get Public Offers",
+        "description": "Which course offers checkout honours right now (DAN-350).\n\nPublic and unauthenticated: the signup page asks before it promises a free\nfirst month or the Launch Bundle, so a link that goes out before the Stripe\nenv vars are set (or after one is cleared) shows the normal page instead.\nReads settings only, no I/O. Cached for five minutes at the edge and in the\nbrowser.",
+        "operationId": "get_public_offers_billing_offers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OffersResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/billing/limits": {
       "get": {
         "tags": [
@@ -8194,7 +8237,7 @@
           "Billing"
         ],
         "summary": "Get Open Invoice",
-        "description": "Return the current open (unpaid) invoice for the owner's Stripe customer,\nwith the hosted pay-page URL. Powers the past-due payment-required overlay.\n\nOwner-only (require_owner). Resolves the owner's OWN stripe_customer_id \u2014\nthe overlay only renders for the agency/direct tenant who can actually pay,\nso no sub-account -> parent walk is needed. Returns null when there is no\nopen invoice (not a 404).",
+        "description": "Return the current open (unpaid) invoice for the owner's Stripe customer,\nwith the hosted pay-page URL. Powers the past-due payment-required overlay.\n\nOwner-only (require_owner). Resolves the owner's OWN stripe_customer_id -\nthe overlay only renders for the agency/direct tenant who can actually pay,\nso no sub-account -> parent walk is needed. Returns null when there is no\nopen invoice (not a 404).",
         "operationId": "get_open_invoice_billing_open_invoice_get",
         "responses": {
           "200": {
@@ -8280,6 +8323,33 @@
             }
           }
         }
+      }
+    },
+    "/billing/usage/timeseries": {
+      "get": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Get Usage Timeseries",
+        "description": "Daily usage for the current billing period, with a running total.\n\nOne row per UTC day of the whole period (zero-filled, future days flagged),\nat the price this tenant was charged: a sub-account sees its agency's price,\na direct customer its plan price. The window is the tenant's own period\n(resolve_usage_period), the same one /stats and /billing/my-billing use, so\nthe last running total equals the period totals on those screens. No\nprojection of the final bill.\n\nNOTE: Uses get_effective_tenant_id so an agency \"Operating as Sub-Account\"\nsees that sub-account's usage.",
+        "operationId": "get_usage_timeseries_billing_usage_timeseries_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageTimeseriesResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
       }
     },
     "/billing/invoices/upcoming": {
@@ -8654,7 +8724,7 @@
           "Agency Management"
         ],
         "summary": "Get Sub Account Usage",
-        "description": "Get usage records for a specific sub-account.",
+        "description": "Get usage records for a specific sub-account.\n\nWith no dates (API-key callers excepted: they get all history), covers\nthe agency's current billing period (the Stripe\nperiod his invoice uses), which the response also returns.",
         "operationId": "get_sub_account_usage_agency_sub_accounts__sub_account_id__usage_get",
         "security": [
           {
@@ -8760,7 +8830,7 @@
           "Agency Management"
         ],
         "summary": "Get All Usage",
-        "description": "Get usage records across all sub-accounts.",
+        "description": "Get usage records across all sub-accounts.\n\nWith no dates (API-key callers excepted: they get all history), covers\nthe agency's current billing period (the Stripe\nperiod his invoice uses), which the response also returns so the Usage\nReports date pickers default to it.",
         "operationId": "get_all_usage_agency_usage_get",
         "security": [
           {
@@ -8850,13 +8920,69 @@
         }
       }
     },
+    "/agency/usage/timeseries": {
+      "get": {
+        "tags": [
+          "Agency Management"
+        ],
+        "summary": "Get Agency Usage Timeseries",
+        "description": "Daily usage over the agency's current billing period, with a running total.\n\nOne row per UTC day of the whole Stripe period (zero-filled, future days\nflagged), priced at what Stripe bills the agency, voice and text. The last\nrunning total equals the voice plus text cost on the agency's Billing page\n(the overview's cost card is voice only). Optionally narrowed to one\nsub-account. No projection.",
+        "operationId": "get_agency_usage_timeseries_agency_usage_timeseries_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sub_account_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sub Account Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageTimeseriesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/agency/usage/export": {
       "get": {
         "tags": [
           "Agency Management"
         ],
         "summary": "Export Usage Csv",
-        "description": "Export usage data as CSV.\n\nReturns a streaming response to handle large datasets efficiently.",
+        "description": "Export usage data as CSV.\n\nReturns a streaming response to handle large datasets efficiently. With no\ndates, exports the agency's current billing period (API-key\ncallers: all history).",
         "operationId": "export_usage_csv_agency_usage_export_get",
         "security": [
           {
@@ -9160,7 +9286,7 @@
           "Agency Management"
         ],
         "summary": "Get Agency Overview",
-        "description": "Get agency dashboard overview stats.\n\nIncludes aggregated metrics across all sub-accounts.",
+        "description": "Get agency dashboard overview stats.\n\nIncludes aggregated metrics across all sub-accounts, over the agency's\ncurrent Stripe billing period (calendar month without a subscription) so\nthe screen matches the invoice. The response carries the period.",
         "operationId": "get_agency_overview_agency_overview_get",
         "responses": {
           "200": {
@@ -9507,7 +9633,7 @@
           "Agency Management"
         ],
         "summary": "Copy Agent Between Sub Accounts",
-        "description": "Copy an agent from one sub-account to another (agency-only).\n\nVerifies the agency owns both source and target sub-accounts.\nCreates a disabled copy with \" (Copy)\" suffix.\n\nNote: Returns the raw agent dict from the database insert, not AgentResponse.\nAgentResponse has computed fields (phone_count, text_assistants) that aren't\npresent in the raw insert result. The frontend doesn't use this response body\nfor rendering \u2014 it invalidates the query cache after a successful copy.",
+        "description": "Copy an agent from one sub-account to another (agency-only).\n\nVerifies the agency owns both source and target sub-accounts.\nCreates a disabled copy with \" (Copy)\" suffix.\n\nNote: Returns the raw agent dict from the database insert, not AgentResponse.\nAgentResponse has computed fields (phone_count, text_assistants) that aren't\npresent in the raw insert result. The frontend doesn't use this response body\nfor rendering - it invalidates the query cache after a successful copy.",
         "operationId": "copy_agent_between_sub_accounts_agency_agents__agent_id__copy_post",
         "security": [
           {
@@ -9558,6 +9684,358 @@
         }
       }
     },
+    "/agency/connect/onboard": {
+      "post": {
+        "tags": [
+          "Agency Management"
+        ],
+        "summary": "Connect Onboard",
+        "description": "Start or continue Stripe onboarding. Returns a fresh Account Link URL.",
+        "operationId": "connect_onboard_agency_connect_onboard_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Connect Onboard Agency Connect Onboard Post"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/agency/connect/status": {
+      "get": {
+        "tags": [
+          "Agency Management"
+        ],
+        "summary": "Connect Status",
+        "description": "Refresh and return the agency's Stripe Connect status.",
+        "operationId": "connect_status_agency_connect_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Connect Status Agency Connect Status Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/agency/connect/disconnect": {
+      "post": {
+        "tags": [
+          "Agency Management"
+        ],
+        "summary": "Connect Disconnect",
+        "description": "Disconnect client billing. The Stripe account itself is never deleted.",
+        "operationId": "connect_disconnect_agency_connect_disconnect_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Connect Disconnect Agency Connect Disconnect Post"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/agency/sub-accounts/{sub_account_id}/client-billing": {
+      "patch": {
+        "tags": [
+          "Agency Management"
+        ],
+        "summary": "Update Client Billing",
+        "description": "Opt one sub-account in to (or out of) client billing.",
+        "operationId": "update_client_billing_agency_sub_accounts__sub_account_id__client_billing_patch",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sub_account_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Sub Account Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientBillingUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Update Client Billing Agency Sub Accounts  Sub Account Id  Client Billing Patch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agency/sub-accounts/{sub_account_id}/client-billing/card-link": {
+      "post": {
+        "tags": [
+          "Agency Management"
+        ],
+        "summary": "Rotate Card Link",
+        "description": "Create a new save-card link. The previous link stops working.",
+        "operationId": "rotate_card_link_agency_sub_accounts__sub_account_id__client_billing_card_link_post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sub_account_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Sub Account Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Rotate Card Link Agency Sub Accounts  Sub Account Id  Client Billing Card Link Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agency/sub-accounts/{sub_account_id}/pause": {
+      "post": {
+        "tags": [
+          "Agency Management"
+        ],
+        "summary": "Pause Sub Account",
+        "description": "Pause the sub-account by hand: no calls in or out, no texts, until unpaused.\n\nDrops any unpause override: the agency has taken the pause back.",
+        "operationId": "pause_sub_account_agency_sub_accounts__sub_account_id__pause_post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sub_account_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Sub Account Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Pause Sub Account Agency Sub Accounts  Sub Account Id  Pause Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agency/sub-accounts/{sub_account_id}/unpause": {
+      "post": {
+        "tags": [
+          "Agency Management"
+        ],
+        "summary": "Unpause Sub Account",
+        "description": "Lift any pause on the sub-account, manual or payment_failed.\n\nThe invoices that are failed right now are recorded as the agency's\noverride, so a Stripe retry failure of the same invoice does not pause the\nsub-account again; a different invoice that fails later still pauses it.",
+        "operationId": "unpause_sub_account_agency_sub_accounts__sub_account_id__unpause_post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sub_account_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Sub Account Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Unpause Sub Account Agency Sub Accounts  Sub Account Id  Unpause Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agency/sub-accounts/{sub_account_id}/client-invoices/latest": {
+      "get": {
+        "tags": [
+          "Agency Management"
+        ],
+        "summary": "Latest Client Invoice",
+        "description": "The sub-account's latest client invoice: amount, status, period, link.",
+        "operationId": "latest_client_invoice_agency_sub_accounts__sub_account_id__client_invoices_latest_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sub_account_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Sub Account Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Latest Client Invoice Agency Sub Accounts  Sub Account Id  Client Invoices Latest Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/notifications/settings": {
       "get": {
         "tags": [
@@ -9589,7 +10067,7 @@
           "Notifications"
         ],
         "summary": "Update Notification Settings",
-        "description": "Update notification settings for the current tenant.\n\nPer-tenant settings: when impersonating, edits the sub-account's settings.\nOnly provided fields are updated; others remain unchanged.",
+        "description": "Update notification settings for the current tenant.\n\nPer-tenant settings: when impersonating, edits the sub-account's settings.\nOnly provided fields are updated; others remain unchanged.\n\nAn extra notification address equal to the owner's login email is\nrejected: the owner already receives every call email and digest.",
         "operationId": "update_notification_settings_notifications_settings_patch",
         "requestBody": {
           "content": {
@@ -9979,7 +10457,7 @@
           "Stats"
         ],
         "summary": "Get Analytics",
-        "description": "Get analytics data for the interactive dashboard.\n\nReturns summary stats, daily call volume trends, status/direction\nbreakdowns, and per-agent performance \u2014 all in one response.",
+        "description": "Get analytics data for the interactive dashboard.\n\nReturns summary stats, daily call volume trends, status/direction\nbreakdowns, and per-agent performance - all in one response.",
         "operationId": "get_analytics_stats_analytics_get",
         "security": [
           {
@@ -10647,7 +11125,7 @@
           "Public"
         ],
         "summary": "Unsubscribe",
-        "description": "One-click unsubscribe from product-update emails. No auth required \u2014 the\nsigned token is the authorization. Idempotent. Always returns 200 with a\nhuman-readable page (email clients / scanners follow the link).",
+        "description": "One-click unsubscribe from product-update emails. No auth required - the\nsigned token is the authorization. Idempotent. Always returns 200 with a\nhuman-readable page (email clients / scanners follow the link).",
         "operationId": "unsubscribe_api_public_unsubscribe_get",
         "parameters": [
           {
@@ -10726,6 +11204,47 @@
                 "schema": {
                   "$ref": "#/components/schemas/PublicBrandingResponse"
                 }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/client-card/{token}": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "Client Card Link",
+        "description": "Public save-card link for an agency's client. No login: the token is the\nauthorization. Redirects (303) to Stripe Checkout in setup mode, created on\nthe agency's own connected account so the page shows the agency's name.\n\nEvery failure (feature off, unknown or rotated token, sub-account opted out,\nagency disconnected or charges disabled, mode mismatch) is the same 404.",
+        "operationId": "client_card_link_api_public_client_card__token__get",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
@@ -11139,7 +11658,7 @@
           "Demos"
         ],
         "summary": "Update Demo",
-        "description": "Update a demo config.",
+        "description": "Update a demo config.\n\nTurning a demo OFF (``is_active: false`` and nothing else) is open to every\nplan. Any other change needs the Demo Suite plan feature.",
         "operationId": "update_demo_demos__demo_id__patch",
         "security": [
           {
@@ -11537,7 +12056,7 @@
           "Public Demos"
         ],
         "summary": "Public Demo Chat",
-        "description": "Public text chat endpoint for demo pages.\nUses the agent's system prompt + tools to generate AI text responses.\nNo auth required \u2014 authenticates via active demo config slug.",
+        "description": "Public text chat endpoint for demo pages.\nUses the agent's system prompt + tools to generate AI text responses.\nNo auth required - authenticates via active demo config slug.",
         "operationId": "public_demo_chat_d__slug__chat_post",
         "parameters": [
           {
@@ -11590,7 +12109,7 @@
           "Public Demos"
         ],
         "summary": "Get Showcase",
-        "description": "Public endpoint: Get all active demos for a showcase page.\nThe slug here is any demo slug \u2014 we find the agent and return all demos for it.",
+        "description": "Public endpoint: Get all active demos for a showcase page.\nThe slug here is any demo slug - we find the agent and return all demos for it.",
         "operationId": "get_showcase_d_showcase__slug__get",
         "parameters": [
           {
@@ -11674,7 +12193,7 @@
           "Voice Samples"
         ],
         "summary": "Get Openai Live Voice Sample",
-        "description": "Serve pre-generated GPT-Live voice sample MP3.\n\nVoices are validated against OPENAI_LIVE_VOICES in live_client.py rather than\na second hardcoded list here \u2014 the roster already lives in three places\n(that constant, the frontend picker, the migration default) and a fourth\nwould drift.\n\nSamples are generated by scripts/generate_openai_live_voice_samples.py, which\nspeaks a fixed line through a real gpt-live-1 session per voice. They are not\nsynthesised from some other TTS engine: these 12 voices exist only on the Live\nAPI, so a sample from anywhere else would be a different voice.",
+        "description": "Serve pre-generated GPT-Live voice sample MP3.\n\nVoices are validated against OPENAI_LIVE_VOICES in live_client.py rather than\na second hardcoded list here - the roster already lives in three places\n(that constant, the frontend picker, the migration default) and a fourth\nwould drift.\n\nSamples are generated by scripts/generate_openai_live_voice_samples.py, which\nspeaks a fixed line through a real gpt-live-1 session per voice. They are not\nsynthesised from some other TTS engine: these 12 voices exist only on the Live\nAPI, so a sample from anywhere else would be a different voice.",
         "operationId": "get_openai_live_voice_sample_voice_samples_openai_live__voice__mp3_get",
         "parameters": [
           {
@@ -11872,7 +12391,7 @@
           "Voice Samples"
         ],
         "summary": "List Elevenlabs Models",
-        "description": "The curated ElevenLabs LLM list, grouped as the picker renders it.\n\nExists so the list is written ONCE. It used to be a literal in\nPremiumVoiceSelector.tsx mirroring the literal in agents/defaults.py, kept\nhonest by a parity test \u2014 which caught drift but could not prevent it. The\ntwo halves deploy as separate Render services, so on 2026-08-14 the static\nsite shipped a widened list ~10 minutes before the backend knew about it and\nthe picker briefly offered models the API would have 422'd.\n\nStatic data, no provider call: safe to serve from the constant and cache\nhard on the client.",
+        "description": "The curated ElevenLabs LLM list, grouped as the picker renders it.\n\nExists so the list is written ONCE. It used to be a literal in\nPremiumVoiceSelector.tsx mirroring the literal in agents/defaults.py, kept\nhonest by a parity test - which caught drift but could not prevent it. The\ntwo halves deploy as separate Render services, so on 2026-08-14 the static\nsite shipped a widened list ~10 minutes before the backend knew about it and\nthe picker briefly offered models the API would have 422'd.\n\nStatic data, no provider call: safe to serve from the constant and cache\nhard on the client.",
         "operationId": "list_elevenlabs_models_voice_samples_elevenlabs_models_get",
         "responses": {
           "200": {
@@ -11902,7 +12421,7 @@
           "Voice Samples"
         ],
         "summary": "Get Elevenlabs Llm Prices",
-        "description": "Real $/min per LLM at this agent's own prompt length.\n\nReplaces the prices that used to be baked into the picker's display strings.\nThose were wrong for 13 of 23 models because a single number cannot describe\na cost that scales with prompt length \u2014 see client.calculate_llm_usage.\n\nOnly the CURATED models are returned. Pricing the ones we no longer offer\nwould invite someone to wire them back up.\n\nNever fails the form: on a provider error this serves stale, then the\nmeasured median-prompt fallback. `estimated` tells the UI which it got.",
+        "description": "Real $/min per LLM at this agent's own prompt length.\n\nReplaces the prices that used to be baked into the picker's display strings.\nThose were wrong for 13 of 23 models because a single number cannot describe\na cost that scales with prompt length - see client.calculate_llm_usage.\n\nOnly the CURATED models are returned. Pricing the ones we no longer offer\nwould invite someone to wire them back up.\n\nNever fails the form: on a provider error this serves stale, then the\nmeasured median-prompt fallback. `estimated` tells the UI which it got.",
         "operationId": "get_elevenlabs_llm_prices_voice_samples_elevenlabs_llm_prices_get",
         "security": [
           {
@@ -12365,7 +12884,7 @@
           "Contacts"
         ],
         "summary": "Patch Contact",
-        "description": "Update a GHL contact: add/remove tags, update custom fields, update pipeline stage.\n\nEach field is independently optional \u2014 partial success is OK.",
+        "description": "Update a GHL contact: add/remove tags, update custom fields, update pipeline stage.\n\nEach field is independently optional - partial success is OK.",
         "operationId": "patch_contact_contacts__phone__patch",
         "security": [
           {
@@ -12424,7 +12943,7 @@
           "Contacts"
         ],
         "summary": "Get Conversation Timeline",
-        "description": "Get merged call + SMS conversation timeline for a contact.\n\nReturns chronological list merging call_logs and text_messages.\nGracefully degrades to voice-only if GHL lookup fails (sms_included=false).\nNever returns 404 \u2014 empty timeline is valid.",
+        "description": "Get merged call + SMS conversation timeline for a contact.\n\nReturns chronological list merging call_logs and text_messages.\nGracefully degrades to voice-only if GHL lookup fails (sms_included=false).\nNever returns 404 - empty timeline is valid.",
         "operationId": "get_conversation_timeline_contacts__phone__conversations_get",
         "security": [
           {
@@ -12691,6 +13210,48 @@
                   "additionalProperties": true,
                   "type": "object",
                   "title": "Response Create Issue Issues  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/contact": {
+      "post": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "Contact Support",
+        "description": "Send a message to Leadlock support from inside the app.\n\nThe message is emailed to the Leadlock support inbox with Reply-To set to\nthe signed-in user's email, so support replies go straight to the user.\nSubject is 1-200 characters and message is 1-5000 characters (surrounding\nwhitespace is trimmed). Limited to 5 messages per user per hour (429).\nReturns 502 if the email could not be sent; in that case, email\nsupport@leadlock.ai directly.",
+        "operationId": "contact_support_support_contact_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactSupportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactSupportResponse"
                 }
               }
             }
@@ -14080,7 +14641,7 @@
           "External Tools"
         ],
         "summary": "Scrape Website Endpoint",
-        "description": "Scrape a website and extract structured business information.\n\nUses Jina Reader for scraping and xAI for AI extraction. Bounded to respond\nbefore webhook clients (e.g. GHL) hang up \u2014 degrades to homepage-only / raw\ndescription rather than exceeding the time budget.",
+        "description": "Scrape a website and extract structured business information.\n\nUses Jina Reader for scraping and xAI for AI extraction. Bounded to respond\nbefore webhook clients (e.g. GHL) hang up - degrades to homepage-only / raw\ndescription rather than exceeding the time budget.",
         "operationId": "scrape_website_endpoint_tools_scrape_website_post",
         "requestBody": {
           "content": {
@@ -16199,6 +16760,34 @@
         ]
       }
     },
+    "/sequences/voicemail/options": {
+      "get": {
+        "tags": [
+          "Sequences",
+          "Sequences"
+        ],
+        "summary": "Get Voicemail Options",
+        "description": "Caller number pools, recordings and voices for voicemail steps.\n\nLists come from the connected voicemail provider. When they cannot load,\n``error`` says why in plain words and the lists are empty (never a 500).",
+        "operationId": "get_voicemail_options_sequences_voicemail_options_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoicemailOptionsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
     "/sequences": {
       "get": {
         "tags": [
@@ -16580,7 +17169,7 @@
           "Sequences"
         ],
         "summary": "List Enrollments",
-        "description": "List enrollments for a sequence.",
+        "description": "List enrollments for a sequence, newest first.\n\n``status`` keeps only enrollments in that status. ``search`` finds contacts by\nname, or by at least 3 digits of their phone number.",
         "operationId": "list_enrollments_sequences__sequence_id__enrollments_get",
         "security": [
           {
@@ -16635,6 +17224,23 @@
                 }
               ],
               "title": "Status"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
             }
           }
         ],
@@ -16840,7 +17446,7 @@
           "Sequences"
         ],
         "summary": "Get Enrollment Dispositions",
-        "description": "Get disposition log for an enrollment.",
+        "description": "Get disposition log for an enrollment.\n\nThe enrollment must be this tenant's and belong to the sequence in the URL,\notherwise 404 (DAN-167 L-16). Both reads run off the event loop.",
         "operationId": "get_enrollment_dispositions_sequences__sequence_id__enrollments__enrollment_id__dispositions_get",
         "security": [
           {
@@ -16878,6 +17484,70 @@
                   "type": "array",
                   "items": {},
                   "title": "Response Get Enrollment Dispositions Sequences  Sequence Id  Enrollments  Enrollment Id  Dispositions Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sequences/{sequence_id}/enrollments/{enrollment_id}/steps": {
+      "get": {
+        "tags": [
+          "Sequences",
+          "Sequences"
+        ],
+        "summary": "Get Enrollment Steps",
+        "description": "What each step did for one contact, newest first, in plain words.\n\nA voicemail shows as waiting until Drop Cowboy reports back, then as\ndelivered or not delivered with the reason. A call shows what happened on\nit (answered, voicemail, no answer, ...) and a text whether it was\ndelivered (DAN-167 M-26). Every read runs off the event loop.",
+        "operationId": "get_enrollment_steps_sequences__sequence_id__enrollments__enrollment_id__steps_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sequence_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Sequence Id"
+            }
+          },
+          {
+            "name": "enrollment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Enrollment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EnrollmentStepEntry"
+                  },
+                  "title": "Response Get Enrollment Steps Sequences  Sequence Id  Enrollments  Enrollment Id  Steps Get"
                 }
               }
             }
@@ -17287,10 +17957,18 @@
           },
           "top_sub_accounts": {
             "items": {
-              "$ref": "#/components/schemas/app__agency__schemas__SubAccountSummary"
+              "$ref": "#/components/schemas/SubAccountSummary"
             },
             "type": "array",
             "title": "Top Sub Accounts",
+            "default": []
+          },
+          "usage_by_sub_account": {
+            "items": {
+              "$ref": "#/components/schemas/SubAccountSummary"
+            },
+            "type": "array",
+            "title": "Usage By Sub Account",
             "default": []
           },
           "daily_trend": {
@@ -17308,6 +17986,41 @@
             "type": "array",
             "title": "Usage By Provider",
             "default": []
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "period_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period End"
+          },
+          "period_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Source"
           }
         },
         "type": "object",
@@ -17627,7 +18340,7 @@
           "finish_greeting_before_listening": {
             "type": "boolean",
             "title": "Finish Greeting Before Listening",
-            "description": "If true, caller cannot interrupt the agent's first response (inbound). Ignored if ai_speaks_first is false \u2014 validator will reject the combo.",
+            "description": "If true, caller cannot interrupt the agent's first response (inbound). Ignored if ai_speaks_first is false - validator will reject the combo.",
             "default": false
           },
           "finish_greeting_before_listening_outbound": {
@@ -17751,7 +18464,7 @@
             "type": "string",
             "pattern": "^(low|medium|high|auto)$",
             "title": "Openai Vad Eagerness",
-            "description": "OpenAI semantic VAD eagerness: low (patient) to high (responsive). Default medium (~4s max wait) \u2014 low waited up to ~8s and felt sluggish.",
+            "description": "OpenAI semantic VAD eagerness: low (patient) to high (responsive). Default medium (~4s max wait) - low waited up to ~8s and felt sluggish.",
             "default": "medium"
           },
           "openai_noise_reduction": {
@@ -21456,6 +22169,17 @@
               }
             ],
             "title": "Callduration"
+          },
+          "Timestamp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timestamp"
           }
         },
         "type": "object",
@@ -21822,7 +22546,17 @@
             },
             "type": "object",
             "title": "Field Mapping",
-            "description": "CSV column \u2192 schema field mapping"
+            "description": "CSV column → schema field mapping"
+          },
+          "allow_inactive": {
+            "type": "boolean",
+            "title": "Allow Inactive",
+            "default": false
+          },
+          "launch": {
+            "type": "boolean",
+            "title": "Launch",
+            "default": false
           }
         },
         "type": "object",
@@ -22828,6 +23562,31 @@
         "title": "CheckoutResponse",
         "description": "Response containing Stripe Checkout URL."
       },
+      "ClientBillingUpdateRequest": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "billing_email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "email"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Billing Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled"
+        ],
+        "title": "ClientBillingUpdateRequest"
+      },
       "CollectionStatsResponse": {
         "properties": {
           "collection_id": {
@@ -23307,6 +24066,46 @@
         "type": "object",
         "title": "ContactStats",
         "description": "Aggregate stats for a contact's call history."
+      },
+      "ContactSupportRequest": {
+        "properties": {
+          "subject": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Subject"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "subject",
+          "message"
+        ],
+        "title": "ContactSupportRequest"
+      },
+      "ContactSupportResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "reply_to": {
+            "type": "string",
+            "title": "Reply To"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "reply_to"
+        ],
+        "title": "ContactSupportResponse"
       },
       "ConversationEvent": {
         "properties": {
@@ -24434,6 +25233,11 @@
             "title": "Config",
             "default": {}
           },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          },
           "view_count": {
             "type": "integer",
             "title": "View Count",
@@ -25251,9 +26055,16 @@
             "title": "Contact Id"
           },
           "timezone": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Timezone",
-            "default": "UTC"
+            "description": "IANA timezone for this contact. Leave empty to use the sequence timezone."
           },
           "variables": {
             "additionalProperties": {
@@ -25353,6 +26164,17 @@
             "type": "string",
             "title": "Status"
           },
+          "paused_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paused Reason"
+          },
           "next_action_at": {
             "anyOf": [
               {
@@ -25366,7 +26188,14 @@
             "title": "Next Action At"
           },
           "timezone": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Timezone"
           },
           "total_calls": {
@@ -25391,6 +26220,18 @@
               }
             ],
             "title": "Last Call Outcome"
+          },
+          "replied_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replied At"
           },
           "enrolled_via": {
             "type": "string",
@@ -25432,7 +26273,6 @@
           "contact_phone",
           "current_step",
           "status",
-          "timezone",
           "total_calls",
           "total_texts",
           "total_attempts",
@@ -25442,6 +26282,85 @@
           "updated_at"
         ],
         "title": "EnrollmentResponse"
+      },
+      "EnrollmentStepEntry": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "step_index": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step Index"
+          },
+          "step_type": {
+            "type": "string",
+            "title": "Step Type"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          }
+        },
+        "type": "object",
+        "required": [
+          "step_type",
+          "status",
+          "label"
+        ],
+        "title": "EnrollmentStepEntry",
+        "description": "One row on an enrollment's step timeline (DAN-167 S-19, L-21)."
       },
       "FAQPairCreate": {
         "properties": {
@@ -26078,7 +26997,7 @@
           "contact_id": {
             "type": "string",
             "title": "Contact Id",
-            "description": "GHL contact ID \u2014 always present via Contact Intelligence",
+            "description": "GHL contact ID - always present via Contact Intelligence",
             "default": "test-contact-id"
           }
         },
@@ -27515,7 +28434,7 @@
           "integration_id"
         ],
         "title": "MSImportRequest",
-        "description": "Body for POST /sms-pools/ \u2014 import an existing Twilio MS as a pool."
+        "description": "Body for POST /sms-pools/ - import an existing Twilio MS as a pool."
       },
       "MSListItem": {
         "properties": {
@@ -28015,6 +28934,25 @@
         "type": "object",
         "title": "NotificationSettingsUpdate",
         "description": "Request body for updating notification settings."
+      },
+      "OffersResponse": {
+        "properties": {
+          "jumpstart": {
+            "type": "boolean",
+            "title": "Jumpstart"
+          },
+          "bundle": {
+            "type": "boolean",
+            "title": "Bundle"
+          }
+        },
+        "type": "object",
+        "required": [
+          "jumpstart",
+          "bundle"
+        ],
+        "title": "OffersResponse",
+        "description": "DAN-350: course offers the server will honour at checkout right now."
       },
       "OnboardingProgress": {
         "properties": {
@@ -28568,17 +29506,6 @@
             "description": "User must accept Terms of Service and Privacy Policy",
             "default": false
           },
-          "affiliate_code": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Affiliate Code"
-          },
           "utm_source": {
             "anyOf": [
               {
@@ -28644,6 +29571,23 @@
               }
             ],
             "title": "Referrer Url"
+          },
+          "offer": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "jumpstart"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offer"
+          },
+          "bundle": {
+            "type": "boolean",
+            "title": "Bundle",
+            "default": false
           }
         },
         "type": "object",
@@ -29181,7 +30125,7 @@
         },
         "type": "object",
         "title": "PoolUpdate",
-        "description": "Body for PATCH /sms-pools/{pool_id} \u2014 pool-default sending config."
+        "description": "Body for PATCH /sms-pools/{pool_id} - pool-default sending config."
       },
       "PortalRequest": {
         "properties": {
@@ -29195,6 +30139,18 @@
               }
             ],
             "title": "Return Url"
+          },
+          "flow": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "cancel"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flow"
           }
         },
         "type": "object",
@@ -29611,17 +30567,6 @@
             ],
             "title": "Billing Period",
             "default": "monthly"
-          },
-          "affiliate_code": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Affiliate Code"
           }
         },
         "type": "object",
@@ -30819,7 +31764,8 @@
           "description": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "maxLength": 2000
               },
               {
                 "type": "null"
@@ -30924,7 +31870,8 @@
           "template_id": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "maxLength": 100
               },
               {
                 "type": "null"
@@ -30935,7 +31882,8 @@
           "qualification_criteria": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "maxLength": 5000
               },
               {
                 "type": "null"
@@ -31012,6 +31960,16 @@
           "total": {
             "type": "integer",
             "title": "Total"
+          },
+          "totals": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SequenceTotals"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -31255,6 +32213,11 @@
             "title": "Active Count",
             "default": 0
           },
+          "receiving_steps_count": {
+            "type": "integer",
+            "title": "Receiving Steps Count",
+            "default": 0
+          },
           "booked_count": {
             "type": "integer",
             "title": "Booked Count",
@@ -31363,6 +32326,16 @@
           "booking_rate": {
             "type": "number",
             "title": "Booking Rate"
+          },
+          "in_flight_count": {
+            "type": "integer",
+            "title": "In Flight Count",
+            "default": 0
+          },
+          "receiving_steps_count": {
+            "type": "integer",
+            "title": "Receiving Steps Count",
+            "default": 0
           }
         },
         "type": "object",
@@ -31406,6 +32379,19 @@
             "type": "object",
             "title": "Config",
             "description": "Step-specific config"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id",
+            "description": "Stable step id. Send back the id you read so contacts partway through the sequence stay on the right step after an edit. Leave it out on a new step."
           }
         },
         "type": "object",
@@ -31415,6 +32401,48 @@
         ],
         "title": "SequenceStep",
         "description": "Single step in a sequence. Stored as JSONB array element."
+      },
+      "SequenceTotals": {
+        "properties": {
+          "enrolled_count": {
+            "type": "integer",
+            "title": "Enrolled Count",
+            "default": 0
+          },
+          "active_count": {
+            "type": "integer",
+            "title": "Active Count",
+            "default": 0
+          },
+          "receiving_steps_count": {
+            "type": "integer",
+            "title": "Receiving Steps Count",
+            "default": 0
+          },
+          "booked_count": {
+            "type": "integer",
+            "title": "Booked Count",
+            "default": 0
+          },
+          "replied_count": {
+            "type": "integer",
+            "title": "Replied Count",
+            "default": 0
+          },
+          "booking_rate": {
+            "type": "number",
+            "title": "Booking Rate",
+            "default": 0.0
+          },
+          "reply_rate": {
+            "type": "number",
+            "title": "Reply Rate",
+            "default": 0.0
+          }
+        },
+        "type": "object",
+        "title": "SequenceTotals",
+        "description": "Totals across every sequence of the sub-account, not only the page (DAN-167 L-13).\n\nRates are weighted by contacts: booked / enrolled over all sequences."
       },
       "SequenceUpdate": {
         "properties": {
@@ -31434,7 +32462,8 @@
           "description": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "maxLength": 2000
               },
               {
                 "type": "null"
@@ -31481,7 +32510,8 @@
           "active_tag": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "maxLength": 255
               },
               {
                 "type": "null"
@@ -31574,7 +32604,8 @@
           "qualification_criteria": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "maxLength": 5000
               },
               {
                 "type": "null"
@@ -32452,7 +33483,14 @@
             "title": "Suspended Reason"
           },
           "billing_start_day": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Billing Start Day",
             "default": 1
           },
@@ -32542,6 +33580,190 @@
             "type": "boolean",
             "title": "Sequences Enabled",
             "default": false
+          },
+          "is_paused": {
+            "type": "boolean",
+            "title": "Is Paused",
+            "default": false
+          },
+          "paused_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paused At"
+          },
+          "paused_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paused Reason"
+          },
+          "client_payment_failed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Payment Failed At"
+          },
+          "client_payment_failed_invoice_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Payment Failed Invoice Id"
+          },
+          "client_card_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Card Status"
+          },
+          "client_card_last4": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Card Last4"
+          },
+          "client_card_saved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Card Saved At"
+          },
+          "client_billing_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Billing Enabled"
+          },
+          "client_billing_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Billing Email"
+          },
+          "client_billing_enabled_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Billing Enabled At"
+          },
+          "client_billing_disabled_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Billing Disabled At"
+          },
+          "client_billing_final_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Billing Final Start"
+          },
+          "client_billing_unpriced_providers": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Billing Unpriced Providers"
+          },
+          "client_billing_rate_gaps": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Billing Rate Gaps"
+          },
+          "client_billing_rate_gaps_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Billing Rate Gaps Message"
           }
         },
         "type": "object",
@@ -32557,6 +33779,56 @@
         ],
         "title": "SubAccountResponse",
         "description": "Sub-account with billing and stats."
+      },
+      "SubAccountSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "calls": {
+            "type": "integer",
+            "title": "Calls"
+          },
+          "minutes": {
+            "type": "number",
+            "title": "Minutes"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          },
+          "margin_cents": {
+            "type": "integer",
+            "title": "Margin Cents"
+          },
+          "conversion_rate": {
+            "type": "number",
+            "title": "Conversion Rate"
+          },
+          "billed_minutes": {
+            "type": "integer",
+            "title": "Billed Minutes",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "calls",
+          "minutes",
+          "revenue_cents",
+          "margin_cents",
+          "conversion_rate"
+        ],
+        "title": "SubAccountSummary",
+        "description": "Top sub-account stats for agency dashboard."
       },
       "SubscriptionStatus": {
         "properties": {
@@ -32581,6 +33853,11 @@
           "cancel_at_period_end": {
             "type": "boolean",
             "title": "Cancel At Period End"
+          },
+          "has_stripe_subscription": {
+            "type": "boolean",
+            "title": "Has Stripe Subscription",
+            "default": false
           },
           "usage": {
             "anyOf": [
@@ -34292,6 +35569,16 @@
             "title": "Demo Suite Available",
             "default": false
           },
+          "simulation_suite_available": {
+            "type": "boolean",
+            "title": "Simulation Suite Available",
+            "default": false
+          },
+          "call_analysis_available": {
+            "type": "boolean",
+            "title": "Call Analysis Available",
+            "default": false
+          },
           "api_access": {
             "type": "boolean",
             "title": "Api Access",
@@ -34311,6 +35598,11 @@
             "type": "integer",
             "title": "Premium Voice Rate Cents",
             "default": 0
+          },
+          "client_billing_included": {
+            "type": "boolean",
+            "title": "Client Billing Included",
+            "default": false
           }
         },
         "type": "object",
@@ -34879,6 +36171,41 @@
           },
           "summary": {
             "$ref": "#/components/schemas/UsageExportSummary"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "period_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period End"
+          },
+          "period_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Source"
           }
         },
         "type": "object",
@@ -34911,6 +36238,11 @@
           "total_margin_cents": {
             "type": "integer",
             "title": "Total Margin Cents"
+          },
+          "total_billable_minutes": {
+            "type": "integer",
+            "title": "Total Billable Minutes",
+            "default": 0
           },
           "by_provider": {
             "items": {
@@ -35081,6 +36413,94 @@
         "title": "UsageSummary",
         "description": "Summary of usage for the current billing period."
       },
+      "UsageTimeseriesDay": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "minutes": {
+            "type": "number",
+            "title": "Minutes"
+          },
+          "texts": {
+            "type": "integer",
+            "title": "Texts"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "title": "Amount Cents"
+          },
+          "cumulative_minutes": {
+            "type": "number",
+            "title": "Cumulative Minutes"
+          },
+          "cumulative_amount_cents": {
+            "type": "integer",
+            "title": "Cumulative Amount Cents"
+          },
+          "is_future": {
+            "type": "boolean",
+            "title": "Is Future"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "minutes",
+          "texts",
+          "amount_cents",
+          "cumulative_minutes",
+          "cumulative_amount_cents",
+          "is_future"
+        ],
+        "title": "UsageTimeseriesDay",
+        "description": "One UTC day of a billing period. A running total, never a projection."
+      },
+      "UsageTimeseriesResponse": {
+        "properties": {
+          "period_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period Start"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period End"
+          },
+          "period_source": {
+            "type": "string",
+            "title": "Period Source"
+          },
+          "pricing": {
+            "type": "string",
+            "enum": [
+              "wholesale",
+              "client_price"
+            ],
+            "title": "Pricing"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/UsageTimeseriesDay"
+            },
+            "type": "array",
+            "title": "Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period_start",
+          "period_end",
+          "period_source",
+          "pricing",
+          "days"
+        ],
+        "title": "UsageTimeseriesResponse",
+        "description": "Daily usage across the whole period, zero-filled, oldest day first.\n\npricing='wholesale': what Stripe bills the agency (agency screens).\npricing='client_price': what the tenant was charged (the agency's price\nfor a sub-account, the plan price for a direct customer)."
+      },
       "UserResponse": {
         "properties": {
           "id": {
@@ -35223,6 +36643,129 @@
         ],
         "title": "VariableDefinition",
         "description": "Definition for a template variable in agent prompts."
+      },
+      "VoicemailChoice": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "VoicemailChoice"
+      },
+      "VoicemailOptionsResponse": {
+        "properties": {
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider",
+            "description": "drop_cowboy, slybroadcast, or null when none is connected"
+          },
+          "pools": {
+            "items": {
+              "$ref": "#/components/schemas/VoicemailPool"
+            },
+            "type": "array",
+            "title": "Pools"
+          },
+          "recordings": {
+            "items": {
+              "$ref": "#/components/schemas/VoicemailChoice"
+            },
+            "type": "array",
+            "title": "Recordings"
+          },
+          "voices": {
+            "items": {
+              "$ref": "#/components/schemas/VoicemailChoice"
+            },
+            "type": "array",
+            "title": "Voices"
+          },
+          "pool_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pool Id",
+            "description": "Caller number pool saved in Settings"
+          },
+          "voice_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice Id",
+            "description": "Default voice saved in Settings"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error",
+            "description": "Plain reason the lists could not load"
+          }
+        },
+        "type": "object",
+        "title": "VoicemailOptionsResponse",
+        "description": "Choices for voicemail steps and Settings (DAN-167 S-18)."
+      },
+      "VoicemailPool": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "number_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Number Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "VoicemailPool"
       },
       "WebCrawlerCreate": {
         "properties": {
@@ -35649,51 +37192,6 @@
         "title": "WebhookUrlTestRequest",
         "description": "Request to test a webhook URL directly (no demo ID needed)."
       },
-      "app__agency__schemas__SubAccountSummary": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "calls": {
-            "type": "integer",
-            "title": "Calls"
-          },
-          "minutes": {
-            "type": "number",
-            "title": "Minutes"
-          },
-          "revenue_cents": {
-            "type": "integer",
-            "title": "Revenue Cents"
-          },
-          "margin_cents": {
-            "type": "integer",
-            "title": "Margin Cents"
-          },
-          "conversion_rate": {
-            "type": "number",
-            "title": "Conversion Rate"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "name",
-          "calls",
-          "minutes",
-          "revenue_cents",
-          "margin_cents",
-          "conversion_rate"
-        ],
-        "title": "SubAccountSummary",
-        "description": "Top sub-account stats for agency dashboard."
-      },
       "app__agents__prompt_router__GenerateAllKnowledgeRequest": {
         "properties": {
           "business_name": {
@@ -35719,7 +37217,7 @@
             "type": "string",
             "pattern": "^(inbound|outbound|both)$",
             "title": "Agent Mode",
-            "description": "Agent mode \u2014 outbound routes 'team' to objections generator",
+            "description": "Agent mode - outbound routes 'team' to objections generator",
             "default": "inbound"
           }
         },
@@ -35768,7 +37266,7 @@
             "type": "string",
             "pattern": "^(inbound|outbound|both)$",
             "title": "Agent Mode",
-            "description": "Agent mode \u2014 outbound routes 'team' to objections generator",
+            "description": "Agent mode - outbound routes 'team' to objections generator",
             "default": "inbound"
           }
         },
