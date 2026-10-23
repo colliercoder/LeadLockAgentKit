@@ -170,9 +170,9 @@ Claude picks up the matching skill, reads your `.env`, hits the Leadlock API, an
 
 ## Get a key
 
-Generate an API key from your Leadlock account: Settings → API Keys → Create.
+API keys live inside a sub-account. If your dashboard has none yet, click **Create Sub-Account** first. Then pick the sub-account from the switcher at the top and go to **Settings > API Keys > Manage API Keys > Create API Key**. Copy the key right away: it is only shown once.
 
-If you're on the Agency plan, the key has access to all your sub-accounts. If you're a sub-account user, the key is scoped to your tenant.
+Each key works only inside the sub-account it was made in. `subaccount-onboarding` needs an agency-level key, which the dashboard does not issue yet.
 
 ## Adding your own skills
 
