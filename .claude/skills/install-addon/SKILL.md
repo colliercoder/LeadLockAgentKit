@@ -82,8 +82,9 @@ It picks the newest Python 3.9+ on the machine, creates `.venv/` and copies `.en
 
 Read `GHL_PIT` and `GHL_LOCATION_ID` from the kit's `.env`. Write them into
 `addons/leadlock-ghl-connector/ghl-cli/.env` as `GHL_API_KEY=<GHL_PIT>` and
-`GHL_LOCATION_ID=<GHL_LOCATION_ID>`. If either is blank in the kit `.env`, ask the user for
-it and write it to both files.
+`GHL_LOCATION_ID=<GHL_LOCATION_ID>`. Treat a value as missing if it is blank or still a
+placeholder (`pit-paste-your-token-here`, `pit-xxxx...`, `YOUR_LOCATION_ID`). If either is
+missing, ask the user for it and write it to both files.
 
 Smoke test:
 
