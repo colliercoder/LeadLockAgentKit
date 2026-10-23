@@ -69,17 +69,17 @@ In the same page open **Connection details > Connect**.
 shows from the kit folder. It looks like:
 
 ```bash
-claude mcp add --transport http n8n-mcp https://<your-instance>/mcp-server/http
+claude mcp add --transport http n8n https://<your-instance>/mcp-server/http
 ```
 
-Then inside Claude Code run `/mcp`, select `n8n-mcp`, choose **Authenticate**, and approve in
+Then inside Claude Code run `/mcp`, select `n8n`, choose **Authenticate**, and approve in
 the browser.
 
 **Token instead.** Open the **API key** tab (n8n shows the token once; rotating it revokes
 the old one) and run:
 
 ```bash
-claude mcp add --transport http n8n-mcp https://<your-instance>/mcp-server/http \
+claude mcp add --transport http n8n https://<your-instance>/mcp-server/http \
   --header "Authorization: Bearer <TOKEN>"
 ```
 
@@ -100,7 +100,7 @@ Restart Claude Code in the kit folder, then:
 claude mcp list
 ```
 
-`n8n-mcp` should show as connected. Then ask Claude to "list my n8n workflows". An empty
+`n8n` should show as connected. Then ask Claude to "list my n8n workflows". An empty
 list on a new account is a pass; an auth error means re-run `/mcp` > Authenticate.
 
 ### Step 4: Make a workflow visible to Claude
@@ -135,6 +135,11 @@ the agent.
 - Google Sheets and other OAuth credentials are created inside n8n (on Cloud it is a "Sign in
   with Google" click). Claude cannot click that for the user; it tells them which node needs a
   credential.
+- **Leadlock sends everything the agent collected inside a field named `arguments`, and n8n
+  expressions refuse to read a field with that name.** Put a Code node right after the Webhook
+  that copies `arguments` out into normal fields, then build the rest on those.
+- Workflows Claude creates over MCP are already "Available in MCP"; ones you build by hand
+  need the switch (Step 4).
 - A workflow that works in the editor but fails from Leadlock is almost always the test URL
   or an unpublished workflow (Rule 6).
 - Every client connected to the MCP server sees every MCP-enabled workflow the user can
