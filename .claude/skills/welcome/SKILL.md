@@ -83,7 +83,7 @@ You don't need to memorize commands — just describe what you want.
     Lets Claude build n8n workflows, the backend for custom functions.
 
   install-addon   (paid add-ons in ./addons/)
-    "Install my add-on" / "I bought the Launch Bundle"
+    "Install my add-on" / "I bought the GHL Connector"
 
   add-to-learnings
     "/add-to-learnings"

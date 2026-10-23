@@ -4,9 +4,9 @@ This folder is where paid Leadlock add-ons go. Everything you drop in here stays
 machine: the whole folder (except this file) is in `.gitignore`, so it never gets pushed to
 GitHub or shared.
 
-## Leadlock Launch Bundle
+## Leadlock GHL Connector
 
-The Launch Bundle adds GoHighLevel superpowers to the kit:
+The GHL Connector (sold on its own and inside the Leadlock Launch Bundle) adds GoHighLevel superpowers to the kit:
 
 - **GHL CLI and Claude skill**: Claude can read and change your GoHighLevel account from
   the terminal (contacts, opportunities, calendars, workflows, conversations and more).
@@ -18,7 +18,7 @@ Get it at https://www.leadlock.ai/store
 ## Install an add-on
 
 1. Unzip what you got after purchase into this folder, so you have
-   `addons/leadlock-launch-bundle/`.
+   `addons/leadlock-ghl-connector/`.
 2. Open Claude Code in the kit folder and say: **"install my add-on"**.
 
 Claude runs the `install-addon` skill: it installs the add-on, connects its Claude skill to

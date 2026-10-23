@@ -22,7 +22,7 @@ A growing library of Claude Code skills for Leadlock agency owners. Run them wit
 | `self-selling-setup` | Walk an agency step-by-step through standing up the **self-selling GHL snapshot** for their own business: from an imported snapshot to a live, paying, hands-off system. Claude runs an intake interview, **auto-fills every GHL custom value** via the public API + a Private Integration Token, hands over an ordered checklist for the GHL-UI-only steps (Stripe, products, contract, triggers, publishing) with all the gotchas baked in, and verifies there are no config gaps. Ships the intake, the checklist, and stdlib setup/verify scripts. The Leadlock extension is included in the Leadlock Launch Bundle. |
 | `pick-your-offer` | The **pick-your-offer prompt pack** from course video 2b. Coaches you from "what should I sell?" to a **one-sentence offer, a first setup price and a monthly price** in about an hour: tests your niche, builds the offer only from what Leadlock delivers today, runs the four value-equation questions one at a time, and sets a setup-plus-monthly price ladder. Writes the finished offer to `./output/` and ships copy-paste prompts for any Claude chat. No API key needed. |
 | `connect-n8n` | Connect Claude Code to **n8n** through n8n's built-in MCP server, so Claude can build, edit and run n8n workflows in plain English. The fastest backend for Leadlock custom functions: webhook in, look anything up, short answer back to the agent. Covers n8n Cloud vs self-hosted, OAuth or token, and verifies the connection. |
-| `install-addon` | Install a **paid add-on** you dropped into `addons/` (today: the Leadlock Launch Bundle, a GHL CLI with its Claude skill plus the Leadlock GHL Connector Chrome extension). Installs it, links its skill, reuses your GHL keys, loads the extension. Add-on files stay gitignored. |
+| `install-addon` | Install a **paid add-on** you dropped into `addons/` (today: the Leadlock GHL Connector, a GHL CLI with its Claude skill plus a Chrome extension). Installs it, links its skill, reuses your GHL keys, loads the extension. Add-on files stay gitignored. |
 
 **Setup helpers** (auto-fire when needed):
 
@@ -89,7 +89,7 @@ n8n is the easiest backend for Leadlock **custom functions**: your agent calls a
 
 ## Paid add-ons (optional)
 
-The kit is free. The **Leadlock Launch Bundle** adds GoHighLevel superpowers: a GHL command-line tool with its own Claude skill, and the Leadlock GHL Connector Chrome extension, so Claude can build and edit GHL workflows for you. Get it at https://www.leadlock.ai/store, unzip it into `addons/`, and say **"install my add-on"**. Everything in `addons/` stays on your machine; it is gitignored. See [addons/README.md](addons/README.md).
+The kit is free. The **Leadlock GHL Connector** (on its own or in the Leadlock Launch Bundle) adds GoHighLevel superpowers: a GHL command-line tool with its own Claude skill, plus a Chrome extension, so Claude can work in your GHL account and build workflows for you. Get it at https://www.leadlock.ai/store, unzip it into `addons/`, and say **"install my add-on"**. Everything in `addons/` stays on your machine; it is gitignored. See [addons/README.md](addons/README.md).
 
 ## The kit gets smarter
 
