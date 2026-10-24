@@ -52,6 +52,8 @@ Verify both keys exist:
 - `LEADLOCK_API_KEY` — required
 - `LEADLOCK_API_URL` — required (default to `https://leadlock-app.onrender.com` if missing)
 - `RETELL_API_KEY` — optional; only the `retell-to-leadlock` skill needs it (the source platform, read-only). Ignore it if you're not porting from Retell.
+- `MY_PHONE_NUMBER`: optional, recommended. The user's own cell in `+1` format; test-call steps default to it.
+- `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN`: optional. Fall back to the older `LEADLOCK_TWILIO_SID` / `LEADLOCK_TWILIO_AUTH` names when the new ones are empty.
 
 If `LEADLOCK_API_KEY` is missing or still contains the placeholder `sk_live_paste_your_key_here`, stop with:
 
@@ -104,6 +106,7 @@ except Exception as e:
     <✓ or ✗> retell-to-leadlock  (requires RETELL_API_KEY in .env)
     <✓ or ✗> subaccount-onboarding  (requires agency-tier key — you are: <tenant_type>)
     ✓ pick-your-offer  (no key needed)
+    ✓ clarify-voice  (no key needed)
     ✓ connect-n8n  (no Leadlock key needed to connect)
     <✓ or ✗> install-addon  (needs a paid add-on in ./addons/)
     ✓ kit-audit  (maintainer self-check — no key needed for the static half)
@@ -147,6 +150,44 @@ Mask the API key: show the first 6 chars + last 4 chars only.
   If that fails, the platform is down or your network is blocked.
 ```
 
+### Step 4b: Optional settings: phone and Twilio
+
+Report each as set or not set. Never print a value: the phone shows only its area code, the SID only its first 4 characters, the token never.
+
+**`MY_PHONE_NUMBER`**: set means non-empty. Also check it looks like E.164 (`+` then 10-15 digits). If set but malformed, say so and show the expected shape (`+15555550123`), not the user's value.
+
+**Twilio**: resolve the credentials first, new names winning:
+
+```python
+sid = env.get("TWILIO_ACCOUNT_SID") or env.get("LEADLOCK_TWILIO_SID") or ""
+token = env.get("TWILIO_AUTH_TOKEN") or env.get("LEADLOCK_TWILIO_AUTH") or ""
+```
+
+If both are present, run one read-only auth check (a GET on the account itself, which changes nothing):
+
+```python
+import base64
+auth = base64.b64encode(f"{sid}:{token}".encode()).decode()
+req = urllib.request.Request(
+    f"https://api.twilio.com/2010-04-01/Accounts/{sid}.json",
+    headers={"Authorization": f"Basic {auth}"},
+)
+# 200 -> credentials work; read body["status"] (active / suspended) and body["friendly_name"]
+# 401 -> SID or token is wrong
+```
+
+Report block (append to the Step 4 output):
+
+```
+  Optional settings:
+    MY_PHONE_NUMBER      ✓ set (+1 512 area code)      | ✗ not set: test calls will ask for a number
+    Twilio credentials   ✓ valid (account active, ACxx...)  | ✗ rejected (401): re-copy both from console.twilio.com
+                         | ✗ not set: Twilio features (numbers, A2P status, call logs, call backstop) are off
+                         | (note "using the older LEADLOCK_TWILIO_* names" when the fallback was used)
+```
+
+Only one of the two Twilio values set counts as not set; name the missing one.
+
 ### Step 5 — Tenant-tier skills check
 
 If `tenant_type` is `agency` or higher: all production skills are available.
@@ -161,6 +202,8 @@ If everything passed, write a tiny file at `.claude/.setup-ok` containing the da
 ## Rules
 
 - **Never print the full API key.** Always mask: `sk_live_xxxxxx...xxxx`.
+- **Never print the phone number or Twilio credentials.** Phone: area code only. SID: first 4 characters. Auth token: never, not even masked.
+- **The Twilio check is read-only.** One GET on the account. Never buy, release, or reconfigure anything from setup-check.
 - **Don't auto-create `.env`.** Tell the user to copy `.env.example` to `.env`. They need to be aware of the file.
 - **Don't write to `.env`.** Read-only. The user owns the contents.
 - **Fail loud, fail fast.** Each failure mode has a specific remediation message above. Don't be vague.

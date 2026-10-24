@@ -210,6 +210,7 @@ Returns chronological analyses with pass rates. Useful for plotting improvement 
 - **`temperature` matters but isn't in the rewrite scope**. If the agent paraphrases too much, that's a temperature issue, not a prompt issue. Suggest `PATCH /agents/<id> {"temperature": 0.6}` separately.
 - **xAI agents need different tuning than OpenAI/Gemini**. xAI is more literal-prompt-following; OpenAI improvises more. The analyzer doesn't know this — be skeptical of "more explicit" suggestions on OpenAI agents.
 - **Don't tune demos** (`channel=demo` or `direction=demo`). Those calls are warm/canned and don't reflect production behavior.
+- **Real test call: default to `MY_PHONE_NUMBER`.** If the user wants to hear the agent on a real phone call after a rewrite is applied, use `POST /outbound/agents/{agent_id}/call` with `to_number` = `MY_PHONE_NUMBER` from `.env` when it is set (otherwise ask) and a voice-capable `from_phone_number_id`. Confirm before dialing and mask the number to its area code in anything you print.
 
 ## Rule capture
 

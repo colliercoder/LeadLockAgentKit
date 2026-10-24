@@ -9,8 +9,9 @@ Placeholders expanded by the harness before use:
 
 Voice models (set `voice_provider` + the per-provider model field on either agent
 to test a feature on a specific voice):
-    xai          -> Grok. voice: ara|eve|rex|sal|leo
-    openai       -> openai_voice_model: gpt-realtime-1.5 | gpt-realtime-2
+    xai          -> Grok Voice 3.0 (default xai_voice_model). voice: ara|eve|rex|sal|leo
+    openai       -> openai_voice_model: gpt-realtime-1.5 | gpt-realtime-2 | gpt-realtime-2.1 | gpt-realtime-2.1-mini
+    openai_live  -> GPT-Live. openai_live_voice: vesper (default) or another of its 12 voices
     gemini       -> gemini_voice: <gemini voice>
     elevenlabs   -> elevenlabs_voice_id: <11labs voice id>
 Default in cases below is xai; override per case or per run.

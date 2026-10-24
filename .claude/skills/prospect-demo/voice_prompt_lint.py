@@ -67,7 +67,8 @@ ABSOLUTE_SAFE_HEADERS = ("guardrail", "reminder", "never", "hard rule", "hard li
 
 # Prompting profiles.
 #
-# xAI's own migration guidance for grok-voice-think-fast (the model Leadlock runs)
+# xAI's own migration guidance for its newer Grok voice models (grok-voice-3.0 is
+# Leadlock's default; xAI now serves the legacy think-fast-1.0 id as 3.0)
 # is explicit: "Simplify your system prompt... your prompt should be much shorter"
 # and "Remove workaround prompting. Prompt hacks and edge-case fixes needed for GPT
 # models are unnecessary." leadlock-app's migration doc calls this out as THE risk:
@@ -168,7 +169,7 @@ def lint(
     """Return findings, most severe first. Empty list means clean.
 
     `profile` selects which checks apply. See PROFILES: `think-fast` (default,
-    what Leadlock runs) drops the GPT-era structural scaffolding and instead
+    used for every Grok voice model including grok-voice-3.0) drops the GPT-era structural scaffolding and instead
     flags it, per xAI's migration guidance. `gpt-realtime` keeps it.
     """
     cfg = PROFILES.get(profile, PROFILES[DEFAULT_PROFILE])

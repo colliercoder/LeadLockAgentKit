@@ -46,7 +46,7 @@ Evidence: `POST /agents` rejected the outbound user-sim until `ai_speaks_first` 
   when the agents don't hang up cleanly.
 
 **Why:** Without these, create fails, or the call burns provider minutes until the
-cap. The optional Twilio backstop (`LEADLOCK_TWILIO_SID/AUTH`) force-ends a runaway
+cap. The optional Twilio backstop (`TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN`, or the older `LEADLOCK_TWILIO_SID/AUTH`) force-ends a runaway
 call, but the agents' own `end_call` + the cap are the primary mechanism.
 
 **How to apply:** These defaults are baked into `UNDER_BASE` / `USER_BASE` in

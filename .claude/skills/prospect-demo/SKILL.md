@@ -20,18 +20,18 @@ Before doing anything, confirm `.env` exists and has `LEADLOCK_API_KEY` + `LEADL
 
 ## Rules
 
-0. **CHECK `xai_voice_model` FIRST, then start from the matching shape, and lint before you POST.**
+0. **CHECK THE MODEL FIRST (`voice_provider`, and `xai_voice_model` when it is `xai`), then start from the matching shape, and lint before you POST.**
 
-   - **`grok-voice-think-fast-*` (Leadlock's default and premium voice models): use `templates/voice-prompt.md`.** Write a BRIEF, not a rulebook. xAI's guidance for think-fast is to simplify the prompt, make it much shorter, and strip prompt hacks written for GPT models. State intent and let the model reason. A validated 39-field legal intake runs about 1,300 tokens this way.
-   - **GPT realtime models or `grok-voice-fast-1.0`: use `## Shared prompt skeleton`** further down. That skeleton is GPT-shaped on purpose.
+   - **Grok voice models (`grok-voice-3.0`, Leadlock's default, plus the legacy `grok-voice-think-fast-*` ids): use `templates/voice-prompt.md`.** Write a BRIEF, not a rulebook. xAI's guidance for its newer voice models is to simplify the prompt, make it much shorter, and strip prompt hacks written for GPT models. State intent and let the model reason. A validated 39-field legal intake runs about 1,300 tokens this way.
+   - **Any other model (OpenAI `gpt-realtime-*`, GPT-Live, Gemini 3.8, ElevenLabs): use `## Shared prompt skeleton`** further down. That skeleton is GPT-shaped on purpose.
 
-   Getting this backwards is the single biggest quality risk in this skill. The GPT-shaped scaffolding actively hurts think-fast: it costs prompt budget, and format templates make the model fabricate data. A read-back FORMAT template ("Names: <name>, spelled X - Y - Z") made a live agent INVENT a spelling for a name the caller had never spelled, and assert it twice as fact. The intent version ("when a name could be spelled more than one way, ask them to spell it") fixed it.
+   Getting this backwards is the single biggest quality risk in this skill. The GPT-shaped scaffolding actively hurts the Grok models: it costs prompt budget, and format templates make the model fabricate data. A read-back FORMAT template ("Names: <name>, spelled X - Y - Z") made a live agent INVENT a spelling for a name the caller had never spelled, and assert it twice as fact. The intent version ("when a name could be spelled more than one way, ask them to spell it") fixed it.
 
-   Validate with the bundled linter before creating anything. It auto-selects the profile from `xai_voice_model`, so it will tell you if you used the wrong shape:
+   Validate with the bundled linter before creating anything. It auto-selects the profile from `--model` (any `grok-voice-*` id gets the brief profile, anything else gets the skeleton profile), so it will tell you if you used the wrong shape:
 
    ```bash
    python3 .claude/skills/prospect-demo/validate.py prompt prompt.md \
-     --model grok-voice-think-fast-2.0
+     --model grok-voice-3.0
    ```
 
    It FAILs on: over 2,000 tokens, em dashes, speech markup (`<break>` / `[pause]` / `<emotion>` are inert on realtime speech-to-speech and get read aloud literally), missing sections, unfilled `{{variables}}` (they get spoken: "Is this tier patient_ame?"), and a missing re-ask guard. It WARNs on blanket always/never (realtime models take absolutes literally and produce bad edge behaviour), multi-turn example transcripts (they eat the attention budget and get imitated), and missing split-message handling.
@@ -58,7 +58,7 @@ Before doing anything, confirm `.env` exists and has `LEADLOCK_API_KEY` + `LEADL
 8. **Recording disclosure off by default on demos** (`enable_recording_disclosure=false`, `recording_enabled=false`). Flip back on when shipping to a real outbound line.
 9. **Confirm ambiguous names with the user before building.** Intake forms often contradict themselves. Stop and ask.
 10. **Use the house-style template structure exactly** (see `## Shared prompt skeleton`). Don't invent your own structure. Don't hoist a "CRITICAL RULES" section to the top - it duplicates Guardrails.
-11. **Length target depends on the model.** On `grok-voice-think-fast-*`: aim UNDER 2,000 tokens (~8,000 chars) and prefer the low end. A validated 39-field legal intake is about 1,300 tokens; there is no "too short" floor on think-fast, because anything you cut is scaffolding the model does not need. On GPT realtime / `grok-voice-fast-1.0`: 5K-9K chars, under 3K usually means missing context, over 10K is bloat.
+11. **Length target depends on the model.** On Grok voice models (`grok-voice-3.0` and legacy think-fast): aim UNDER 2,000 tokens (~8,000 chars) and prefer the low end. A validated 39-field legal intake is about 1,300 tokens; there is no "too short" floor on Grok, because anything you cut is scaffolding the model does not need. On every other model: 5K-9K chars, under 3K usually means missing context, over 10K is bloat.
 12. **No dynamic variables (`{{...}}`) for cold inbound prospects.** Reserve for stateful agents that pull per-session data.
 13. **Numbered Call Flow with concrete quoted phrases.** Each stage has the actual opening line in quotes the agent can speak. Don't write `"ask about their needs"` - write the actual question in quotes.
 14. **Eligibility gates restated as a Guardrails rule.** "All four gates must be a yes before invoking `book_appointment`" - not just a checklist inside Call Flow.
@@ -209,10 +209,13 @@ Per-provider voice fields:
 
 | Provider | `voice_provider` | Voice field | Language | Male voices | Female voices |
 |---|---|---|---|---|---|
-| Gemini | `gemini` | `gemini_voice` | `gemini_language_code` (BCP-47, e.g. `en-US`, `he-IL`) | `Charon`, `Orus`, `Iapetus` | `Aoede`, `Kore`, `Leda` |
-| OpenAI | `openai` | `openai_voice` | (auto) | `ballad`, `ash`, `verse`, `echo` | `shimmer`, `coral`, `sage` |
-| xAI (Grok) | `xai` | `voice` | (auto) | `rex`, `leo` | `ara` |
+| Gemini 3.8 | `gemini` | `gemini_voice` | `gemini_language_code` (BCP-47, e.g. `en-US`, `he-IL`) | `Charon`, `Orus`, `Iapetus` | `Aoede`, `Kore`, `Leda` |
+| OpenAI | `openai` | `openai_voice` | (auto) | `ballad`, `ash`, `verse`, `echo` (+ `cedar` on v2 models) | `shimmer`, `coral`, `sage` (+ `marin` on v2 models) |
+| xAI (Grok Voice 3.0) | `xai` | `voice` | (auto) | `rex`, `leo` | `ara`, `eve` |
+| GPT-Live | `openai_live` | `openai_live_voice` | (auto) | 12 voices, not split by gender (see CLAUDE.md); default `vesper` | |
 | ElevenLabs | `elevenlabs` | `elevenlabs_voice_id` | `elevenlabs_language` (2-letter) | UUID from ElevenLabs | UUID |
+
+Model field per provider (full list in CLAUDE.md, "Voice provider quick reference"): xAI `xai_voice_model` defaults to `grok-voice-3.0`, leave it. OpenAI `openai_voice_model` defaults to `gpt-realtime-1.5`; the premium v2 models are `gpt-realtime-2`, `gpt-realtime-2.1`, `gpt-realtime-2.1-mini`. GPT-Live and Gemini have no model field.
 
 Gemini also needs: `gemini_start_sensitivity: "low"`, `gemini_end_sensitivity: "high"`.
 OpenAI also needs: `openai_vad_type: "semantic_vad"`, `openai_vad_eagerness: "low"`, `openai_noise_reduction: "far_field"`.
@@ -446,6 +449,7 @@ Reply however - voice note, bullets, whatever's fastest. Excited to hear what yo
 - **Iframe surround is controlled by the parent.** Always include `?embed=true` on iframe sources for phone/web/orb demos - it forces transparent backgrounds, so the GHL section's own color bleeds through. The iframe auto-detect (`window.self !== window.top`) does this too, but `?embed=true` is explicit and safer.
 - **There is only one phone demo channel.** Channel enum is `phone | sms | web | orb | fb_messenger | ig_messenger | tiktok | whatsapp | fb_lead | ig_lead` - verified in `LEADLOCKDOCS.json`. No `phone_mockup` or `incoming_call` variant exists.
 - **`LEADLOCKDOCS.json` is the canonical doc reference.** The two older files at the kit root (`openapi-spec.json`, `leadlock-docs.md`) are stale earlier exports - do not reference them. **Critical:** `LEADLOCKDOCS.json` does NOT document per-demo customization keys like `phone_caller_image` because `demo.config` is `additionalProperties: true` - those live inside the renderer chunk, not the schema. When the docs say a feature isn't supported and a user says it is, audit the deployed JS before publishing a "platform gap" finding.
+- **Real test call: default to `MY_PHONE_NUMBER`.** If the user wants to hear the agent on a real phone call (beyond the orb or phone demo link), use `POST /outbound/agents/{agent_id}/call` with `to_number` = `MY_PHONE_NUMBER` from `.env` when it is set (otherwise ask) and a voice-capable `from_phone_number_id`. Confirm before dialing and mask the number to its area code in anything you print.
 
 ## Prompt Length Targets
 
@@ -469,12 +473,12 @@ If you're under 3K and the agent has any complexity (eligibility gates, multiple
 
 ## Shared prompt skeleton
 
-> **PICK THE RIGHT SKELETON. Read the agent's `xai_voice_model` first.**
+> **PICK THE RIGHT SKELETON. Read the agent's `voice_provider` (and `xai_voice_model` for `xai`) first.**
 >
-> - **`grok-voice-think-fast-*` (Leadlock's default and premium models): use `templates/voice-prompt.md`, NOT the skeleton below.** xAI's guidance for think-fast is to simplify the prompt, make it much shorter, and strip prompt hacks written for GPT models. The skeleton below is GPT-shaped: its scripted-greeting rule, its stage-by-stage call flow, and its turn-taking guardrails are the exact scaffolding xAI says to remove. A 39-field legal intake runs 1,300 tokens on think-fast; the GPT-shaped version of the same agent was 2,240 and followed its own rules worse.
-> - **GPT realtime models, or `grok-voice-fast-1.0` (a drop-in GPT replacement): the skeleton below is correct.**
+> - **Grok voice models (`grok-voice-3.0`, Leadlock's default, plus legacy `grok-voice-think-fast-*`): use `templates/voice-prompt.md`, NOT the skeleton below.** xAI's guidance for its newer voice models is to simplify the prompt, make it much shorter, and strip prompt hacks written for GPT models. The skeleton below is GPT-shaped: its scripted-greeting rule, its stage-by-stage call flow, and its turn-taking guardrails are the exact scaffolding xAI says to remove. A 39-field legal intake runs 1,300 tokens on Grok think-fast; the GPT-shaped version of the same agent was 2,240 and followed its own rules worse.
+> - **Any other model (OpenAI `gpt-realtime-*`, GPT-Live, Gemini 3.8, ElevenLabs): the skeleton below is correct.**
 >
-> Either way, run `voice_prompt_lint.py` before you POST. It auto-selects the profile from `xai_voice_model` and will tell you if you used the wrong shape.
+> Either way, run `validate.py prompt` before you POST. It auto-selects the profile from `--model` and will tell you if you used the wrong shape.
 
 Fill the `<PLACEHOLDERS>` from the intake/scrape. Keep section order exactly as shown. Cut any section that doesn't apply (e.g. omit `## Eligibility` for agents that don't gate on qualification).
 

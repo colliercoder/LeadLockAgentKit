@@ -226,25 +226,40 @@ If your skill needs an agency-tier API key (anything under `/agency/*`), say so 
 
 ## Voice provider quick reference
 
-When skills create or modify agents, these are the working voice options on the platform:
+Source: the platform's agent schema (`AgentCreate` in `LEADLOCKDOCS.json`) and the dashboard's voice picker, checked 2026-10-23. When skills create or modify agents, these are the working options.
 
-| Provider | `voice_provider` | Voice field | Language | Male | Female |
-|---|---|---|---|---|---|
-| Gemini | `gemini` | `gemini_voice` | `gemini_language_code` | `Charon`, `Orus`, `Iapetus` | `Aoede`, `Kore`, `Leda` |
-| OpenAI | `openai` | `openai_voice` | (auto) | `ballad`, `ash`, `verse`, `echo` | `shimmer`, `coral`, `sage` |
-| xAI (Grok) | `xai` | `voice` | (auto) | `rex`, `leo` | `ara` |
-| ElevenLabs | `elevenlabs` | `elevenlabs_voice_id` | `elevenlabs_language` | voice UUID | voice UUID |
-| GPT-Live | `openai_live` | `openai_live_voice` | (auto) | 12 voices, not split by gender: `quartz`, `ripple`, `vesper` (default), `willow`, `stone`, `gleam`, `meridian`, `bossa`, `tempo`, `beacon`, `delta`, `cinder` | (same list) |
+### Models
 
-xAI (Grok) `voice` also accepts `eve` and `sal` beyond the `rex`/`leo`/`ara` listed above (all set via the `voice` field).
+| Provider (dashboard label) | `voice_provider` | Model field | Models |
+|---|---|---|---|
+| Grok | `xai` | `xai_voice_model` | `grok-voice-3.0` "Grok Voice 3.0" (default, standard rate, the only one offered for new agents). Legacy, still valid on old agents: `grok-voice-think-fast-2.0` "Grok Voice 2.0 (legacy)" (premium rate), `grok-voice-think-fast-1.0` "Grok Voice 1.0 (legacy)" (xAI now serves it as 3.0). |
+| OpenAI | `openai` | `openai_voice_model` | `gpt-realtime-1.5` (default, standard). Premium, reasoning-capable "v2" models: `gpt-realtime-2`, `gpt-realtime-2.1`, `gpt-realtime-2.1-mini` (mini trades a little quality for lower latency). `openai_reasoning_effort` applies to the v2 models only; `low` is recommended. |
+| GPT-Live | `openai_live` | none | `gpt-live-1` (fixed; the platform pairs it with a background model for tool calls). |
+| Gemini 3.8 | `gemini` | none | `gemini-3.8-live` (fixed, since 2026-09-24). |
+| ElevenLabs | `elevenlabs` | `elevenlabs_model_id` | The LLM behind the ElevenLabs agent, from a curated list. Default `claude-sonnet-5`; anything off the list is rejected. |
 
-Gemini additionally needs: `gemini_start_sensitivity: "low"`, `gemini_end_sensitivity: "high"`.
-Gemini agents run on Google's **Gemini 3.8 Live** (`gemini-3.8-live`, since 2026-09-24); there is no model field to set. `gemini_thinking_level`, `gemini_proactive_audio` and `gemini_affective_dialog` are still accepted by the API but ignored (3.8 does not support them), so skills should not set them.
+Grok Voice 3.0 always runs with reasoning on: the platform forces `xai_reasoning_effort: "high"` for `grok-voice-3.0` (and legacy 1.0) whatever the stored value, because "none" made the model speak tool calls out loud. Only legacy think-fast-2.0 honours the setting. Don't set the field on new agents.
+
+### Voices
+
+| Provider | Voice field | Language | Male | Female |
+|---|---|---|---|---|
+| Grok | `voice` | (auto) | `rex`, `leo` | `ara` (default), `eve` |
+| OpenAI | `openai_voice` | (auto) | `ballad`, `ash`, `verse`, `echo` | `shimmer`, `coral`, `sage` |
+| GPT-Live | `openai_live_voice` | (auto) | 12 voices, not split by gender: `quartz`, `ripple`, `vesper` (default), `willow`, `stone`, `gleam`, `meridian`, `bossa`, `tempo`, `beacon`, `delta`, `cinder` | (same list) |
+| Gemini 3.8 | `gemini_voice` | `gemini_language_code` | `Charon`, `Orus`, `Iapetus` | `Aoede`, `Kore`, `Leda` |
+| ElevenLabs | `elevenlabs_voice_id` | `elevenlabs_language` | voice UUID | voice UUID |
+
+Grok `voice` also accepts `sal` (neutral). OpenAI also has `alloy` (the API default). The OpenAI v2 models (`gpt-realtime-2`, `2.1`, `2.1-mini`) add `marin` and `cedar`; never put those on a `gpt-realtime-1.5` agent, it rejects them. Gemini has 30 prebuilt voices in total; the six above are the curated picks.
+
+### Required companion settings
+
+Gemini additionally needs: `gemini_start_sensitivity: "low"`, `gemini_end_sensitivity: "high"`. `gemini_thinking_level`, `gemini_proactive_audio` and `gemini_affective_dialog` are still accepted by the API but ignored (3.8 does not support them), so skills should not set them.
 OpenAI additionally needs: `openai_vad_type: "semantic_vad"`, `openai_vad_eagerness: "low"`, `openai_noise_reduction: "far_field"`.
 
-OpenAI Realtime **v2** (`openai_voice_model: "gpt-realtime-2"`) adds two voices not in the table above: `marin` and `cedar` (v2-only). The `retell-to-leadlock` skill defaults to this v2 block (`gpt-realtime-2` + `marin`/`cedar` + `openai_reasoning_effort: "low"`).
+The `retell-to-leadlock` skill defaults to the OpenAI v2 block (`gpt-realtime-2` + `marin`/`cedar` + `openai_reasoning_effort: "low"`).
 
-The API returns default values on every non-matching voice column (e.g. `gemini_voice` defaults to `"Puck"` on every agent regardless of provider). Always verify with explicit columns matched to `voice_provider`, not a fallback chain.
+The API returns default values on every non-matching voice column (e.g. `gemini_voice` defaults to `"Puck"` and `xai_voice_model` to `"grok-voice-3.0"` on every agent regardless of provider). Always verify with explicit columns matched to `voice_provider`, not a fallback chain.
 
 ---
 
@@ -252,4 +267,4 @@ The API returns default values on every non-matching voice column (e.g. `gemini_
 
 Maintain a one-line note here when CLAUDE.md changes substantially. Don't pad with version history — just the most recent meaningful update.
 
-2026-05-31 - Added three skills (`build-agent`, `agent-to-agent-call-testing`, `retell-to-leadlock`); the last needs `RETELL_API_KEY` in `.env`. Migrated the canonical API doc to `LEADLOCKDOCS.json` and removed the stale `leadlock-docs.md` + `openapi-spec.json`. All skills are now surfaced in the README, the `welcome` menu, and `setup-check`.
+2026-10-23 - Voice reference rebuilt from the platform code (Grok Voice 3.0, GPT-Live, gpt-realtime-2.1 / 2.1-mini, Gemini 3.8). `LEADLOCKDOCS.json` regenerated from the live spec. `.env.example` gained `MY_PHONE_NUMBER` and `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN`. Added the `clarify-voice` skill.

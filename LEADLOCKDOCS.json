@@ -18531,10 +18531,10 @@
           },
           "xai_voice_model": {
             "type": "string",
-            "pattern": "^(grok-voice-think-fast-1\\.0|grok-voice-think-fast-2\\.0)$",
+            "pattern": "^(grok-voice-3\\.0|grok-voice-think-fast-1\\.0|grok-voice-think-fast-2\\.0)$",
             "title": "Xai Voice Model",
-            "description": "xAI Speech-to-Speech model. '2.0' is the premium tier and bills at a higher per-minute rate. Default '1.0'. xAI provider only.",
-            "default": "grok-voice-think-fast-1.0"
+            "description": "xAI Speech-to-Speech model. Default 'grok-voice-3.0' (standard rate). 'grok-voice-think-fast-2.0' is the legacy premium tier and bills at a higher per-minute rate; 'grok-voice-think-fast-1.0' is legacy standard. xAI provider only.",
+            "default": "grok-voice-3.0"
           },
           "elevenlabs_eagerness": {
             "type": "string",
@@ -19718,7 +19718,7 @@
               }
             ],
             "title": "Xai Voice Model",
-            "default": "grok-voice-think-fast-1.0"
+            "default": "grok-voice-3.0"
           },
           "elevenlabs_eagerness": {
             "anyOf": [
@@ -20924,7 +20924,7 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(grok-voice-think-fast-1\\.0|grok-voice-think-fast-2\\.0)$"
+                "pattern": "^(grok-voice-3\\.0|grok-voice-think-fast-1\\.0|grok-voice-think-fast-2\\.0)$"
               },
               {
                 "type": "null"
@@ -33579,7 +33579,7 @@
           "sequences_enabled": {
             "type": "boolean",
             "title": "Sequences Enabled",
-            "default": false
+            "default": true
           },
           "is_paused": {
             "type": "boolean",
@@ -34373,7 +34373,7 @@
           "sequences_enabled": {
             "type": "boolean",
             "title": "Sequences Enabled",
-            "default": false
+            "default": true
           }
         },
         "type": "object",

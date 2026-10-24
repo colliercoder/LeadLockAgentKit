@@ -157,6 +157,8 @@ curl -s https://app.leadlock.ai/assets/_slug_-<hash>.js | grep -oE '\.[a-z][a-z_
 
 ### Default V2-native voices when using `openai_voice_model=gpt-realtime-2`
 
+**Update 2026-10-23:** the same applies to the newer v2 models `gpt-realtime-2.1` and `gpt-realtime-2.1-mini`; all three accept `marin` and `cedar`. `gpt-realtime-1.5` still rejects them.
+
 Date: 2026-05-19
 Tags: skill:build-agent, type:pattern, model:gpt-realtime-2, provider:openai
 Evidence: a live YouTube demo agent — switched from `ash` (legacy v1 voice) to `cedar` (V2-native voice) once the user pointed it out; the V2-native voice noticeably improved prosody and expressiveness on the test call.
@@ -318,3 +320,18 @@ Evidence: `POST /demos/import-from-url` for `brightlineelectric.example` timed o
 **Why:** The scrape endpoint fans out to several pages then runs an LLM extraction, so it takes tens of seconds to two minutes depending on the site. A 30s timeout fails on anything non-trivial and the operator sees "read operation timed out", which reads like the site is unreachable when it is really just slow.
 
 **How to apply:** In new code, do the scrape POST with an explicit long timeout (Big Dawg's `bin/bd-make-demo scrape` uses `--timeout 120` via a direct `urlopen` rather than the shared 30s client). If the scrape still fails, fall back to reading the homepage plus key pages directly to author the prompt, rather than blocking the whole demo on the extraction endpoint.
+
+---
+
+### Voice model lineup as of 2026-10-23 (supersedes older model names in this folder)
+
+Date: 2026-10-23
+Tags: type:pattern, provider:xai, provider:openai, provider:openai_live, provider:gemini, model:grok-voice-3.0
+Evidence: the platform's agent schema enums and the dashboard voice picker at the time of writing; summarised in CLAUDE.md "Voice provider quick reference".
+
+**Rule:** Treat these as current. Grok: `grok-voice-3.0` (default, the only Grok model offered for new agents); `grok-voice-think-fast-2.0` and `-1.0` are legacy. OpenAI: `gpt-realtime-1.5` (default) plus premium v2 `gpt-realtime-2`, `gpt-realtime-2.1`, `gpt-realtime-2.1-mini`. GPT-Live (`openai_live`) runs `gpt-live-1`. Gemini runs `gemini-3.8-live`. ElevenLabs' `elevenlabs_model_id` defaults to `claude-sonnet-5` and only accepts the platform's curated list (`claude-sonnet-4-5` is rejected).
+
+**Why:** Older entries here name think-fast as "the model Leadlock runs" and `gpt-realtime-2` as the only v2 model. Both stopped being true. xAI now serves the think-fast-1.0 id as 3.0, and the platform forces reasoning on for 3.0 because reasoning "none" made it speak tool calls aloud.
+
+**How to apply:** Leave `xai_voice_model` and `xai_reasoning_effort` unset on new Grok agents. Grok 3.0 takes the short-brief prompt shape (`prospect-demo/templates/voice-prompt.md`), same as think-fast did. When an older learning names a model, read it through this entry.
+

@@ -23,6 +23,7 @@ Content lives in the category files, not here. To add a new entry, invoke `/add-
 
 ## Best practices
 
+- 2026-10-23 - Voice model lineup (Grok Voice 3.0, gpt-realtime-2.1 / 2.1-mini, GPT-Live, Gemini 3.8); supersedes older model names - [best-practices.md](best-practices.md)
 - 2026-07-16 - `POST /demos/import-from-url` is slow (Jina + AI extraction); use a 120s timeout - [best-practices.md](best-practices.md)
 - 2026-05-31 — Dogfood a new lint/audit skill on the real repo; first-run false positives are the suppression-list spec — [best-practices.md](best-practices.md)
 - 2026-05-31 — Content rules (no "closer", no platform name) apply to prompt TEMPLATES, not just runtime output — [best-practices.md](best-practices.md)
@@ -43,7 +44,7 @@ Content lives in the category files, not here. To add a new entry, invoke `/add-
 ## Bugs
 
 - 2026-07-16 - `POST /agents` ignores `max_call_duration_minutes`, forces plan default (30); PATCH works - [bugs.md](bugs.md)
-- 2026-05-19 — `POST /agents` silently ignores `openai_voice_model`; defaults to gpt-realtime-1.5. PATCH works — [bugs.md](bugs.md)
+- 2026-05-19 - ~~FIXED on the platform (2026-10-23)~~: `POST /agents` silently ignored `openai_voice_model`; defaults to gpt-realtime-1.5. PATCH works - [bugs.md](bugs.md)
 - 2026-05-13 — `PATCH /demos/{id}/` (trailing slash) drops body via 307 redirect — [bugs.md#patch-demosid-trailing-slash-silently-drops-the-body-via-307-redirect](bugs.md#patch-demosid-trailing-slash-silently-drops-the-body-via-307-redirect)
 
 ## Skill-specific

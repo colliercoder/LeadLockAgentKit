@@ -21,6 +21,7 @@ A growing library of Claude Code skills for Leadlock agency owners. Run them wit
 | `ghl-workflow-api` | Read and write **GoHighLevel workflows** through GHL's private backend API with a captured browser session token, no clicking through the builder. List workflows, dump any workflow node-by-node, audit every workflow for broken references (bad pipeline/stage, dead sub-workflow links, empty webhook samples, missing email templates), and bulk-edit action-node attributes then publish. Stdlib-only Python. Ships the token-capture guide, endpoint + JSON-anatomy reference, and four scripts (core helper, writer, auditor, tracer). Unofficial API: tokens expire hourly and triggers stay UI-only. |
 | `self-selling-setup` | Walk an agency step-by-step through standing up the **self-selling GHL snapshot** for their own business: from an imported snapshot to a live, paying, hands-off system. Claude runs an intake interview, **auto-fills every GHL custom value** via the public API + a Private Integration Token, hands over an ordered checklist for the GHL-UI-only steps (Stripe, products, contract, triggers, publishing) with all the gotchas baked in, and verifies there are no config gaps. Ships the intake, the checklist, and stdlib setup/verify scripts. The Leadlock extension is included in the Leadlock Launch Bundle. |
 | `pick-your-offer` | The **pick-your-offer prompt pack** from course video 2b. Coaches you from "what should I sell?" to a **one-sentence offer, a first setup price and a monthly price** in about an hour: tests your niche, builds the offer only from what Leadlock delivers today, runs the four value-equation questions one at a time, and sets a setup-plus-monthly price ladder. Writes the finished offer to `./output/` and ships copy-paste prompts for any Claude chat. No API key needed. |
+| `clarify-voice` | Talk to Claude Code by dictation? Paste the rambling voice-to-text and this turns it into a **short summary you confirm** before any work starts, fixing mangled names ("lead lock", "go high level") and catching mid-sentence changes of mind. Then it hands off to the matching skill. No API key needed. |
 | `connect-n8n` | Connect Claude Code to **n8n** through n8n's built-in MCP server, so Claude can build, edit and run n8n workflows in plain English. The fastest backend for Leadlock custom functions: webhook in, look anything up, short answer back to the agent. Covers n8n Cloud vs self-hosted, OAuth or token, and verifies the connection. |
 | `install-addon` | Install a **paid add-on** you dropped into `addons/` (today: the Leadlock GHL Connector, a GHL CLI with its Claude skill plus a Chrome extension). Installs it, links its skill, reuses your GHL keys, loads the extension. Add-on files stay gitignored. |
 
@@ -84,6 +85,11 @@ Open `.env` and fill in:
 | `LEADLOCK_API_KEY` | Leadlock > Settings > API Keys > Create | Every skill |
 | `GHL_PIT` | GoHighLevel > Settings > Private Integrations > Create New (pick the scopes you want Claude to use) | GoHighLevel skills and add-ons |
 | `GHL_LOCATION_ID` | The long ID in your GoHighLevel sub-account URL | GoHighLevel skills and add-ons |
+| `MY_PHONE_NUMBER` | Your own cell, in `+1` format (e.g. `+15555550123`) | Test calls: skills call you to test agents, and always ask first |
+| `TWILIO_ACCOUNT_SID` | Twilio Console home page (console.twilio.com) > Account Info. Starts with `AC` | Working with Twilio from Claude Code: numbers, A2P status, call logs, the runaway-call backstop |
+| `TWILIO_AUTH_TOKEN` | Same place, next to the Account SID | Same as above |
+
+The older `LEADLOCK_TWILIO_SID` / `LEADLOCK_TWILIO_AUTH` names still work; the new names win when both are set.
 
 Then say **"check my setup"** in Claude Code. `.env` is gitignored, so your keys never leave your machine.
 

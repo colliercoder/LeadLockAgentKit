@@ -4,7 +4,7 @@
 Two commands, no dependencies, no API key needed for either.
 
   # BEFORE you POST: does the prompt hold up for the model you are targeting?
-  python3 validate.py prompt my-prompt.md --model grok-voice-think-fast-2.0
+  python3 validate.py prompt my-prompt.md --model grok-voice-3.0
 
   # AFTER a test call: what went wrong, and which prompt line caused it?
   python3 validate.py call transcript.txt --prompt my-prompt.md
@@ -39,7 +39,10 @@ except ImportError as e:  # noqa: BLE001
 
 
 def profile_for_model(model: str | None) -> str:
-    if model and "think-fast" in model:
+    # Every Grok voice model (grok-voice-3.0, the default, plus the legacy
+    # think-fast ids) takes the short-brief profile. GPT and other models keep
+    # the structured skeleton.
+    if model and model.startswith("grok-voice"):
         return "think-fast"
     if model:
         return "gpt-realtime"

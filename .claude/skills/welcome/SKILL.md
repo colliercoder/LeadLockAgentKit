@@ -78,6 +78,12 @@ You don't need to memorize commands — just describe what you want.
     "I sell voice agents to plumbers in Denver. Write my offer."
     "How much should I charge my first client?"
 
+  clarify-voice   (no API key needed)
+    "/clarify-voice <paste your dictated note>"
+    "Clean up this voice note: ..."
+    Turns a rambling voice-to-text note into a short summary you confirm
+    before any work starts.
+
   connect-n8n
     "Connect n8n" / "Set up the n8n MCP"
     Lets Claude build n8n workflows, the backend for custom functions.

@@ -88,8 +88,12 @@ class Cfg:
     # Optional Twilio creds — used ONLY as a runaway backstop to force-end a call
     # if two AI agents fail to hang up on their own. The agents' own end_call tool
     # + a goal-driven user-sim are the primary end mechanism.
-    twilio_sid = _env.get("LEADLOCK_TWILIO_SID", "").strip()
-    twilio_auth = _env.get("LEADLOCK_TWILIO_AUTH", "").strip()
+    # Reads the kit-wide TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN first and falls
+    # back to the older LEADLOCK_TWILIO_SID / LEADLOCK_TWILIO_AUTH names.
+    twilio_sid = (_env.get("TWILIO_ACCOUNT_SID", "").strip()
+                  or _env.get("LEADLOCK_TWILIO_SID", "").strip())
+    twilio_auth = (_env.get("TWILIO_AUTH_TOKEN", "").strip()
+                   or _env.get("LEADLOCK_TWILIO_AUTH", "").strip())
 
     # Resolved at runtime from the two --*-number-id flags (or their env fallbacks):
     num_under_pid = ""

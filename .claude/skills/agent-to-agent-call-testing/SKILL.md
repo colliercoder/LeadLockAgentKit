@@ -97,8 +97,8 @@ confirm). Capture each one's `id`.
 
 `AskUserQuestion` for the voice on both agents (or just the under-test agent if
 only its behavior matters):
-- **xAI Grok** (`xai`, voice ara/eve/rex/sal/leo) — default.
-- **OpenAI** (`openai-1.5` or `openai-2`).
+- **xAI Grok** (`xai`, Grok Voice 3.0, voice ara/eve/rex/sal/leo): the default.
+- **OpenAI** (`openai-1.5` or `openai-2`; `openai-2.1` and `openai-2.1-mini` for the newer v2 models).
 - **Gemini** (`gemini`).
 - **ElevenLabs** (`elevenlabs`).
 
@@ -180,7 +180,9 @@ From `./.env` in the kit root (same as every other skill):
 - `LEADLOCK_API_KEY` — required.
 - `LEADLOCK_API_URL` (or `LEADLOCK_API_BASE`) — the API host.
 - `LEADLOCK_SUB_ACCOUNT_ID` — optional; or pass `--sub-account-id`.
-- `LEADLOCK_TWILIO_SID` / `LEADLOCK_TWILIO_AUTH` — optional. Only used as a
+- `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN`: optional (the older names
+  `LEADLOCK_TWILIO_SID` / `LEADLOCK_TWILIO_AUTH` still work as a fallback; the
+  new names win when both are set). Only used as a
   runaway backstop to force-end a call if two AI agents fail to hang up on their
   own. Without them the agents' own `end_call` tool plus the per-agent
   `max_call_duration_minutes` cap (set to 2–3 min) bound the cost.

@@ -155,9 +155,11 @@ Voice picks (match the human's gender):
 
 | Provider | Male | Female |
 |---|---|---|
-| Gemini | `Charon`, `Orus`, `Iapetus` | `Aoede`, `Kore`, `Leda` |
+| Gemini 3.8 | `Charon`, `Orus`, `Iapetus` | `Aoede`, `Kore`, `Leda` |
 | OpenAI | `ballad`, `ash`, `verse`, `echo` | `shimmer`, `coral`, `sage` |
-| xAI (Grok) | `rex`, `leo` | `ara` |
+| xAI (Grok Voice 3.0) | `rex`, `leo` | `ara`, `eve` |
+
+GPT-Live (`openai_live`) and the OpenAI v2 models are also available; see CLAUDE.md's "Voice provider quick reference" for their voices and model ids. Leave `xai_voice_model` unset (it defaults to `grok-voice-3.0`).
 
 ### Step 8 — Create demo configs
 

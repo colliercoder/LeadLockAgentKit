@@ -58,12 +58,14 @@ VOICE_CONFIGS: dict[str, dict] = {
     "xai": {"voice_provider": "xai", "voice": "ara"},
     "openai-1.5": {"voice_provider": "openai", "openai_voice_model": "gpt-realtime-1.5"},
     "openai-2": {"voice_provider": "openai", "openai_voice_model": "gpt-realtime-2"},
+    "openai-2.1": {"voice_provider": "openai", "openai_voice_model": "gpt-realtime-2.1"},
+    "openai-2.1-mini": {"voice_provider": "openai", "openai_voice_model": "gpt-realtime-2.1-mini"},
     "gemini": {"voice_provider": "gemini"},
     "elevenlabs": {"voice_provider": "elevenlabs"},
 }
 # transfer_to_agent only works on xai/openai (mid-call session.update); gemini /
 # elevenlabs decline the swap. Teams must use an xai or openai voice.
-TRANSFER_CAPABLE = {"xai", "openai-1.5", "openai-2"}
+TRANSFER_CAPABLE = {"xai", "openai-1.5", "openai-2", "openai-2.1", "openai-2.1-mini"}
 
 
 # ---------------------------------------------------------------------------

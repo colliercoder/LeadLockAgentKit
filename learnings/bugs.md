@@ -22,6 +22,8 @@ Evidence: `PATCH https://leadlock-app.onrender.com/demos/{id}/` returned 307; fo
 
 ### `POST /agents` silently ignores `openai_voice_model` and defaults to `gpt-realtime-1.5`
 
+**Update 2026-10-23: fixed on the platform.** The create path in the platform source now persists `openai_voice_model` and `openai_reasoning_effort` (and `xai_voice_model`). The PATCH step below is no longer needed, but it is harmless; keep the follow-up GET that confirms the model stuck. Entry kept for history.
+
 Date: 2026-05-19
 Tags: api:agents, skill:build-agent, type:bug, model:openai-realtime
 Evidence: a demo agent — POSTed with `"openai_voice_model": "gpt-realtime-2"`; response returned `"gpt-realtime-1.5"`. Subsequent `PATCH /agents/{id}` with the same field returned `"gpt-realtime-2"` and a follow-up GET confirmed it stuck. Verified twice in one session.
