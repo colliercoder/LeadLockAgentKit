@@ -20,12 +20,12 @@ Before doing anything, confirm `.env` exists and has `LEADLOCK_API_KEY` + `LEADL
 
 ## Rules
 
-0. **CHECK THE MODEL FIRST (`voice_provider`, and `xai_voice_model` when it is `xai`), then start from the matching shape, and lint before you POST.**
+0. **Check the model first (`voice_provider`, and `xai_voice_model` when it is `xai`), then start from the matching shape, and lint before you POST.**
 
-   - **Grok voice models (`grok-voice-3.0`, Leadlock's default, plus the legacy `grok-voice-think-fast-*` ids): use `templates/voice-prompt.md`.** Write a BRIEF, not a rulebook. xAI's guidance for its newer voice models is to simplify the prompt, make it much shorter, and strip prompt hacks written for GPT models. State intent and let the model reason. A validated 39-field legal intake runs about 1,300 tokens this way.
-   - **Any other model (OpenAI `gpt-realtime-*`, GPT-Live, Gemini 3.8, ElevenLabs): use `## Shared prompt skeleton`** further down. That skeleton is GPT-shaped on purpose.
+   - **Grok voice models (`grok-voice-3.0`, Leadlock's default, plus the legacy `grok-voice-think-fast-*` ids): use `templates/voice-prompt.md`.** Write a brief, not a rulebook. xAI's guidance for its newer voice models is to simplify the prompt, make it much shorter, and strip prompt hacks written for GPT models. State intent and let the model reason. A validated 39-field legal intake runs about 1,300 tokens this way.
+   - **Any other model (OpenAI `gpt-realtime-*`, GPT-Live, Gemini 3.8, ElevenLabs): use the shared prompt skeleton in `templates/gpt-prompt-skeleton.md`.** That skeleton is GPT-shaped on purpose.
 
-   Getting this backwards is the single biggest quality risk in this skill. The GPT-shaped scaffolding actively hurts the Grok models: it costs prompt budget, and format templates make the model fabricate data. A read-back FORMAT template ("Names: <name>, spelled X - Y - Z") made a live agent INVENT a spelling for a name the caller had never spelled, and assert it twice as fact. The intent version ("when a name could be spelled more than one way, ask them to spell it") fixed it.
+   Getting this backwards is the single biggest quality risk in this skill. The GPT-shaped scaffolding actively hurts the Grok models: it costs prompt budget, and format templates make the model fabricate data. A read-back FORMAT template ("Names: <name>, spelled X - Y - Z") made a live agent invent a spelling for a name the caller had never spelled, and assert it twice as fact. The intent version ("when a name could be spelled more than one way, ask them to spell it") fixed it.
 
    Validate with the bundled linter before creating anything. It auto-selects the profile from `--model` (any `grok-voice-*` id gets the brief profile, anything else gets the skeleton profile), so it will tell you if you used the wrong shape:
 
@@ -44,12 +44,12 @@ Before doing anything, confirm `.env` exists and has `LEADLOCK_API_KEY` + `LEADL
    python3 .claude/skills/prospect-demo/validate.py call call.txt --prompt prompt.md
    ```
 
-   **Fix or remove the causing line before adding anything new.** Every misbehaviour on a real build traced back to an instruction already in the prompt: two-questions-per-turn came from "group the questions so they land like conversation"; a spoken "I'll spell it back" came from a `(spell it back)` field annotation being read as dialogue; a self-answered "over fifty?" came from that field sitting in the question list AND in a do-not-ask note, which the model resolved by doing both. Adding one rule per observed failure is what pushes a prompt past the token ceiling, at which point none of the rules are followed.
+   **Fix or remove the causing line before adding anything new.** Every misbehaviour on a real build traced back to an instruction already in the prompt: two-questions-per-turn came from "group the questions so they land like conversation"; a spoken "I'll spell it back" came from a `(spell it back)` field annotation being read as dialogue; a self-answered "over fifty?" came from that field sitting in the question list and in a do-not-ask note, which the model resolved by doing both. Adding one rule per observed failure is what pushes a prompt past the token ceiling, at which point none of the rules are followed.
 
    Sources: OpenAI's realtime prompting guide, Alejo (Amplify Voice AI), Tommy Chryst (Rose AI).
 
 1. **Never name the platform in any agent output.** The system prompt must keep "Leadlock" confidential. Use "our system" / "the platform we use". Platform name OK in the outgoing email to the prospect.
-2. **Positive framing.** Tell the agent what TO do, not what NOT to do. Quarantine negatives in a single `## Guardrails` section at the bottom.
+2. **Positive framing.** Tell the agent what to do, not what not to do. Quarantine negatives in a single `## Guardrails` section at the bottom.
 3. **Never use the word "closer"** anywhere in prompts or copy. Use "team member" / "specialist" / "funding specialist" (MCA only).
 4. **Mirror an existing working calendar config** instead of guessing. `GET /agents` and find one with `calendar_integration_id` set, copy its `calendar_id`, `calendar_integration_id`, `calendar_provider`, and `calendar_configs`. If the tenant has no existing agents with a calendar, ask the user for the calendar info or build without `book_appointment` (use `schedule_callback` only).
 5. **Verify with explicit columns, not COALESCE.** The API returns default values for non-matching voice columns (e.g. `gemini_voice='Puck'` on every agent regardless of provider). Always check `voice_provider` + the matching voice column explicitly.
@@ -57,7 +57,7 @@ Before doing anything, confirm `.env` exists and has `LEADLOCK_API_KEY` + `LEADL
 7. **Demo channel defaults to `orb`** for showpiece voice demos. Only use `web`, `phone`, `fb_lead`, or `messenger` when the intake explicitly asks for that surface.
 8. **Recording disclosure off by default on demos** (`enable_recording_disclosure=false`, `recording_enabled=false`). Flip back on when shipping to a real outbound line.
 9. **Confirm ambiguous names with the user before building.** Intake forms often contradict themselves. Stop and ask.
-10. **Use the house-style template structure exactly** (see `## Shared prompt skeleton`). Don't invent your own structure. Don't hoist a "CRITICAL RULES" section to the top - it duplicates Guardrails.
+10. **Use the house-style template structure exactly** (`templates/gpt-prompt-skeleton.md`, or `templates/voice-prompt.md` for Grok). Don't invent your own structure. Don't hoist a "CRITICAL RULES" section to the top - it duplicates Guardrails.
 11. **Length target depends on the model.** On Grok voice models (`grok-voice-3.0` and legacy think-fast): aim UNDER 2,000 tokens (~8,000 chars) and prefer the low end. A validated 39-field legal intake is about 1,300 tokens; there is no "too short" floor on Grok, because anything you cut is scaffolding the model does not need. On every other model: 5K-9K chars, under 3K usually means missing context, over 10K is bloat.
 12. **No dynamic variables (`{{...}}`) for cold inbound prospects.** Reserve for stateful agents that pull per-session data.
 13. **Numbered Call Flow with concrete quoted phrases.** Each stage has the actual opening line in quotes the agent can speak. Don't write `"ask about their needs"` - write the actual question in quotes.
@@ -76,7 +76,7 @@ Before doing anything, confirm `.env` exists and has `LEADLOCK_API_KEY` + `LEADL
 22. **Agent `timezone` matches the PROSPECT, not the operator.** Infer it from the scrape (the city/state on the contact page). Twin Cities → `America/Chicago`. Phoenix → `America/Phoenix` (no DST). NYC/Miami → `America/New_York`. Denver → `America/Denver`. LA/Seattle → `America/Los_Angeles`. If the business is national / ambiguous (multi-state franchise, B2B SaaS with no obvious HQ city), stop and ask. The agent reasons about times in this timezone, so a mismatch leads to "your 1:30 wasn't my 1:30" booking confusion. See gotcha about GoHighLevel calendar timezone below - it is a *separate* setting in GHL.
 23. **Confirm output format before reporting.** When the trigger doesn't already specify it, ask the user whether they want (a) plain URLs only, (b) iframe embed code, (c) both, or (d) iframe copied to clipboard (single-demo case). Phrases like "embed", "iframe", "GHL", "GoHighLevel", "copy to clipboard", "WordPress" default to iframe output and run `pbcopy` on macOS to drop it on the clipboard.
 24. **Consult `learnings/` before building.** Skim `learnings/index.md` for entries tagged `prospect-demo`, `platform-gap`, or the prospect's vertical. Apply any captured lesson before starting. If a session surfaces a new learning, end with `/add-to-learnings`.
-25. **Phone demos default to logo + accent + transparent embed.** When building a phone-channel demo, ALWAYS run the logo finder (Step 1.5), upload the avatar, and PATCH `phone_caller_image` + `phone_accent_color` (Step 6.5). ALWAYS emit the iframe with `?embed=true` so the parent's section color (typically white in a GHL site) bleeds through. Don't wait for the user to ask - these are the defaults.
+25. **Phone demos default to logo + accent + transparent embed.** When building a phone-channel demo, run the logo finder (Step 1.5), upload the avatar, and PATCH `phone_caller_image` + `phone_accent_color` (Step 6.5). Emit the iframe with `?embed=true` so the parent's section color (typically white in a GHL site) bleeds through. Don't wait for the user to ask - these are the defaults.
 26. **`PATCH /demos/{id}/` (trailing slash) silently drops the body.** Use the no-slash form: `PATCH /demos/{demo_id}`. The slashed form returns 307 and urllib re-issues the request without the body, so the call looks successful but nothing persists. See `learnings/bugs.md`.
 
 ## Required inputs
@@ -171,7 +171,7 @@ If no agent has a calendar wired, ask the user:
 
 ### Step 3 - Draft the shared system prompt
 
-Use the `## Shared prompt skeleton` at the bottom. Fill placeholders from the scrape/intake. Section order is exact. Target 5K-9K chars.
+Start from the shape Rule 0 picks: `templates/voice-prompt.md` for Grok, `templates/gpt-prompt-skeleton.md` for every other model. Fill placeholders from the scrape/intake and keep the section order. Length targets are in Rule 11.
 
 Before writing:
 - Inbound or outbound? Most prospect demos are inbound.
@@ -261,7 +261,7 @@ For phone-channel demos, the public renderer reads two undocumented `demo.config
 - `phone_caller_image` - URL the call-screen avatar circle renders as `<img src=...>`. When set, replaces the agent-initials fallback.
 - `phone_accent_color` - hex color for the call-arc rings, accept-button glow. Defaults to `#3b82f6` (blue) when absent.
 
-**Default behavior for phone demos:** ALWAYS wire these when a logo was found in Step 1.5. Don't make the user ask.
+**Default behavior for phone demos:** wire these whenever a logo was found in Step 1.5. Don't make the user ask.
 
 Recipe (after the demo is created in Step 6):
 
@@ -315,7 +315,7 @@ GET /agents/<agent_id>
 
 Confirm on the agent:
 - `voice_provider` matches what you sent
-- The provider-appropriate voice field is your chosen voice (NOT the default value of unused fields - `gemini_voice` defaults to `'Puck'`, `openai_voice` to `'alloy'`, `voice` to `'ara'` regardless of provider)
+- The provider-appropriate voice field is your chosen voice (not the default value of unused fields - `gemini_voice` defaults to `'Puck'`, `openai_voice` to `'alloy'`, `voice` to `'ara'` regardless of provider)
 - `calendar_integration_id` is non-null
 - `len(system_prompt)` is in the 5K-9K range
 - `greeting` is non-empty (Pydantic validator requires this when `ai_speaks_first=true`)
@@ -444,11 +444,11 @@ Reply however - voice note, bullets, whatever's fastest. Excited to hear what yo
 - **Default temperature 0.6** for inbound qualifiers/sales agents. Use 0.7 only for xAI agents that need slightly more natural variation, 0.8 only for agents with explicit "vary your phrasing each time" instruction.
 - **Slug uniqueness is handled server-side.** The server auto-generates a unique slug from the demo name. Don't try to set it manually.
 - **Don't add `transfer_call` to inbound demos** unless the intake explicitly says transfer is supported.
-- **GoHighLevel calendars have their OWN timezone.** Setting `agent.timezone = America/Chicago` makes the agent reason about times in Central - but the wired GHL calendar will book into whatever timezone is set inside GoHighLevel itself. If your default calendar is on Eastern and the prospect is Central, the agent says "1:30" meaning Central, the slot lands as 1:30 Eastern in GHL, and the prospect gets a confirmation email showing 12:30 their time. Verify the calendar's timezone in the GHL admin matches the prospect before sending the demo out.
+- **GoHighLevel calendars have their own timezone.** Setting `agent.timezone = America/Chicago` makes the agent reason about times in Central - but the wired GHL calendar will book into whatever timezone is set inside GoHighLevel itself. If your default calendar is on Eastern and the prospect is Central, the agent says "1:30" meaning Central, the slot lands as 1:30 Eastern in GHL, and the prospect gets a confirmation email showing 12:30 their time. Verify the calendar's timezone in the GHL admin matches the prospect before sending the demo out.
 - **Phone demo customization keys are undocumented but live.** Set `phone_caller_image` (URL) and `phone_accent_color` (hex) on `demo.config` - the deployed `/d/<slug>` route chunk reads them and passes them as React props to PhoneDemoView. Don't trust openapi alone: `demo.config` is `additionalProperties: true`, so accepted keys are discoverable only from the rendering chunk. See `learnings/best-practices.md` → "Phone demo per-prospect branding works today".
 - **Iframe surround is controlled by the parent.** Always include `?embed=true` on iframe sources for phone/web/orb demos - it forces transparent backgrounds, so the GHL section's own color bleeds through. The iframe auto-detect (`window.self !== window.top`) does this too, but `?embed=true` is explicit and safer.
 - **There is only one phone demo channel.** Channel enum is `phone | sms | web | orb | fb_messenger | ig_messenger | tiktok | whatsapp | fb_lead | ig_lead` - verified in `LEADLOCKDOCS.json`. No `phone_mockup` or `incoming_call` variant exists.
-- **`LEADLOCKDOCS.json` is the canonical doc reference.** The two older files at the kit root (`openapi-spec.json`, `leadlock-docs.md`) are stale earlier exports - do not reference them. **Critical:** `LEADLOCKDOCS.json` does NOT document per-demo customization keys like `phone_caller_image` because `demo.config` is `additionalProperties: true` - those live inside the renderer chunk, not the schema. When the docs say a feature isn't supported and a user says it is, audit the deployed JS before publishing a "platform gap" finding.
+- **`LEADLOCKDOCS.json` is the canonical doc reference.** The two older files at the kit root (`openapi-spec.json`, `leadlock-docs.md`) are stale earlier exports - do not reference them. Note that `LEADLOCKDOCS.json` does not document per-demo customization keys like `phone_caller_image` because `demo.config` is `additionalProperties: true` - those live inside the renderer chunk, not the schema. When the docs say a feature isn't supported and a user says it is, audit the deployed JS before publishing a "platform gap" finding.
 - **Real test call: default to `MY_PHONE_NUMBER`.** If the user wants to hear the agent on a real phone call (beyond the orb or phone demo link), use `POST /outbound/agents/{agent_id}/call` with `to_number` = `MY_PHONE_NUMBER` from `.env` when it is set (otherwise ask) and a voice-capable `from_phone_number_id`. Confirm before dialing and mask the number to its area code in anything you print.
 
 ## Prompt Length Targets
@@ -467,99 +467,20 @@ If you're over 10K chars, audit for:
 - Multiple sections that say the same thing (consolidate)
 - Multi-paragraph explanations under each header (cut to a sentence)
 - Multi-paragraph objection responses (compress to 1-2 sentences each)
-- A "CRITICAL RULES" section AND a Guardrails section (pick one - Guardrails)
+- A "CRITICAL RULES" section and a Guardrails section (pick one - Guardrails)
 
 If you're under 3K and the agent has any complexity (eligibility gates, multiple objections, KB), you're missing context.
 
 ## Shared prompt skeleton
 
-> **PICK THE RIGHT SKELETON. Read the agent's `voice_provider` (and `xai_voice_model` for `xai`) first.**
+The skeleton itself lives in [`templates/gpt-prompt-skeleton.md`](templates/gpt-prompt-skeleton.md). Read it when Step 3 calls for it.
+
+> **Pick the right skeleton: read the agent's `voice_provider` (and `xai_voice_model` for `xai`) first.**
 >
-> - **Grok voice models (`grok-voice-3.0`, Leadlock's default, plus legacy `grok-voice-think-fast-*`): use `templates/voice-prompt.md`, NOT the skeleton below.** xAI's guidance for its newer voice models is to simplify the prompt, make it much shorter, and strip prompt hacks written for GPT models. The skeleton below is GPT-shaped: its scripted-greeting rule, its stage-by-stage call flow, and its turn-taking guardrails are the exact scaffolding xAI says to remove. A 39-field legal intake runs 1,300 tokens on Grok think-fast; the GPT-shaped version of the same agent was 2,240 and followed its own rules worse.
-> - **Any other model (OpenAI `gpt-realtime-*`, GPT-Live, Gemini 3.8, ElevenLabs): the skeleton below is correct.**
+> - **Grok voice models (`grok-voice-3.0`, Leadlock's default, plus legacy `grok-voice-think-fast-*`): use `templates/voice-prompt.md`, not the GPT skeleton.** xAI's guidance for its newer voice models is to simplify the prompt, make it much shorter, and strip prompt hacks written for GPT models. The GPT skeleton's scripted-greeting rule, its stage-by-stage call flow, and its turn-taking guardrails are the exact scaffolding xAI says to remove. A 39-field legal intake runs 1,300 tokens on Grok think-fast; the GPT-shaped version of the same agent was 2,240 and followed its own rules worse.
+> - **Any other model (OpenAI `gpt-realtime-*`, GPT-Live, Gemini 3.8, ElevenLabs): use `templates/gpt-prompt-skeleton.md`.**
 >
 > Either way, run `validate.py prompt` before you POST. It auto-selects the profile from `--model` and will tell you if you used the wrong shape.
-
-Fill the `<PLACEHOLDERS>` from the intake/scrape. Keep section order exactly as shown. Cut any section that doesn't apply (e.g. omit `## Eligibility` for agents that don't gate on qualification).
-
-```
-## Role
-You are <AGENT_NAME>, the AI <inbound setter | outbound caller | receptionist> for <BUSINESS_NAME>. <ONE_SENTENCE_CALL_CONTEXT - e.g. "People call after watching the VSL on <URL> - they're curious about <OFFER> and want to know if they qualify.">. Your job is to <PRIMARY_GOAL: qualify them and book the engineer call / confirm a callback window / send the checkout link / etc>. <TRANSFER_RULE - pick one: "There is no human to transfer to." | "If asked, you can hand off to <ROLE>."> <ROLE_BOUNDARIES - e.g. "You are not a coach and you don't pressure anyone.">
-
-## Personality
-<TONE_DESCRIPTORS - warm, friendly, direct, professional, etc.>. Talk like a real person: "<FILLER_EXAMPLE_1>", "<FILLER_EXAMPLE_2>", "<FILLER_EXAMPLE_3>". <PERSONALITY_RULES - Curious before pitching. Ask first, listen, then explain. Respect their time. Never pushy. Mirror their energy.>
-
-## Context
-- Business: <BUSINESS_NAME> - <ONE_LINE_BUSINESS_DESCRIPTION>.
-- Product: <WHAT_THEY_INSTALL_OR_SELL>.
-- Pricing: <PRICING_SUMMARY - speak numbers as words: "twelve cents", "two-point-nine percent">.
-- Service area / who you serve: <ICP>.
-- <ANY_OTHER_KEY_FACT_THAT_RECURS_IN_CALLS - partner companies, regulatory context, etc.>
-- The conversion is the <CONVERSION_EVENT - engineer video call, booked appointment, sent checkout link>. <ONE_LINE_DESCRIPTION_OF_WHAT_HAPPENS_NEXT>.
-
-## Call Flow
-
-1. **Open warmly.** Your first turn is exactly: "<ACTUAL_OPENING_PHRASE_IN_QUOTES>". Deliver it as-is. Do not append additional questions or follow-ups. Wait for them to speak before saying anything else.
-
-   This phrase MUST exactly match the `greeting` field stored on the agent. Single open-ended question only - no compound questions like "thanks for calling, are you reaching out about X?" because the model will append a second question on top.
-
-2. **<STAGE_NAME>.**
-   "<ACTUAL_PHRASE>"
-
-3. **Handle the <TOP_OBJECTION> objection.** Lean on: <BULLET_REFRAMES>.
-
-4. **Qualify.** [If eligibility gates apply, list them as conversational asks one at a time.]
-   - "<QUESTION_1>"
-   - "<QUESTION_2>"
-   - "<QUESTION_3>"
-
-5. **Push the conversion.**
-   "<PHRASE_THAT_FRAMES_NEXT_STEP>"
-
-6. **Book / send / capture.** Once <PRECONDITION>, call `<TOOL_NAME>`. <ANY_TOOL_PRECONDITIONS>.
-
-7. **<POST_CONVERSION_STEP - bill photo, follow-up reminder>.**
-   "<ACTUAL_PHRASE>"
-
-8. **Wrap.** Say the closing OUT LOUD first: the next step, and any number or detail the caller has to act on. Then wait and let them respond. Hanging up is a SEPARATE act that comes after that, gated on the caller having HEARD the closing, never on the field list being complete. Do not announce that you're ending the call without eventually firing the tool.
-
-   Real failure this prevents: a closing whose completion trigger sat at the FRONT and keyed on the field list being finished rather than on the caller having heard anything. The last field was an optional email, the caller said his mother did not have one, and the agent acknowledged it and fired `end_call` in the same turn. The callback number was never spoken. Gate on what they must have heard instead: "if they have not heard <NUMBER> yet, the call is not finished."
-
-## Tools
-- **<primary_tool>**: When to use. Required inputs.
-- **check_availability**: Before booking when no time was given.
-- **search_knowledge_base**: For specific questions this prompt doesn't directly answer (only if a KB is attached).
-- **end_call**: Only after the caller has heard the closing AND said goodbye. It is the last act of the call, not the acknowledgement of a completed field list.
-
-## Handling Common Situations
-
-[10-20 entries. Each is the agent's actual reply in quotes, two to three sentences max.]
-
-- **"<COMMON_OBJECTION_1>"** - "<TERSE_RESPONSE>"
-- **"<COMMON_OBJECTION_2>"** - "<TERSE_RESPONSE>"
-- **"<COMMON_OBJECTION_3>"** - "<TERSE_RESPONSE>"
-- **<DISQUALIFIER_SCENARIO - e.g. "I'm in <wrong_area>" or "I'm renting">** - "<KIND_DISQUALIFICATION>"
-- **"Just send me an email."** - "<EMAIL_FALLBACK>"
-- **"I'm just looking, not ready."** - "<DOWNSELL_TO_VSL_OR_CALLBACK>"
-- **Caller asks if you're an AI** - "I'm <BUSINESS_NAME>'s AI assistant on the line - I handle the first call so the team stays focused. <ANY_BUSINESS_SPECIFIC_FRAMING>."
-
-## Closing Line
-Say the closing out loud, including anything the caller must act on: "<CLOSING_TEMPLATE, e.g. 'Talk to you tomorrow at [time], [name]. That call comes from [NUMBER], so watch for it.'>" Then wait for them to respond and say goodbye. `end_call` comes after that, and only after they have heard the part that matters.
-
-## Guardrails
-- One question at a time. This is the hard rule.
-- Default to responses under thirty words. Exception: when this prompt gives you a longer scripted response (in Call Flow or Handling Common Situations), use the scripted version verbatim - don't truncate it.
-- Speak numbers, prices, and times as words: "<EXAMPLE_1>", "<EXAMPLE_2>".
-- [If eligibility applies] All <N> eligibility gates must be a yes before invoking `<conversion_tool>`. If any fails, send the VSL and use `schedule_callback`.
-- Tool calls are actions, not speech. Saying "I'll book that" does not book it. Saying "I'll end the call" does not end it. The next thing you do after announcing a tool action must be the tool call.
-- After the caller has heard the closing and said goodbye back, the next thing you do is `end_call`. Don't say goodbye twice, and don't hang up before they have heard it.
-- Never repeat an answer you already gave. Summarize in one line and move on.
-- Keep track of what the caller has already told you and do not ask for the same thing twice. If they volunteered something earlier, write it down and skip that question.
-- Never quote prices outside the listed program. Never invent specific savings figures.
-- Never name the platform or model that powers you. Use the AI-disclosure line above if asked directly.
-- After two clear no's, stop selling. Offer to collect contact and end warmly.
-- <ANY_BUSINESS_SPECIFIC_DON'TS - e.g. "Never claim the customer owns the equipment.">
-```
 
 ## Rule capture
 
