@@ -1,6 +1,6 @@
 ---
 name: welcome
-description: Show the user what skills are available in this kit and example phrases that invoke each one. Use proactively when a user is new to the kit, asks "what can this do", "help", "what's available", "I'm new", "where do I start", "list skills", "show me what you can do", "/help", "how do I use this", or types anything ambiguous that doesn't match a specific skill's triggers.
+description: Show the user what skills are available in this kit and example phrases that invoke each one. Use proactively when a user is new to the kit, asks "what can this do", "help", "what's available", "I'm new", "where do I start", "list skills", "show me what you can do", "/help", "how do I use this", "/welcome", or types anything ambiguous that doesn't match a specific skill's triggers.
 ---
 
 # Welcome to the Leadlock Agent Kit

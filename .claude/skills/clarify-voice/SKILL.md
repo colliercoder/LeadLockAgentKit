@@ -1,6 +1,6 @@
 ---
 name: clarify-voice
-description: Turn a rambling voice-to-text note into a short, clean summary of what you want, confirm it with you, and only then start the work (usually by handing off to the matching kit skill). For anyone who talks to Claude Code through dictation. Triggers on /clarify-voice, clarify voice note, clarify this, voice note, transcribed note, clean up this voice note, what did I mean, summarize what I said, I'm dictating, I just rambled.
+description: Turns a rambling voice-to-text note into a short, clean summary of what the user wants, confirms it with them, and only then starts the work (usually by handing off to the matching kit skill). Use when the user dictates to Claude Code or pastes a messy transcript. Triggers on /clarify-voice, clarify voice note, clarify this, voice note, transcribed note, clean up this voice note, what did I mean, summarize what I said, I'm dictating, I just rambled.
 ---
 
 # Clarify Voice
