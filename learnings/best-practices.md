@@ -349,3 +349,128 @@ Evidence: the platform's own `AgentCreate.openai_vad_eagerness` field (see `LEAD
 
 **How to apply:** Send `medium` unless a use case calls for something else. The two entries above still hold as overrides: `high` for outbound 1:1 calls, `auto` for inbound conversational demos. Where those entries say `low` was "the kit's default", that was true when written and is now superseded by this entry.
 
+---
+
+### An agent's tool set is fixed when the call connects; tell the prompt about every enabled tool
+
+Date: 2026-10-24
+Tags: surface:tools_enabled, surface:system-prompt, type:pattern, model:gpt-live
+Evidence: Summit Plumbing & Drain sub-account, agent Doug Jim Bob McGee (`17668860-...`), call `0ed4b9aa-...` (started 05:27:34; the dashboard save added `cancel_appointment`/`reschedule_appointment`/`schedule_callback` at 05:28:38). The caller asked for a cancel, the agent said "canceling em now", no tool event followed, and he looped "I'm on it, buddy" until the caller gave up.
+
+**Rule:** Changes to tools (and prompt) apply only to the NEXT call. Every enabled tool needs a line in `## Tools`. Guardrails also need "Only promise what your tools can do" and "After a tool returns, say the result; if it failed, say so".
+
+**Why:** A call keeps the tool set it started with. If the agent has no tool for a request and nothing in the prompt says to admit that, it narrates the action and freezes.
+
+**How to apply:** Never edit an agent during a test call and expect it to apply. Whenever you add a tool, add its `## Tools` line in the same change.
+
+---
+
+### Describe `reschedule_appointment` as a one-step move, or the agent cancels and rebooks
+
+Date: 2026-10-24
+Tags: tool:reschedule_appointment, tool:cancel_appointment, surface:system-prompt, type:pattern
+Evidence: Summit Plumbing & Drain sub-account, agent Doug Jim Bob McGee (`17668860-...`), call `2a2a77bb-...`. With both tools enabled and a generic description ("when they want to move a booked recording"), the caller said "cancel Monday and reschedule for Tuesday". The agent needed prodding, then ran `cancel_appointment` and `book_appointment` instead of `reschedule_appointment`.
+
+**Rule:** In the prompt, define the cases explicitly. A new time for an existing booking is `reschedule_appointment`, one step, "never cancel and rebook to move it". `cancel_appointment` is only for removing a booking with no new time.
+
+**Why:** Callers say "cancel and rebook" when they mean "move it". The model follows the caller's literal words unless the prompt says that reschedule covers this case.
+
+**How to apply:** Any agent with both tools: add the line to `## Tools`, and add a "has a booking, wants a new time = reschedule" line in the call flow.
+
+---
+
+### Contact intelligence: flag + prompt section, and greet by name on the SECOND turn
+
+Date: 2026-10-24
+Tags: feature:contact-intelligence, integration:gohighlevel, type:pattern, surface:greeting
+Evidence: Summit Plumbing & Drain sub-account, agent Doug Jim Bob McGee (`17668860-...`), call `25a4f834-...`. After the change the agent said "Dan! Doug Jim Bob McGee here" and later recalled the caller's existing booking date. Before, with the flag off, he answered "I don't have your name yet".
+
+**Rule:** Set `enable_contact_intelligence: true` AND `prompt_includes_contact_intelligence: true`, and add a `## Caller Intelligence` section that says a CALLER CONTEXT block (name, email, company, past calls, notes, tags, upcoming appointments) sits above the prompt. Keep the greeting name-free (for example "Well howdy! Is this who I think it is?") and use the name on the agent's next turn.
+
+**Why:** `greeting` / `greeting_outbound` are fixed text spoken word for word, and the docs list no name variable for them. A guessed `{{variable}}` would be spoken literally if wrong. `POST /agents/wizard/update-prompt-contact-intelligence` with `action: add` returns a generic section you can adapt. The caller must exist as a GHL contact on the connected location; check with GHL `contacts/search/duplicate?number=...`.
+
+**How to apply:** Outbound agents that call known contacts: flip both flags, add the section, and use a teaser greeting. Add "only use what the context says; never invent a last name" so a partial contact doesn't lead the agent to make up the rest.
+
+---
+
+### GPT-Live voices carry built-in accents; pick the voice for the accent, don't fight it with the prompt
+
+Date: 2026-10-24
+Tags: provider:openai_live, type:pattern, surface:voice
+Evidence: Summit Plumbing & Drain sub-account, agent Doug Jim Bob McGee (`17668860-...`). Heavy Jamaican Patois prompted onto `meridian` (North American) came out light (demo call `f895f0a3-...`). Switching to `cinder` (Southern US) for an Appalachian persona sounded right on the first call. Voice/accent map: the dashboard voice picker (`GeminiVoiceSelector-*.js` on app.leadlock.ai, 2026-10-24).
+
+**Rule:** Choose the `openai_live_voice` whose accent matches the persona: `ripple`/`quartz` Australian, `vesper` British, `stone`/`willow` Irish, `meridian`/`gleam` North American, `cinder`/`delta` Southern US, `tempo`/`bossa` Brazilian Portuguese, `beacon` Filipino. Masculine: ripple, vesper, stone, meridian, tempo, beacon, cinder. Prompted accents only push partway.
+
+**Why:** The voice carries the accent. The prompt can add vocabulary and grammar, but not a full accent the voice was not built with. CLAUDE.md's voice table used to say GPT-Live voices are "not split by gender"; it was corrected in the same change as this entry.
+
+**How to apply:** For accented personas on GPT-Live, start from the closest native voice. Expect `[hum]`, `[breath]`, `[laugh]` and `[gasp]` tags as agent lines in GPT-Live transcripts; they are nonverbal sounds, not errors.
+
+---
+
+### Phone demo call screen shows `config.display_name`, falling back to `business_name`; keep it short
+
+Date: 2026-10-24
+Tags: skill:prospect-demo, channel:phone, surface:public-demo-page, type:pattern
+Evidence: deployed `_slug_-Dss-eACo.js`: `agent_name: config.display_name || t.business_name || t.agent_name`. "Bobs Plumbing, Heating, and Cooling" overflowed the phone mockup; `display_name: "Bob's Plumbing"` fixed it.
+
+**Rule:** On every phone-channel demo, set `config.display_name` to a short caller name (about 15 characters max).
+
+**Why:** The caller-name slot on the call screen is narrow, and long business names spill out of the mockup. The landing heading and subheading are separate fields and don't fix it.
+
+**How to apply:** Add `display_name` in the same `PATCH /demos/{id}` that sets `phone_caller_image` / `phone_accent_color`.
+
+---
+
+### Phone-channel demos run in the browser; the agent does not need a phone number
+
+Date: 2026-10-24
+Tags: skill:prospect-demo, channel:phone, type:pattern
+Evidence: two `channel: phone` demos created on agents with no assigned number (`/d/bobs-plumbing-heating-and-cool-homeservices-rtn0op`, `-ey3ppw`). Both pages returned 200, and web calls completed (calls `f895f0a3-...`, `f6d9a9cf-...`).
+
+**Rule:** Skip number assignment for phone-channel demos. Only an agent that places or answers real phone calls needs a number, and `POST /outbound/agents/{id}/call` accepts `from_phone_number_id` to borrow any account number.
+
+**Why:** prospect-demo Step 6 says phone-channel demos need a number assigned. On an account with one number, that would have taken the number away from a live agent for no reason.
+
+**How to apply:** prospect-demo Step 6 now says this. For outbound test calls from a numberless agent, pass `from_phone_number_id`.
+
+---
+
+### Calling the GHL API from Python needs a browser User-Agent
+
+Date: 2026-10-24
+Tags: integration:gohighlevel, http:headers, type:pattern
+Evidence: `services.leadconnectorhq.com/contacts/search` with the default `Python-urllib` UA returned a 403 Cloudflare error 1010 ("browser signature"). The same request with a Chrome UA returned 200.
+
+**Rule:** Any stdlib `urllib` call to `services.leadconnectorhq.com` sends `User-Agent: Mozilla/5.0 ... Chrome/...` along with `Authorization: Bearer <PIT>` and `Version: 2021-07-28`.
+
+**Why:** Cloudflare in front of the GHL API blocks the default Python UA. The 403 looks like an auth failure, but it isn't.
+
+**How to apply:** Put the browser UA in every GHL helper. If you see 403 with `error_code: 1010`, it's the UA, not the token.
+
+---
+
+### Tell a local-service agent its business timezone, or it asks the caller and books in theirs
+
+Date: 2026-10-24
+Tags: skill:prospect-demo, provider:xai, model:grok-voice-3.0, surface:system-prompt, type:pattern
+Evidence: Maya (Grok 3.0) demo call `f6d9a9cf-...` for a Michigan (Eastern) plumber. The prompt never said Eastern. She asked "What timezone are you in?", the caller said Central, and she booked "9 AM Central". She also booked a Chicago job outside the service area, and said "I'll use whatever number you called from" on a web call that has no caller number.
+
+**Rule:** For a business that serves a local area, the prompt states the business timezone ("give every time in Eastern"), the service area plus what to do with out-of-area callers, and "only claim what you know".
+
+**Why:** `agent.timezone` alone doesn't stop the model asking the caller. Without an area rule it books anything. Without "only claim what you know" it covers gaps with made-up claims.
+
+**How to apply:** Put these three lines in every local-service prompt. Exception: agents that book across timezones (like the podcast booker) should ask the caller's timezone before offering times.
+
+---
+
+### `update_contact` cannot correct an email already on file; plan for it in the prompt
+
+Date: 2026-10-24
+Tags: tool:update_contact, integration:gohighlevel, type:pattern, surface:system-prompt
+Evidence: Summit Plumbing & Drain sub-account, agent Doug Jim Bob McGee (`17668860-...`), call `2a2a77bb-...`. The caller said the email on file was wrong and gave a new one. `update_contact` fired with the new email, but the contact kept the old one. That is by design: `reference/agent-functions.md` says it only fills empty fields and reports existing ones as skipped.
+
+**Rule:** If the workflow is "verify the email on file, and fix it if wrong", `update_contact` alone can't do the fix. The prompt has the agent read the `updated` / `skipped` lists in the result and only say "saved" for updated fields. If the email was skipped, the agent says so plainly. Actually overwriting an email needs a custom function (for example an n8n webhook calling GHL `PUT /contacts/{id}`) or a GHL workflow.
+
+**Why:** The skip is safe by design: a phone match is not proof of identity. But an agent that doesn't read the result tells the caller it updated the email when it didn't.
+
+**How to apply:** For email-verification flows, add the result check to the prompt and decide up front whether you need a real overwrite path. If you do, build the custom function before promising callers their email will change.

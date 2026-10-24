@@ -252,7 +252,7 @@ POST /demos/
 
 Slug is auto-generated server-side. Response includes `slug` and `demo_url`. No need to check uniqueness - the server handles it.
 
-**Phone-channel extras**: If `channel == "phone"`, also assign a tenant phone number to the agent so the click-to-call mockup has a real number to dial. Pick an unassigned number from `GET /phone-numbers` and `PATCH /phone-numbers/{phone_number_id}` with `{"agent_id": "<agent_id>"}`.
+**Phone-channel extras**: The phone demo runs in the browser, so the agent does not need a phone number. Don't move a number off another agent for it. Only assign one when the same agent must also place or answer real calls.
 
 ### Step 6.5 - Wire the logo + accent into the demo (default for phone)
 
@@ -260,6 +260,7 @@ For phone-channel demos, the public renderer reads two undocumented `demo.config
 
 - `phone_caller_image` - URL the call-screen avatar circle renders as `<img src=...>`. When set, replaces the agent-initials fallback.
 - `phone_accent_color` - hex color for the call-arc rings, accept-button glow. Defaults to `#3b82f6` (blue) when absent.
+- `display_name` - the caller name on the call screen. Falls back to the agent's `business_name`, and long names overflow the mockup, so set a short one (about 15 characters).
 
 **Default behavior for phone demos:** wire these whenever a logo was found in Step 1.5. Don't make the user ask.
 
@@ -288,6 +289,7 @@ patch_body = {"config": {
     **existing_config,
     "phone_caller_image": avatar_url,
     "phone_accent_color": "#FFC72C",  # set to the prospect's brand color; null to accept default blue
+    "display_name": "Acme Plumbing",  # short caller name; long business names overflow
 }}
 req = urllib.request.Request(f"{API_URL}/demos/{demo_id}",
     data=json.dumps(patch_body).encode(), method="PATCH",
