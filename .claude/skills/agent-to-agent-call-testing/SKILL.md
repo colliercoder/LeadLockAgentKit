@@ -147,7 +147,7 @@ agent-under-test (or front desk) receives ON.
 ### Step 6 — Judge and report
 
 The harness writes the full result (transcript, status, signals) to
-`./output/agent_loop_results.json` and does NOT call an LLM itself. **You are the
+`./output/agent_loop_results.json` and does not call an LLM itself. **You are the
 judge.** Read that file and for each case:
 
 1. Read the `transcript` against the `judge_question`.
@@ -199,7 +199,7 @@ From `./.env` in the kit root (same as every other skill):
 - For teams: `transfer_to_agents = [{agent_id, name, when}]`; `when` is what the
   model matches caller intent against. The front desk needs BOTH
   `transfer_to_agent` in `tools_enabled` AND a non-empty `transfer_to_agents`.
-  Department agents need NO phone number — transfer swaps the live session brain.
+  Department agents need no phone number: transfer swaps the live session brain.
 - Verdict signal for transfers: `call_logs.agent_transitions` (the department's
   agent_id appears in the timeline); `call_logs.agent_id` stays the front desk.
 
