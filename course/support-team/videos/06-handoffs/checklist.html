@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>06 Handoffs: checklist</title>
+<style>
+  :root { --blue:#6298B6; --ink:#0f1419; --muted:#5b6670; --line:#e4e8ec; --bg:#f6f8fa; --done:#9aa5ae; --warn:#b5651d; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:17px/1.5 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif; color:var(--ink); background:var(--bg); }
+  header { background:var(--ink); color:#fff; padding:28px 40px 24px; }
+  header .top { display:flex; align-items:center; gap:22px; }
+  header .top img { width:84px; height:84px; border-radius:50%; flex:none; background:#24303a; }
+  header .eyebrow { color:var(--blue); font:600 13px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.12em; text-transform:uppercase; }
+  header h1 { margin:10px 0 6px; font-size:34px; letter-spacing:-.01em; }
+  header p { margin:0; color:#b8c2ca; }
+  .bar { margin-top:18px; height:8px; background:#24303a; border-radius:99px; overflow:hidden; }
+  .bar i { display:block; height:100%; width:0; background:var(--blue); transition:width .25s; }
+  .count { margin-top:8px; font:13px ui-monospace, Menlo, monospace; color:#b8c2ca; }
+  main { max-width:980px; margin:0 auto; padding:28px 40px 60px; }
+  h2 { margin:34px 0 12px; font-size:22px; display:flex; align-items:center; gap:10px; }
+  h2 .tag { font:600 12px ui-monospace, Menlo, monospace; color:#fff; background:var(--blue); padding:4px 8px; border-radius:6px; }
+  .step { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin:10px 0; display:grid; grid-template-columns:34px 1fr; gap:12px; cursor:pointer; transition:opacity .2s, border-color .2s; }
+  .step:hover { border-color:var(--blue); }
+  .step input { width:24px; height:24px; margin:2px 0 0; accent-color:var(--blue); cursor:pointer; }
+  .step .t { font-weight:650; font-size:18px; }
+  .step .d { color:var(--muted); margin-top:4px; }
+  .step.done { opacity:.55; }
+  .step.done .t { text-decoration:line-through; color:var(--done); }
+  code, .cmd { font:15px ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .cmd { display:flex; align-items:center; gap:10px; background:var(--ink); color:#e6edf3; padding:9px 12px; border-radius:8px; margin-top:8px; }
+  .cmd span { flex:1; overflow-x:auto; white-space:nowrap; }
+  .cmd b { font:600 11px ui-monospace, Menlo, monospace; color:var(--blue); min-width:62px; text-transform:uppercase; letter-spacing:.06em; }
+  .cmd button, .say button { font:600 12px ui-monospace, Menlo, monospace; background:var(--blue); color:#fff; border:0; border-radius:6px; padding:5px 9px; cursor:pointer; flex:none; }
+  a { color:var(--blue); font-weight:600; text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  .say { margin-top:8px; padding:8px 12px; background:#eef4f8; border-left:3px solid var(--blue); border-radius:6px; font:15px ui-monospace, Menlo, monospace; display:flex; align-items:flex-start; gap:12px; }
+  .say span { flex:1; }
+  .note { color:var(--muted); font-size:14px; margin-top:6px; }
+  .ok { margin-top:8px; padding:8px 12px; background:#eef7f0; border-left:3px solid #3f8f5a; border-radius:6px; font-size:15px; }
+  .trouble { background:#fff; border:1px solid var(--line); border-radius:12px; padding:6px 18px; margin:10px 0; }
+  .trouble dt { font-weight:650; margin-top:12px; }
+  .trouble dd { margin:4px 0 12px; color:var(--muted); }
+  .next { background:var(--ink); color:#e6edf3; border-radius:12px; padding:18px 20px; margin-top:12px; }
+  .next a { color:#9cc3d8; }
+  footer { text-align:center; color:var(--muted); font-size:14px; padding:10px 0 40px; }
+  .reset { background:none; border:1px solid var(--line); color:var(--muted); border-radius:8px; padding:6px 12px; cursor:pointer; font-size:13px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="top"><div>
+  <div class="eyebrow">Build an AI customer support team &middot; Video 06 of 8</div>
+  <h1>Handoffs</h1>
+  <p>Agent to agent with the full history, and to a person with a whisper.</p>
+  </div></div>
+  <div class="bar"><i id="bar"></i></div>
+  <div class="count" id="count">0 of 0 done</div>
+</header>
+<main>
+
+<h2><span class="tag">BEFORE</span> Before you start</h2>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">1. All three desks are installed</div>
+  <div class="d">Joanne, Jim Bob and Miss Hattie Mae.</div>
+</div></label>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">2. Your on-call number is in .env</div>
+  <div class="d">Set <code>MY_PHONE_NUMBER</code> in <code>.env</code>. That's the person the agents hand off to.</div>
+</div></label>
+<h2><span class="tag">BUILD</span> Wire the team</h2>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">3. Agent to agent</div>
+  <div class="say"><span>wire the handoffs</span><button type="button">Copy</button></div>
+  <div class="ok"><b>Success:</b> Each desk lists the other two under transfer_to_agent. The installer already did this as each desk went in; this re-checks it.</div>
+  <div class="note">Joanne sends breakdowns to Jim Bob and billing to Miss Hattie Mae. They send anything outside their desk back to Joanne.</div>
+</div></label>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">4. Agent to a person</div>
+  <div class="say"><span>Add a transfer_call to a person on all three agents, using MY_PHONE_NUMBER from .env, named On-call manager, for safety issues, disputes and anything stuck. Turn whisper on.</span><button type="button">Copy</button></div>
+  <div class="ok"><b>Success:</b> transfer_call on, one target, whisper on, so the person hears a short summary before they pick up.</div>
+</div></label>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">5. Say when, in the prompts</div>
+  <div class="say"><span>Add a short handoff section to each of the three prompts: when to hand off, to whom, and to say who they're handing to before they do it.</span><button type="button">Copy</button></div>
+</div></label>
+<h2><span class="tag">TEST</span> One call, three desks</h2>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">6. The full relay</div>
+  <div class="d">On the call: ask about your rental, then "it's grinding when I swing", then "and what do I owe?"</div>
+  <div class="say"><span>Place a test call from Joanne to my phone.</span><button type="button">Copy</button></div>
+  <div class="ok"><b>Success:</b> Joanne, then Jim Bob, then Miss Hattie Mae. Nobody asks for your name twice.</div>
+</div></label>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">7. Check the history went along</div>
+  <div class="say"><span>Show me the transcript of that last call, split by agent.</span><button type="button">Copy</button></div>
+</div></label>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">8. The whisper</div>
+  <div class="d">Call again and say "someone got hurt on site". The agent hands you to the on-call number. Pick up and listen for the summary first.</div>
+</div></label>
+<h2><span class="tag">FIX</span> If something goes wrong</h2>
+<dl class="trouble"><dt>Claude says the API key is missing or gets a 401</dt><dd>Say <code>check my setup</code>. The setup-check skill finds the problem in <code>.env</code>.</dd><dt>Claude can't reach n8n</dt><dd>Type <code>/mcp</code> and look for n8n. Not there? Say <code>connect n8n</code>. The installer also needs <code>N8N_API_URL</code> and <code>N8N_API_KEY</code> in <code>.env</code>.</dd><dt>The next agent asks for the code again</dt><dd>Verified is per call and travels with it. If it asks again, check that each agent's prompt says to trust a code already checked on this call.</dd><dt>Transfer to a person fails</dt><dd>Check MY_PHONE_NUMBER is in +1 format and the account can place calls.</dd><dt>The handoff is declined</dt><dd>Agent-to-agent handoffs need all three agents on the same voice provider, Grok or OpenAI. Gemini and ElevenLabs voices can't hand off.</dd><dt>It stops handing off</dt><dd>A call can hand off at most 3 times. That's plenty for Joanne, Jim Bob, Miss Hattie Mae and back.</dd></dl>
+<h2><span class="tag">NEXT</span> Outbound</h2>
+<div class="next">Next: <a href="../07-outbound/checklist.html">Video 7: Outbound</a>. The team calls first.</div>
+
+</main>
+<footer><button class="reset" type="button" id="reset">Reset checklist</button></footer>
+
+<script>
+  const boxes = [...document.querySelectorAll('.step input')];
+  const KEY = 'leadlock-support-team-06-handoffs';
+  const saved = JSON.parse(localStorage.getItem(KEY) || '[]');
+  function paint() {
+    const n = boxes.filter(b => b.checked).length;
+    boxes.forEach(b => b.closest('.step').classList.toggle('done', b.checked));
+    document.getElementById('bar').style.width = (100 * n / boxes.length) + '%';
+    document.getElementById('count').textContent = n + ' of ' + boxes.length + ' done';
+    localStorage.setItem(KEY, JSON.stringify(boxes.map(b => b.checked)));
+  }
+  boxes.forEach((b, i) => { b.checked = !!saved[i]; b.addEventListener('change', paint); });
+  document.querySelectorAll('.cmd button, .say button').forEach(btn => btn.addEventListener('click', e => {
+    e.preventDefault(); e.stopPropagation();
+    navigator.clipboard.writeText(btn.previousElementSibling.textContent);
+    btn.textContent = 'Copied'; setTimeout(() => btn.textContent = 'Copy', 1200);
+  }));
+  document.getElementById('reset').addEventListener('click', () => { boxes.forEach(b => b.checked = false); paint(); });
+  paint();
+</script>
+</body>
+</html>

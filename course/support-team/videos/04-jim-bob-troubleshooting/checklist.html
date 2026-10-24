@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>04 Jim Bob's troubleshooting desk: checklist</title>
+<style>
+  :root { --blue:#6298B6; --ink:#0f1419; --muted:#5b6670; --line:#e4e8ec; --bg:#f6f8fa; --done:#9aa5ae; --warn:#b5651d; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:17px/1.5 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif; color:var(--ink); background:var(--bg); }
+  header { background:var(--ink); color:#fff; padding:28px 40px 24px; }
+  header .top { display:flex; align-items:center; gap:22px; }
+  header .top img { width:84px; height:84px; border-radius:50%; flex:none; background:#24303a; }
+  header .eyebrow { color:var(--blue); font:600 13px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.12em; text-transform:uppercase; }
+  header h1 { margin:10px 0 6px; font-size:34px; letter-spacing:-.01em; }
+  header p { margin:0; color:#b8c2ca; }
+  .bar { margin-top:18px; height:8px; background:#24303a; border-radius:99px; overflow:hidden; }
+  .bar i { display:block; height:100%; width:0; background:var(--blue); transition:width .25s; }
+  .count { margin-top:8px; font:13px ui-monospace, Menlo, monospace; color:#b8c2ca; }
+  main { max-width:980px; margin:0 auto; padding:28px 40px 60px; }
+  h2 { margin:34px 0 12px; font-size:22px; display:flex; align-items:center; gap:10px; }
+  h2 .tag { font:600 12px ui-monospace, Menlo, monospace; color:#fff; background:var(--blue); padding:4px 8px; border-radius:6px; }
+  .step { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin:10px 0; display:grid; grid-template-columns:34px 1fr; gap:12px; cursor:pointer; transition:opacity .2s, border-color .2s; }
+  .step:hover { border-color:var(--blue); }
+  .step input { width:24px; height:24px; margin:2px 0 0; accent-color:var(--blue); cursor:pointer; }
+  .step .t { font-weight:650; font-size:18px; }
+  .step .d { color:var(--muted); margin-top:4px; }
+  .step.done { opacity:.55; }
+  .step.done .t { text-decoration:line-through; color:var(--done); }
+  code, .cmd { font:15px ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .cmd { display:flex; align-items:center; gap:10px; background:var(--ink); color:#e6edf3; padding:9px 12px; border-radius:8px; margin-top:8px; }
+  .cmd span { flex:1; overflow-x:auto; white-space:nowrap; }
+  .cmd b { font:600 11px ui-monospace, Menlo, monospace; color:var(--blue); min-width:62px; text-transform:uppercase; letter-spacing:.06em; }
+  .cmd button, .say button { font:600 12px ui-monospace, Menlo, monospace; background:var(--blue); color:#fff; border:0; border-radius:6px; padding:5px 9px; cursor:pointer; flex:none; }
+  a { color:var(--blue); font-weight:600; text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  .say { margin-top:8px; padding:8px 12px; background:#eef4f8; border-left:3px solid var(--blue); border-radius:6px; font:15px ui-monospace, Menlo, monospace; display:flex; align-items:flex-start; gap:12px; }
+  .say span { flex:1; }
+  .note { color:var(--muted); font-size:14px; margin-top:6px; }
+  .ok { margin-top:8px; padding:8px 12px; background:#eef7f0; border-left:3px solid #3f8f5a; border-radius:6px; font-size:15px; }
+  .trouble { background:#fff; border:1px solid var(--line); border-radius:12px; padding:6px 18px; margin:10px 0; }
+  .trouble dt { font-weight:650; margin-top:12px; }
+  .trouble dd { margin:4px 0 12px; color:var(--muted); }
+  .next { background:var(--ink); color:#e6edf3; border-radius:12px; padding:18px 20px; margin-top:12px; }
+  .next a { color:#9cc3d8; }
+  footer { text-align:center; color:var(--muted); font-size:14px; padding:10px 0 40px; }
+  .reset { background:none; border:1px solid var(--line); color:var(--muted); border-radius:8px; padding:6px 12px; cursor:pointer; font-size:13px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="top"><img src="../../assets/people/jim-bob.svg" alt=""><div>
+  <div class="eyebrow">Build an AI customer support team &middot; Video 04 of 8</div>
+  <h1>Jim Bob's troubleshooting desk</h1>
+  <p>He walks you through it, safety first. If it needs a tech, he opens a ticket.</p>
+  </div></div>
+  <div class="bar"><i id="bar"></i></div>
+  <div class="count" id="count">0 of 0 done</div>
+</header>
+<main>
+
+<h2><span class="tag">BEFORE</span> Before you start</h2>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">1. Videos 1 to 3 are done</div>
+  <div class="d">Tables, Verify Caller, and Joanne.</div>
+</div></label>
+<h2><span class="tag">BUILD</span> Doug Jim Bob McGee</h2>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">2. Install his desk</div>
+  <div class="say"><span>install Jim Bob</span><button type="button">Copy</button></div>
+  <div class="ok"><b>Success:</b> A workflow called <b>Granite Peak - Maintenance</b> and an agent called <b>Granite Peak - Doug Jim Bob McGee (Maintenance)</b> with troubleshoot_machine, create_service_ticket, service_ticket_status and the two verify functions.</div>
+</div></label>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">3. Check the safety rules</div>
+  <div class="say"><span>Show me Jim Bob's safety rules from his prompt, in order.</span><button type="button">Copy</button></div>
+  <div class="ok"><b>Success:</b> Before anyone climbs on a machine: parked, bucket or blade down, engine off, locked out. Anything with smoke, fire, a brake or steering problem, or someone hurt goes to a person.</div>
+</div></label>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">4. See the guide he reads</div>
+  <div class="say"><span>From the Granite Peak - Troubleshooting table, show me the rows for excavators.</span><button type="button">Copy</button></div>
+</div></label>
+<h2><span class="tag">TEST</span> Test it</h2>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">5. Test the guide lookup</div>
+  <div class="say"><span>Test Jim Bob's troubleshoot_machine with machine excavator and symptom grinding when I swing.</span><button type="button">Copy</button></div>
+  <div class="ok"><b>Success:</b> The likely cause, what to check, and whether it needs a tech, read from the guide.</div>
+</div></label>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">6. Tickets sit behind the gate</div>
+  <div class="say"><span>Test Jim Bob's create_service_ticket for unit GP-202, issue grinding when swinging, before verifying.</span><button type="button">Copy</button></div>
+  <div class="ok"><b>Success:</b> <b>verify_first</b>. Advice is open to anyone; a ticket on an account needs the code.</div>
+  <div class="note">GP-202, a CAT 374 excavator, is on rent to Ridgeline Aggregates, customer C-1001: that's you.</div>
+</div></label>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">7. A test call</div>
+  <div class="d">On the call: "It's making a grinding sound when I swing." When he offers a tech, read back the code.</div>
+  <div class="say"><span>Give Jim Bob a phone number and place a test call to my phone.</span><button type="button">Copy</button></div>
+  <div class="ok"><b>Success:</b> Safety first, then the check from the guide, then the code, then a ticket with a tech ETA.</div>
+</div></label>
+<h2><span class="tag">FIX</span> If something goes wrong</h2>
+<dl class="trouble"><dt>Claude says the API key is missing or gets a 401</dt><dd>Say <code>check my setup</code>. The setup-check skill finds the problem in <code>.env</code>.</dd><dt>Claude can't reach n8n</dt><dd>Type <code>/mcp</code> and look for n8n. Not there? Say <code>connect n8n</code>. The installer also needs <code>N8N_API_URL</code> and <code>N8N_API_KEY</code> in <code>.env</code>.</dd><dt>He skips the safety step</dt><dd>Say <code>tune my agent</code> with the call, or ask Claude to move the safety rule to the top of his prompt.</dd><dt>No match in the guide</dt><dd>He should say so and offer a tech, not guess. Add a row to the Troubleshooting table for that machine and symptom.</dd></dl>
+<h2><span class="tag">NEXT</span> Miss Hattie Mae's billing desk</h2>
+<div class="next">Next: <a href="../05-hattie-mae-billing/checklist.html">Video 5: Miss Hattie Mae's billing desk</a>. Balance, invoices and a payment link.</div>
+
+</main>
+<footer><button class="reset" type="button" id="reset">Reset checklist</button></footer>
+
+<script>
+  const boxes = [...document.querySelectorAll('.step input')];
+  const KEY = 'leadlock-support-team-04-jim-bob';
+  const saved = JSON.parse(localStorage.getItem(KEY) || '[]');
+  function paint() {
+    const n = boxes.filter(b => b.checked).length;
+    boxes.forEach(b => b.closest('.step').classList.toggle('done', b.checked));
+    document.getElementById('bar').style.width = (100 * n / boxes.length) + '%';
+    document.getElementById('count').textContent = n + ' of ' + boxes.length + ' done';
+    localStorage.setItem(KEY, JSON.stringify(boxes.map(b => b.checked)));
+  }
+  boxes.forEach((b, i) => { b.checked = !!saved[i]; b.addEventListener('change', paint); });
+  document.querySelectorAll('.cmd button, .say button').forEach(btn => btn.addEventListener('click', e => {
+    e.preventDefault(); e.stopPropagation();
+    navigator.clipboard.writeText(btn.previousElementSibling.textContent);
+    btn.textContent = 'Copied'; setTimeout(() => btn.textContent = 'Copy', 1200);
+  }));
+  document.getElementById('reset').addEventListener('click', () => { boxes.forEach(b => b.checked = false); paint(); });
+  paint();
+</script>
+</body>
+</html>

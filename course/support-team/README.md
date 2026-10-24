@@ -1,4 +1,4 @@
-# The support team (advanced course)
+# Build an AI customer support team (advanced course)
 
 Everything the advanced course's AI support team is built from: a fictional heavy equipment rental company, **Granite Peak Equipment Rental**, with three AI desks.
 
@@ -7,6 +7,21 @@ Everything the advanced course's AI support team is built from: a fictional heav
 - **Miss Hattie Mae**, billing: balance and invoices, and a secure payment link to the email or phone on file. Never takes card numbers.
 
 Before any desk shares or changes account details, the caller verifies like at a bank: a 6-digit code goes to the email or phone **on file** (never one the caller gives), and they read it back.
+
+## The checklists
+
+One per video. Double-click to open in your browser. Tick each step as you go (your ticks are saved in that browser), and use the Copy button on every "say this" panel to paste it into Claude Code.
+
+| Video | Checklist | What you build |
+|---|---|---|
+| 1 | [The data and the team plan](videos/01-data-team/checklist.html) | Six n8n data tables from the kit's CSVs, and who does what |
+| 2 | [Verify the caller](videos/02-verify-caller/checklist.html) | The Verify Caller workflow and its two functions |
+| 3 | [Joanne's rentals desk](videos/03-joanne-rentals/checklist.html) | The Rentals workflow, Joanne, Contact Intelligence |
+| 4 | [Jim Bob's troubleshooting desk](videos/04-jim-bob-troubleshooting/checklist.html) | The Maintenance workflow, Jim Bob, safety-first rules |
+| 5 | [Miss Hattie Mae's billing desk](videos/05-hattie-mae-billing/checklist.html) | The Billing workflow, Miss Hattie Mae, the payment link |
+| 6 | [Handoffs](videos/06-handoffs/checklist.html) | Agent to agent with the full history, and to a person with a whisper |
+| 7 | [Outbound](videos/07-outbound/checklist.html) | Off-rent reminders, delivery confirmations, service follow-ups |
+| 8 | [Measure and improve](videos/08-measure/checklist.html) | A call log in n8n, then audit, tune and add to learnings |
 
 ## Install it
 
