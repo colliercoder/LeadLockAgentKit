@@ -28,7 +28,7 @@ Confirm `.env` has `LEADLOCK_API_KEY` + `LEADLOCK_API_URL` (default `https://lea
 
 ## Hard rules
 
-1. **Provider support: `xai` (Grok) or `openai` ONLY.** The client-tool dispatch is wired in the xAI/OpenAI voice path. **Gemini and ElevenLabs do NOT execute web tools** — an agent on those providers would declare the tools but return "Unknown function" when the model calls them. Default to `xai`. If the user insists on Gemini/ElevenLabs, tell them page control won't work yet.
+1. **Provider support: `xai` (Grok) or `openai` only.** The client-tool dispatch is wired in the xAI/OpenAI voice path. **Gemini and ElevenLabs don't execute web tools:** an agent on those providers would declare the tools but return "Unknown function" when the model calls them. Default to `xai`. If the user insists on Gemini/ElevenLabs, tell them page control won't work yet.
 2. **Never name the platform in the agent's prompt/greeting.** Use "our team", "the assistant". Platform name is fine in operator-facing output.
 3. **Scrub.** Never hardcode a slug, calendar ID, integration ID, or token into shipped files. Everything is per-account, discovered at build time.
 4. **Look up endpoint shapes in `LEADLOCKDOCS.json`** before calling (`/agents` POST/PATCH, `/demos/` POST, `/integrations/ghl/integrations`, `/integrations/ghl/calendars`). The `web_*` tool names below are not REST endpoints — they're values for the agent's `tools_enabled`.
