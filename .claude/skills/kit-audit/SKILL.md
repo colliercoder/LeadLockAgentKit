@@ -5,7 +5,7 @@ description: Point the kit at itself and check it's still tight for the people w
 
 # Kit Audit
 
-A self-check for the Leadlock Agent Kit. It does NOT talk to a user's tenant the way the other skills do — it points the kit at *itself* and asks: is this repo still tight for the next person who clones it? Every skill structurally sound, every endpoint it references real, every skill registered in the three places it must be, no hard-rule violations baked into the content, the learnings folder healthy, and no secrets leaked.
+A self-check for the Leadlock Agent Kit. It doesn't talk to a user's tenant the way the other skills do: it points the kit at *itself* and asks: is this repo still tight for the next person who clones it? Every skill structurally sound, every endpoint it references real, every skill registered in the three places it must be, no hard-rule violations baked into the content, the learnings folder healthy, and no secrets leaked.
 
 This is the maintainer's periodic checkup. `setup-check` validates a *user's* `.env` and auth. `kit-audit` validates the *repo's own quality*.
 
@@ -64,8 +64,8 @@ Run the checks in order. Collect findings as `{category, severity (FAIL|WARN|INF
 
 - **Forbidden string used to forbid it.** A skill that *names* `leadlock-docs.md`, `openapi-spec.json`, or the word "closer" *in order to prohibit it* (a rule, a gotcha, this very audit) is not a violation. Only flag a skill that actually *instructs reading* the stale file, or puts "closer" in *generated agent copy*. Trigger phrases in the frontmatter (e.g. "clone my best closer") are user-facing and allowed.
 - **Placeholder secrets.** `key_xxxx...`, `sk_live_***`, `key_paste_your_..._here`, `<your-key>`, all-`x` runs — documentation placeholders, not real keys. A real secret has high-entropy real characters. Flag only those.
-- **Non-API paths.** Slash-command names (`/loop`, `/schedule`, `/add-to-learnings`, `/prompt-tuner`), scraped website paths (`/about`, `/services`, `/contact`), and third-party API paths (Retell `/v2/...`, cal.com) are NOT Leadlock endpoints. Only check a path that is clearly aimed at `API_URL` (in a curl/urllib call to the Leadlock host). When in doubt, INFO not FAIL.
-- **Utility skills have a lighter shape.** `welcome`, `setup-check`, and `add-to-learnings` are menus/diagnostics, not execution skills. Do NOT require the full `## Execution` / `## Required inputs` / 150-line-floor anatomy of them. They need: valid frontmatter, an intro, and `## When to invoke`. Nothing more.
+- **Non-API paths.** Slash-command names (`/loop`, `/schedule`, `/add-to-learnings`, `/prompt-tuner`), scraped website paths (`/about`, `/services`, `/contact`), and third-party API paths (Retell `/v2/...`, cal.com) are not Leadlock endpoints. Only check a path that is clearly aimed at `API_URL` (in a curl/urllib call to the Leadlock host). When in doubt, INFO not FAIL.
+- **Utility skills have a lighter shape.** `welcome`, `setup-check`, and `add-to-learnings` are menus/diagnostics, not execution skills. Don't require the full `## Execution` / `## Required inputs` / 150-line-floor anatomy of them. They need: valid frontmatter, an intro, and `## When to invoke`. Nothing more.
 - **Partial-path extraction.** If an extracted path looks truncated (`/generate`, `/invite`, `/v2`), re-read the surrounding line before flagging — it's usually a fragment of a real, longer path or a non-API string.
 
 ### Step 1 — Inventory
@@ -108,7 +108,7 @@ Scan skill bodies and any helper scripts for CLAUDE.md hard-rule violations. The
 - SQL / Supabase client / direct DB references (hard rule 1) → FAIL.
 - A background server / long-running process (hard rule 2) → FAIL.
 - The Leadlock platform named inside *generated* agent copy (greetings, system prompts the skill emits) — should be "our system" / "the platform we use" (hard rule 3) → FAIL.
-- The word "closer" in generated prompts/copy (hard rule 4) → FAIL. NOT in trigger phrases or rule text (see suppression list).
+- The word "closer" in generated prompts/copy (hard rule 4) → FAIL. Trigger phrases and rule text don't count (see suppression list).
 - Writes to `/tmp/` or outside the kit dir, or artifacts not going to `./output/` (hard rules 8, 10) → WARN.
 - A new pip/npm/uv dependency beyond Python stdlib (anti-patterns) → WARN.
 
@@ -141,7 +141,7 @@ Put these under a "Recommendations" heading in the report — they're suggestion
 
 ### Step 10 — Apply safe fixes
 
-Apply ONLY the **Safe-fix whitelist** items, in the working tree, no commit:
+Apply only the **Safe-fix whitelist** items, in the working tree, no commit:
 - Append a missing `## Rule capture` block to a SKILL.md.
 - Add a missing README table row / `welcome` line / `setup-check` line for a real skill (text drawn from that skill's `description`).
 - Remove a stale registration entry whose skill folder no longer exists.
