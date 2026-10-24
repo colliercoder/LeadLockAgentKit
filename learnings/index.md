@@ -50,6 +50,7 @@ Content lives in the category files, not here. To add a new entry, invoke `/add-
 
 ## Skill-specific
 
+- 2026-10-24 - How to word SKILL.md files for current Claude models (Opus 5.5): 10 rules with Anthropic sources. Read before writing or rewording a skill - [skill-authoring.md](skill-authoring.md)
 - 2026-05-31 — Agent-team transfer wiring (`transfer_to_agent` in tools_enabled AND non-empty `transfer_to_agents`), voice limits (xai/openai only), verdict via `agent_transitions` — [agent-to-agent-call-testing.md](agent-to-agent-call-testing.md)
 - 2026-05-30 — Agent-to-agent outbound passes a real caller-id to the inbound leg, so `{{caller_phone}}` is testable with no human phone — [agent-to-agent-call-testing.md](agent-to-agent-call-testing.md)
 - 2026-05-30 — Two-AI-agent calls need `end_call` + a goal-driven user-sim + a low `max_call_duration_minutes`, or they run to the cap — [agent-to-agent-call-testing.md](agent-to-agent-call-testing.md)

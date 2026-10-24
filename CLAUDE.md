@@ -220,6 +220,7 @@ If your skill needs an agency-tier API key (anything under `/agency/*`), say so 
 - `LEADLOCKDOCS.json` — canonical API reference (275+ endpoints + full component schemas). Parse with `json.load`.
 - `.claude/skills/prospect-demo/SKILL.md` — the canonical skill example. Mirror its structure when writing new skills.
 - `.claude/skills/prospect-demo/showcase.html` — branded slide deck explaining what `prospect-demo` does. Use as a reference if you build similar marketing artifacts for other skills.
+- `learnings/skill-authoring.md` - how to word SKILL.md files for current Claude models, with Anthropic sources. Read it before writing or rewording a skill.
 - `learnings/` — the kit's persistent memory across sessions. Read `learnings/index.md` before starting non-trivial work. Append to it via `/add-to-learnings`.
 
 ---
