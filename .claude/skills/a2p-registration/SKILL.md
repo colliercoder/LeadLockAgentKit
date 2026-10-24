@@ -33,7 +33,7 @@ Full detail: `reference/a2p-10dlc-overview.md`.
 
 The overwhelming majority of rejections come from **consent/opt-in** and **campaign description** problems - both fully preventable. Before you submit anything, the discipline is:
 
-- **Marketing use case = marketing messages ONLY.** If you also send appointment reminders, order updates, or account alerts, you do **not** want Marketing - you want **Mixed** or **Low Volume Mixed**. Mixing transactional content into a Marketing registration is an instant 30886. (`reference/campaign-use-cases.md`)
+- **Marketing use case = marketing messages only.** If you also send appointment reminders, order updates, or account alerts, you do **not** want Marketing - you want **Mixed** or **Low Volume Mixed**. Mixing transactional content into a Marketing registration is an instant 30886. (`reference/campaign-use-cases.md`)
 - **Your opt-in checkbox must be unchecked by default and optional** (not required to submit the form). This is the single most common rejection. (`reference/consent-and-cta.md`)
 - **Your website, privacy policy, and terms must be live and publicly reachable** (not behind a login, no typos in the URL field - Twilio does not validate the URL on submit). (`reference/error-codes.md` → 30891)
 - **No URL shorteners** (bit.ly, tinyurl) in sample messages. Use your full domain. (30892)
