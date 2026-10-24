@@ -1,0 +1,105 @@
+{
+  "name": "Leadlock - Outbound call",
+  "nodes": [
+    {
+      "id": "a1f0c001-0000-4000-8000-000000000001",
+      "name": "When clicking 'Execute workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "a1f0c001-0000-4000-8000-000000000002",
+      "name": "Who to call",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "includeOtherFields": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f1",
+              "name": "agent_id",
+              "value": "PASTE-YOUR-AGENT-ID",
+              "type": "string"
+            },
+            {
+              "id": "f2",
+              "name": "to_number",
+              "value": "PASTE-YOUR-NUMBER",
+              "type": "string"
+            },
+            {
+              "id": "f3",
+              "name": "first_name",
+              "value": "Sam",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "a1f0c001-0000-4000-8000-000000000003",
+      "name": "Leadlock: start the call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        520,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://leadlock-app.onrender.com/outbound/trigger",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ agent_id: $json.agent_id, to_number: $json.to_number, context: { first_name: $json.first_name, source: \"n8n\" } }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Leadlock API key"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking 'Execute workflow'": {
+      "main": [
+        [
+          {
+            "node": "Who to call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Who to call": {
+      "main": [
+        [
+          {
+            "node": "Leadlock: start the call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

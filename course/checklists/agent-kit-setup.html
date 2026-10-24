@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leadlock Agent Kit: setup and workflow checklist</title>
+<style>
+  :root { --blue:#6298B6; --ink:#0f1419; --muted:#5b6670; --line:#e4e8ec; --bg:#f6f8fa; --done:#9aa5ae; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:17px/1.5 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif; color:var(--ink); background:var(--bg); }
+  header { background:var(--ink); color:#fff; padding:28px 40px 24px; }
+  header .eyebrow { color:var(--blue); font:600 13px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.12em; text-transform:uppercase; }
+  header h1 { margin:10px 0 6px; font-size:34px; letter-spacing:-.01em; }
+  header p { margin:0; color:#b8c2ca; }
+  .bar { margin-top:18px; height:8px; background:#24303a; border-radius:99px; overflow:hidden; }
+  .bar i { display:block; height:100%; width:0; background:var(--blue); transition:width .25s; }
+  .count { margin-top:8px; font:13px ui-monospace, Menlo, monospace; color:#b8c2ca; }
+  main { max-width:980px; margin:0 auto; padding:28px 40px 60px; }
+  h2 { margin:34px 0 12px; font-size:22px; display:flex; align-items:center; gap:10px; }
+  h2 .tag { font:600 12px ui-monospace, Menlo, monospace; color:#fff; background:var(--blue); padding:4px 8px; border-radius:6px; }
+  .step { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin:10px 0; display:grid; grid-template-columns:34px 1fr; gap:12px; cursor:pointer; transition:opacity .2s, border-color .2s; }
+  .step:hover { border-color:var(--blue); }
+  .step input { width:24px; height:24px; margin:2px 0 0; accent-color:var(--blue); cursor:pointer; }
+  .step .t { font-weight:650; font-size:18px; }
+  .step .d { color:var(--muted); margin-top:4px; }
+  .step.done { opacity:.55; }
+  .step.done .t { text-decoration:line-through; color:var(--done); }
+  code, .cmd { font:15px ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .cmd { display:flex; align-items:center; gap:10px; background:var(--ink); color:#e6edf3; padding:9px 12px; border-radius:8px; margin-top:8px; }
+  .cmd span { flex:1; overflow-x:auto; white-space:nowrap; }
+  .cmd b { font:600 11px ui-monospace, Menlo, monospace; color:var(--blue); min-width:62px; text-transform:uppercase; letter-spacing:.06em; }
+  .cmd button { font:600 12px ui-monospace, Menlo, monospace; background:var(--blue); color:#fff; border:0; border-radius:6px; padding:5px 9px; cursor:pointer; }
+  a { color:var(--blue); font-weight:600; text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  .say { margin-top:8px; padding:8px 12px; background:#eef4f8; border-left:3px solid var(--blue); border-radius:6px; font:15px ui-monospace, Menlo, monospace; }
+  .note { color:var(--muted); font-size:14px; margin-top:6px; }
+  footer { text-align:center; color:var(--muted); font-size:14px; padding:10px 0 40px; }
+  .reset { background:none; border:1px solid var(--line); color:var(--muted); border-radius:8px; padding:6px 12px; cursor:pointer; font-size:13px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Leadlock Agent Kit</div>
+  <h1>From zero to Claude building your voice agents</h1>
+  <p>Follow along and tick each step as we go. Every link is clickable.</p>
+  <div class="bar"><i id="bar"></i></div>
+  <div class="count" id="count">0 of 0 done</div>
+</header>
+<main>
+
+<h2><span class="tag">PART 1</span> Set up your machine</h2>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">1. Get a paid Claude plan</div>
+  <div class="d">Claude Code needs Pro or Max. <a href="https://claude.com/pricing" target="_blank">claude.com/pricing</a></div>
+</div></label>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">2. Install Claude Code</div>
+  <div class="d">An AI that works in your files and terminal, not a chat window. Setup guide: <a href="https://code.claude.com/docs/en/setup" target="_blank">code.claude.com/docs/en/setup</a></div>
+  <div class="cmd"><b>Mac</b><span>curl -fsSL https://claude.ai/install.sh | bash</span><button type="button">Copy</button></div>
+  <div class="cmd"><b>Windows</b><span>irm https://claude.ai/install.ps1 | iex</span><button type="button">Copy</button></div>
+  <div class="note">Windows: run it in PowerShell. Or use <code>winget install Anthropic.ClaudeCode</code>.</div>
+</div></label>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">3. Log in and prove it works</div>
+  <div class="d">Run <code>claude</code>, log in in the browser, then check the version.</div>
+  <div class="cmd"><span>claude --version</span><button type="button">Copy</button></div>
+</div></label>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">4. Make sure you have Git</div>
+  <div class="d">Needed to download the kit. Check with <code>git --version</code>; if it is missing:</div>
+  <div class="cmd"><b>Mac</b><span>xcode-select --install</span><button type="button">Copy</button></div>
+  <div class="cmd"><b>Windows</b><span>winget install --id Git.Git -e --source winget</span><button type="button">Copy</button></div>
+  <div class="note">On Windows, Git for Windows also lets Claude Code use its full toolset. Restart PowerShell after installing.</div>
+</div></label>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">5. Download Orca</div>
+  <div class="d">Free app that runs several Claude sessions side by side, each on its own copy of the repo. <a href="https://www.onorca.dev/download" target="_blank">onorca.dev/download</a>. Mac, Windows 10/11 and Linux.</div>
+</div></label>
+
+<h2><span class="tag">PART 2</span> Get the Agent Kit</h2>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">6. Clone the free Agent Kit</div>
+  <div class="d">Free on GitHub: <a href="https://github.com/colliercoder/LeadLockAgentKit" target="_blank">github.com/colliercoder/LeadLockAgentKit</a></div>
+  <div class="cmd"><span>git clone https://github.com/colliercoder/LeadLockAgentKit.git</span><button type="button">Copy</button></div>
+</div></label>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">7. Create your settings file</div>
+  <div class="cmd"><b>Mac</b><span>cd LeadLockAgentKit &amp;&amp; cp .env.example .env</span><button type="button">Copy</button></div>
+  <div class="cmd"><b>Windows</b><span>cd LeadLockAgentKit; Copy-Item .env.example .env</span><button type="button">Copy</button></div>
+  <div class="note">Your keys go in <code>.env</code>. It never leaves your machine and is never pushed to GitHub.</div>
+</div></label>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">8. Open it in Orca and start a Claude session</div>
+  <div class="d">In Orca: add the LeadLockAgentKit folder as a repo, then start a Claude Code session inside it.</div>
+</div></label>
+
+<h2><span class="tag">PART 3</span> Add your keys</h2>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">9. Leadlock API key</div>
+  <div class="d">Settings, API Keys, Create. Paste it into <code>.env</code> as <code>LEADLOCK_API_KEY</code>. <a href="https://app.leadlock.ai/dashboard/settings/api-keys" target="_blank">app.leadlock.ai/dashboard/settings/api-keys</a></div>
+</div></label>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">10. GoHighLevel token (if you use GoHighLevel)</div>
+  <div class="d">In your sub-account: Settings, Private Integrations, Create New, pick the scopes, copy the token. Paste it as <code>GHL_PIT</code>. The location ID is the long ID in the URL: paste it as <code>GHL_LOCATION_ID</code>. <a href="https://app.gohighlevel.com/" target="_blank">app.gohighlevel.com</a></div>
+</div></label>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">11. Check your setup</div>
+  <div class="d">Say this to Claude. It tests your keys and lists what you can run.</div>
+  <div class="say">check my setup</div>
+</div></label>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">12. Optional: connect n8n</div>
+  <div class="d">n8n is how your agent looks things up in any system mid-call. Sign up at <a href="https://n8n.io" target="_blank">n8n.io</a>, then say:</div>
+  <div class="say">connect n8n</div>
+  <div class="note">Guide: <a href="https://docs.n8n.io/connect/connect-to-n8n-mcp-server/" target="_blank">docs.n8n.io/connect/connect-to-n8n-mcp-server</a>. Then in Claude: <code>/mcp</code>, n8n, Authenticate.</div>
+</div></label>
+
+<h2><span class="tag">PART 4</span> Build, demo, test, improve</h2>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">13. See every skill</div>
+  <div class="say">help</div>
+</div></label>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">14. Build an agent</div>
+  <div class="d">It asks about 10 questions, finds your numbers and calendars, writes the prompt and creates the agent.</div>
+  <div class="say">build me an agent for Summit Plumbing</div>
+</div></label>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">15. Make a demo for a prospect</div>
+  <div class="d">It reads the website, builds the agent and gives you live demo links to send.</div>
+  <div class="say">make a demo for summitplumbing.com</div>
+</div></label>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">16. Test it</div>
+  <div class="d">Call the agent yourself, or have two of your agents call each other so you hear the real call.</div>
+  <div class="say">test my agent on a real call</div>
+</div></label>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">17. Read the calls</div>
+  <div class="d">A report on what went wrong and why. It changes nothing.</div>
+  <div class="say">audit my calls</div>
+</div></label>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">18. Ship the next version</div>
+  <div class="d">It suggests prompt changes from your real calls. You approve, it applies them. Shorter prompts usually win.</div>
+  <div class="say">tune my agent</div>
+</div></label>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">19. Teach the kit what you learned</div>
+  <div class="d">Saves what worked and what broke, so the next build starts smarter.</div>
+  <div class="say">add to learnings</div>
+</div></label>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">20. More skills to try</div>
+  <div class="d">Knowledge base from your FAQ or website. Clone your best salesperson's call into an agent. A talking website that drives the page while it talks.</div>
+  <div class="say">create a knowledge base &nbsp;|&nbsp; build an agent from this recording &nbsp;|&nbsp; make my website talk</div>
+</div></label>
+
+<label class="step"><input type="checkbox"><div>
+  <div class="t">21. Stay up to date</div>
+  <div class="d">Pull the latest skills any time. Your keys and add-ons are never touched.</div>
+  <div class="cmd"><span>git pull</span><button type="button">Copy</button></div>
+</div></label>
+
+<h2><span class="tag">NEXT</span> Connect your agent to anything</h2>
+<p>Next video: your agent looks up live data mid-call through n8n. Free kit and every link: <a href="https://www.leadlock.ai/agent-kit" target="_blank">leadlock.ai/agent-kit</a></p>
+
+</main>
+<footer><button class="reset" type="button" id="reset">Reset checklist</button></footer>
+
+<script>
+  const boxes = [...document.querySelectorAll('.step input')];
+  const KEY = 'leadlock-agent-kit-checklist';
+  const saved = JSON.parse(localStorage.getItem(KEY) || '[]');
+  function paint() {
+    const n = boxes.filter(b => b.checked).length;
+    boxes.forEach(b => b.closest('.step').classList.toggle('done', b.checked));
+    document.getElementById('bar').style.width = (100 * n / boxes.length) + '%';
+    document.getElementById('count').textContent = n + ' of ' + boxes.length + ' done';
+    localStorage.setItem(KEY, JSON.stringify(boxes.map(b => b.checked)));
+  }
+  boxes.forEach((b, i) => { b.checked = !!saved[i]; b.addEventListener('change', paint); });
+  document.querySelectorAll('.cmd button').forEach(btn => btn.addEventListener('click', e => {
+    e.preventDefault(); e.stopPropagation();
+    navigator.clipboard.writeText(btn.previousElementSibling.textContent);
+    btn.textContent = 'Copied'; setTimeout(() => btn.textContent = 'Copy', 1200);
+  }));
+  document.getElementById('reset').addEventListener('click', () => { boxes.forEach(b => b.checked = false); paint(); });
+  paint();
+</script>
+</body>
+</html>

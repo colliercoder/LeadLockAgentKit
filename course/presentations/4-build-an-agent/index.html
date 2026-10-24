@@ -1,0 +1,986 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leadlock course 4: How to build a voice agent</title>
+<style>
+  @font-face { font-family: "Geist"; src: url(assets/fonts/geist.woff2) format("woff2"); font-weight: 100 900; font-display: block; }
+  @font-face { font-family: "Geist Mono"; src: url(assets/fonts/geist-mono.woff2) format("woff2"); font-weight: 100 900; font-display: block; }
+  :root {
+    --ink: #0F0F0F;
+    --card: #141416;
+    --card-2: #1F1F1F;
+    --line-dark: #26262A;
+    --text: #EDEDED;
+    --muted: #A1A1AA;
+    --paper: #F4F4F1;
+    --paper-card: #FFFFFF;
+    --line-light: #DCDCD6;
+    --text-dark: #0F0F0F;
+    --muted-dark: #5B5B63;
+    --blue: #6298B6;
+    --blue-deep: #4A7A96;
+    --font: "Geist", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #000; overflow: hidden; font-family: var(--font); -webkit-font-smoothing: antialiased; }
+
+  /* Stage: every slide is a fixed 1920x1080 canvas, scaled to fit the window */
+  #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; outline: none; }
+  #deck { width: 1920px; height: 1080px; position: relative; transform-origin: center center; flex: none; }
+  .slide { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; display: none; }
+  .slide.active { display: block; }
+
+  .dark  { background: var(--ink); color: var(--text); }
+  .light { background: var(--paper); color: var(--text-dark); }
+  .accent { color: var(--blue); }
+  .light .accent { color: var(--blue-deep); }
+
+  /* Static copy: the fallback under each video and the PDF source */
+  .pad { position: absolute; left: 0; right: 0; top: 0; height: 940px; padding: 120px 160px 40px; display: flex; flex-direction: column; justify-content: center; }
+  .eyebrow { font-family: var(--mono); font-size: 28px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); margin-bottom: 44px; }
+  .light .eyebrow { color: var(--blue-deep); }
+  h1 { font-size: 128px; line-height: 1.02; font-weight: 700; letter-spacing: -0.04em; }
+  h2 { font-size: 96px; line-height: 1.06; font-weight: 700; letter-spacing: -0.035em; }
+  .lede { font-size: 48px; line-height: 1.3; font-weight: 400; letter-spacing: -0.012em; margin-top: 44px; max-width: 1500px; }
+  .dark .lede { color: #C9C9CF; }
+  .light .lede { color: #3F3F46; }
+
+  .tiles { margin-top: 70px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; width: 1600px; }
+  .tiles.n2, .tiles.n4 { grid-template-columns: repeat(2, 1fr); }
+  .tiles.n5 { grid-template-columns: repeat(6, 1fr); }
+  .tiles.n5 > div { grid-column: span 2; }
+  .tiles.n5 > div:nth-child(n+4) { grid-column: span 3; }
+  .tiles > div { border-radius: 22px; padding: 38px 40px; font-size: 40px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.2; }
+  .dark .tiles > div { background: var(--card); border: 1px solid var(--line-dark); }
+  .light .tiles > div { background: var(--paper-card); border: 1px solid var(--line-light); }
+  .tiles + .lede { margin-top: 48px; }
+  .lede + .tiles { margin-top: 48px; }
+
+  .cols { margin-top: 56px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 1600px; }
+  .col { border-radius: 26px; padding: 40px 48px 42px; }
+  .dark .col { background: var(--card); border: 1px solid var(--line-dark); }
+  .light .col { background: var(--paper-card); border: 1px solid var(--line-light); }
+  .cols.n3 { grid-template-columns: repeat(3, 1fr); gap: 32px; }
+  .cols.n3 .col { padding: 42px 40px 46px; }
+  .cols.n3 .col h3 { font-size: 40px; }
+  .cols.n3 .col li { font-size: 34px; padding-left: 34px; }
+  .cols + .lede { margin-top: 40px; }
+  .col h3 { font-size: 46px; line-height: 1.15; font-weight: 700; letter-spacing: -0.02em; }
+  .col ul { list-style: none; margin-top: 22px; }
+  .col li { font-size: 36px; line-height: 1.3; padding: 9px 0 9px 40px; position: relative; }
+  .col li::before { content: ""; position: absolute; left: 0; top: 50%; width: 14px; height: 14px; margin-top: -7px; border-radius: 50%; background: var(--blue); }
+  .dark .col li { color: #C9C9CF; }
+  .light .col li { color: #3F3F46; }
+
+  /* Dot table (paths compared) */
+  .ptable { margin-top: 56px; width: 1600px; border-collapse: collapse; }
+  .ptable th, .ptable td { font-size: 34px; line-height: 1.2; padding: 20px 0; text-align: left; border-bottom: 1px solid var(--line-dark); }
+  .ptable th { font-weight: 600; color: var(--muted); }
+  .ptable th.win { color: var(--blue); }
+  .ptable td:first-child { width: 520px; color: #C9C9CF; }
+  .dots { display: inline-flex; gap: 12px; }
+  .dots i { width: 22px; height: 22px; border-radius: 50%; background: #3A3A40; }
+  .dots.win i { background: var(--blue); }
+  .ptable + .lede { margin-top: 44px; }
+  .stat-row { display: flex; align-items: flex-end; gap: 80px; }
+  .stat { font-size: 380px; font-weight: 700; letter-spacing: -0.06em; line-height: 0.82; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .stat-lbl { font-size: 58px; line-height: 1.15; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 20px; }
+  .stat-row + h1, .stat-row + h2 { margin-top: 64px; }
+
+  .cmp { margin-top: 80px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 1600px; }
+  .cmp > div { border-radius: 26px; padding: 50px 54px; }
+  .dark .cmp > div { background: var(--card); border: 1px solid var(--line-dark); }
+  .cmp > div.hi { border-color: var(--blue); }
+  .light .cmp > div { background: var(--paper-card); border: 1px solid var(--line-light); }
+  .light .cmp > div.hi { border-color: var(--blue-deep); }
+  .light .cmp .hi .v { color: var(--blue-deep); }
+  .light .cmp .l { color: #3F3F46; }
+  .cmp + .lede { margin-top: 48px; }
+  .cmp .v { font-size: 120px; font-weight: 700; letter-spacing: -0.045em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .cmp .hi .v { color: var(--blue); }
+  .cmp .l { font-size: 38px; margin-top: 24px; color: #C9C9CF; }
+
+  /* ---- Course decks: "page" slides (top-anchored, click-builds) ---------------------- */
+  .page { position: absolute; left: 160px; right: 160px; top: 88px; bottom: 140px; display: flex; flex-direction: column; }
+  .eb { font-family: var(--mono); font-size: 24px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); margin-bottom: 20px; }
+  .light .eb { color: var(--blue-deep); }
+  .ttl { font-size: 88px; line-height: 1.04; font-weight: 700; letter-spacing: -0.04em; }
+  .ttl > span { display: block; }
+  .ttl.md { font-size: 72px; }
+  .ttl.xl { font-size: 132px; line-height: 0.98; letter-spacing: -0.045em; }
+  .sub { font-size: 36px; line-height: 1.35; margin-top: 26px; max-width: 1400px; letter-spacing: -0.01em; }
+  .dark .sub { color: #C9C9CF; } .light .sub { color: #3F3F46; }
+  .muted { color: var(--muted); } .light .muted { color: var(--muted-dark); }
+  .blue { color: var(--blue); } .light .blue { color: var(--blue-deep); }
+  .fill { flex: 1; min-height: 0; margin-top: 52px; display: flex; flex-direction: column; }
+  .center { justify-content: center; }
+  .row { display: flex; align-items: center; gap: 28px; }
+  .grid { display: grid; gap: 28px; }
+  .c2 { grid-template-columns: repeat(2, 1fr); } .c3 { grid-template-columns: repeat(3, 1fr); } .c4 { grid-template-columns: repeat(4, 1fr); }
+  .card { border-radius: 22px; padding: 32px 36px; position: relative; }
+  .dark .card { background: #141416; border: 2px solid #2A2A2F; }
+  .light .card { background: #FFFFFF; border: 2px solid #DCDCD6; box-shadow: 0 10px 30px rgba(15,15,15,0.06); }
+  .dark .card.hi { border-color: var(--blue); } .light .card.hi { border-color: var(--blue-deep); }
+  .light .card.ink { background: #0F0F0F; border-color: #0F0F0F; color: #EDEDED; }
+  .card h3 { font-size: 42px; line-height: 1.15; font-weight: 650; letter-spacing: -0.02em; }
+  .card p { font-size: 32px; line-height: 1.35; margin-top: 14px; }
+  .dark .card p, .light .card.ink p { color: #C9C9CF; } .light .card p { color: #3F3F46; }
+  .card .icb + h3 { margin-top: 22px; }
+  .ic { display: inline-block; width: 52px; height: 52px; flex: none; background-color: var(--blue); -webkit-mask: var(--i) center / contain no-repeat; mask: var(--i) center / contain no-repeat; vertical-align: middle; }
+  .light .ic { background-color: var(--blue-deep); }
+  .icb { width: 92px; height: 92px; border-radius: 22px; display: inline-flex; align-items: center; justify-content: center; flex: none; background: rgba(98,152,182,0.14); }
+  .icb .ic { width: 52px; height: 52px; }
+  .label { font-family: var(--mono); font-size: 22px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .light .label { color: var(--muted-dark); }
+  .chip { display: inline-flex; align-items: center; gap: 12px; height: 54px; padding: 0 24px; border-radius: 999px; font-family: var(--mono); font-size: 24px; font-weight: 500; white-space: nowrap; }
+  .dark .chip { border: 2px solid #2A2A2F; color: #EDEDED; background: #141416; }
+  .light .chip { border: 2px solid #DCDCD6; color: #0F0F0F; background: #FFFFFF; }
+  .chip.on { background: #4A7A96 !important; border-color: #4A7A96 !important; color: #FFFFFF !important; }
+  .chip .ic { width: 28px; height: 28px; }
+  .chip.on .ic { background-color: #FFFFFF; }
+  .chips { display: flex; flex-wrap: wrap; gap: 14px; }
+  .arr { width: 84px; height: 28px; flex: none; fill: none; stroke: var(--muted); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+  .arrd { width: 28px; height: 64px; flex: none; fill: none; stroke: var(--muted); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+  .light .arr, .light .arrd { stroke: #9A9AA2; }
+  .flow { display: flex; align-items: stretch; gap: 18px; }
+  .flow > .arr, .flow > span { align-self: center; display: flex; }
+  .grow { flex: 1; min-height: 0; }
+  .chips.lg .chip { height: 76px; padding: 0 32px; font-size: 30px; gap: 16px; }
+  .chips.lg .chip .ic { width: 36px; height: 36px; }
+  .split { display: grid; grid-template-columns: 1fr 760px; gap: 80px; flex: 1; min-height: 0; }
+  .agenda { counter-reset: ag; list-style: none; }
+  .agenda li { counter-increment: ag; display: flex; align-items: baseline; gap: 22px; font-size: 34px; line-height: 1.3; padding: 13px 0; border-bottom: 2px solid #2A2A2F; }
+  .light .agenda li { border-color: #DCDCD6; }
+  .agenda li::before { content: counter(ag, decimal-leading-zero); font-family: var(--mono); font-size: 24px; color: var(--blue); flex: none; width: 44px; }
+  .agenda li:last-child { border-bottom: 0; }
+  .agenda.tight li { font-size: 30px; padding: 8px 0; }
+  .grow > .card { display: flex; flex-direction: column; }
+  .grow > .card > h3 { margin-top: auto !important; padding-top: 24px; }
+  .grow > .card > h3 + p { min-height: 2.7em; }
+  .term.big .tb { font-size: 36px; line-height: 1.5; padding: 34px 40px; }
+  .doc.lg .r > div { font-size: 40px; padding: 30px 34px; }
+  .doc.lg .r > div:first-child { font-size: 30px; }
+  .bul.lg li { font-size: 42px; padding: 18px 0 18px 46px; }
+  .bul.lg li::before { top: 38px; width: 16px; height: 16px; }
+  .flow .card { flex: 1; }
+  .disp { font-size: 220px; line-height: 0.9; font-weight: 700; letter-spacing: -0.05em; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .light .disp { color: var(--blue-deep); }
+  .num { font-variant-numeric: tabular-nums; }
+  .quote { font-size: 80px; line-height: 1.1; font-weight: 700; letter-spacing: -0.035em; }
+  .bul { list-style: none; }
+  .bul li { position: relative; padding: 10px 0 10px 40px; font-size: 34px; line-height: 1.3; }
+  .bul li::before { content: ""; position: absolute; left: 0; top: 28px; width: 14px; height: 14px; border-radius: 50%; background: var(--blue); }
+  .dark .bul li { color: #C9C9CF; } .light .bul li { color: #3F3F46; }
+  .bul li b { font-weight: 650; } .dark .bul li b { color: #EDEDED; } .light .bul li b { color: #0F0F0F; }
+  /* Terminal mock (typed on screen, illustrative) */
+  .term { border-radius: 20px; overflow: hidden; background: #0B0B0C; border: 2px solid #2A2A2F; color: #EDEDED; font-family: var(--mono); }
+  .term .bar { height: 50px; display: flex; align-items: center; gap: 10px; padding: 0 20px; background: #161618; border-bottom: 2px solid #2A2A2F; }
+  .term .bar i { width: 14px; height: 14px; border-radius: 50%; background: #3A3A40; }
+  .term .bar span { margin-left: 14px; font-size: 20px; color: #A1A1AA; letter-spacing: 0.04em; }
+  .term .tb { padding: 26px 32px; font-size: 28px; line-height: 1.5; }
+  .term .p { color: var(--blue); }
+  .term .o { color: #A1A1AA; }
+  /* Labelled placeholder for a real screenshot still to capture */
+  .ph { border: 3px dashed #8A8A93; border-radius: 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 30px; }
+  .dark .ph { background: rgba(255,255,255,0.02); } .light .ph { background: rgba(15,15,15,0.025); }
+  .ph .label { color: var(--blue); } .light .ph .label { color: var(--blue-deep); }
+  .ph .d { font-size: 30px; line-height: 1.35; max-width: 760px; }
+  .dark .ph .d { color: #C9C9CF; } .light .ph .d { color: #3F3F46; }
+  .foot { font-family: var(--mono); font-size: 22px; line-height: 1.45; letter-spacing: 0.01em; }
+  .dark .foot { color: #A1A1AA; } .light .foot { color: #5B5B63; }
+  .card.sm { padding: 28px 30px; }
+  .card.sm h3 { font-size: 35px; }
+  .card.sm p { font-size: 29px; }
+  .card .k { font-family: var(--mono); font-size: 22px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .light .card .k { color: var(--muted-dark); } .card.hi .k { color: var(--blue); } .light .card.hi .k { color: var(--blue-deep); }
+  /* Two-column comparison (vs) */
+  .vs { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; }
+  .vs .hd { font-family: var(--mono); font-size: 24px; letter-spacing: 0.12em; text-transform: uppercase; padding: 0 0 18px 4px; color: var(--muted); }
+  .vs .hd.a { color: var(--blue); } .light .vs .hd.a { color: var(--blue-deep); }
+  .vs .r { display: contents; }
+  .vs .r > div { font-size: 40px; line-height: 1.25; padding: 30px 34px; margin-bottom: 16px; border-radius: 18px; display: flex; align-items: center; gap: 20px; }
+  .dark .vs .r > div:first-child { background: #141416; color: #A1A1AA; border: 2px solid #2A2A2F; }
+  .dark .vs .r > div:last-child { background: #141416; color: #EDEDED; border: 2px solid var(--blue); }
+  .light .vs .r > div:first-child { background: #FFFFFF; color: #5B5B63; border: 2px solid #DCDCD6; }
+  .light .vs .r > div:last-child { background: #FFFFFF; color: #0F0F0F; border: 2px solid var(--blue-deep); }
+  .vs .r > div .ic { width: 36px; height: 36px; }
+  .vs .r > div:first-child .ic { background-color: #6B6B73; }
+  /* Range / value bars */
+  .bars { display: flex; flex-direction: column; gap: 12px; }
+  .bar { display: grid; grid-template-columns: 380px 1fr; align-items: center; gap: 24px; height: 70px; }
+  .bar .n { font-size: 32px; font-weight: 600; letter-spacing: -0.01em; }
+  .bar .t { position: relative; height: 70px; }
+  .bar .f { position: absolute; top: 6px; bottom: 6px; border-radius: 12px; background: #5B5B63; display: flex; align-items: center; justify-content: flex-end; padding: 0 18px; }
+  .light .bar .f { background: #A1A1AA; }
+  .bar .f.hi { background: #4A7A96; }
+  .bar .f.lo { background: #2A2A2F; } .light .bar .f.lo { background: #DCDCD6; }
+  .bar .v { font-family: var(--mono); font-size: 24px; color: #FFFFFF; white-space: nowrap; }
+  .light .bar .f.lo .v, .bar .f.lo .v { color: #A1A1AA; }
+  .light .bar .f.lo .v { color: #5B5B63; }
+  .bar .v.out { position: absolute; left: calc(100% + 16px); color: var(--muted); }
+  .axis { display: grid; grid-template-columns: 380px 1fr; gap: 24px; margin-top: 10px; }
+  .axis .line { border-top: 2px solid #3A3A40; padding-top: 10px; display: flex; justify-content: space-between; }
+  .light .axis .line { border-color: #C9C9CF; }
+  /* Ladder (rising steps) */
+  .ladder { display: flex; align-items: flex-end; gap: 28px; height: 100%; }
+  .ladder > div { flex: 1; border-radius: 18px 18px 0 0; padding: 26px 28px; display: flex; flex-direction: column; justify-content: flex-start; }
+  .dark .ladder > div { background: #1B1B1E; border: 2px solid #2A2A2F; border-bottom: 0; }
+  .ladder > div.hi { background: #4A7A96 !important; border-color: #4A7A96 !important; }
+  .ladder .lv { font-size: 72px; font-weight: 700; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; line-height: 1; }
+  .ladder .ll { font-family: var(--mono); font-size: 22px; letter-spacing: 0.1em; text-transform: uppercase; color: #A1A1AA; margin-bottom: 14px; }
+  .ladder .hi .ll { color: #FFFFFF; }
+  .ladder .ls { font-size: 26px; color: #C9C9CF; margin-top: 12px; line-height: 1.3; }
+  .ladder .hi .ls { color: #FFFFFF; }
+  .c5 { grid-template-columns: repeat(5, 1fr); gap: 22px; }
+  .flip { transform: scaleX(-1); } .up { transform: rotate(180deg); }
+  .alab { font-family: var(--mono); font-size: 22px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .light .alab { color: var(--muted-dark); }
+  /* Table mock */
+  .tbl { width: 100%; border-collapse: separate; border-spacing: 0; }
+  .tbl th { font-family: var(--mono); font-size: 22px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; text-align: left; padding: 0 22px 16px; color: var(--muted-dark); }
+  .dark .tbl th { color: var(--muted); }
+  .tbl td { font-size: 32px; padding: 36px 24px; white-space: nowrap; }
+  .light .tbl td { background: #FFFFFF; border-top: 2px solid #DCDCD6; border-bottom: 2px solid #DCDCD6; }
+  .dark .tbl td { background: #141416; border-top: 2px solid #2A2A2F; border-bottom: 2px solid #2A2A2F; }
+  .tbl td:first-child { border-left: 2px solid #DCDCD6; border-radius: 16px 0 0 16px; font-weight: 600; }
+  .dark .tbl td:first-child { border-left-color: #2A2A2F; }
+  .tbl td:last-child { border-right: 2px solid #DCDCD6; border-radius: 0 16px 16px 0; }
+  .dark .tbl td:last-child { border-right-color: #2A2A2F; }
+  /* Chat bubbles + tool chips */
+  .chat { display: flex; flex-direction: column; gap: 14px; }
+  .msg { max-width: 1100px; font-size: 34px; line-height: 1.3; padding: 20px 30px; border-radius: 26px; }
+  .msg .who { display: inline-block; font-family: var(--mono); font-size: 20px; letter-spacing: 0.1em; text-transform: uppercase; margin-right: 16px; opacity: 0.75; vertical-align: 3px; }
+  .msg.in { align-self: flex-start; border-bottom-left-radius: 8px; }
+  .light .msg.in { background: #FFFFFF; border: 2px solid #DCDCD6; color: #0F0F0F; }
+  .dark .msg.in { background: #1B1B1E; border: 2px solid #2A2A2F; color: #EDEDED; }
+  .msg.out { align-self: flex-end; background: #436F89; color: #FFFFFF; border-bottom-right-radius: 8px; }
+  .tool { align-self: center; font-family: var(--mono); font-size: 24px; padding: 12px 22px; border-radius: 12px; border: 2px dashed var(--blue); color: var(--blue); }
+  .light .tool { color: var(--blue-deep); border-color: var(--blue-deep); }
+  /* Phone mock (incoming-call demo) */
+  .phone { width: 360px; height: 640px; border-radius: 58px; background: #0F0F0F; border: 10px solid #26262A; box-shadow: 0 30px 60px rgba(15,15,15,0.25); display: flex; flex-direction: column; align-items: center; padding: 70px 26px 44px; color: #EDEDED; text-align: center; }
+  .phone .pl { font-family: var(--mono); font-size: 22px; letter-spacing: 0.1em; text-transform: uppercase; color: #A1A1AA; }
+  .phone .pn { font-size: 46px; font-weight: 700; letter-spacing: -0.02em; margin-top: 20px; line-height: 1.1; }
+  .phone .ps { font-size: 26px; color: #A1A1AA; margin-top: 12px; }
+  .phone .pb { margin-top: auto; display: flex; gap: 60px; }
+  .phone .pb div { display: flex; flex-direction: column; align-items: center; gap: 12px; font-size: 22px; color: #C9C9CF; }
+  .phone .pb i { width: 96px; height: 96px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #3A3A40; }
+  .phone .pb .acc i { background: #436F89; }
+  .phone .pb .ic { width: 44px; height: 44px; background-color: #FFFFFF; }
+  /* Slider (temperature) */
+  .slider { position: relative; height: 22px; border-radius: 999px; background: #2A2A2F; margin: 60px 0 18px; }
+  .slider .zone { position: absolute; top: 0; bottom: 0; }
+  .slider .knob { position: absolute; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%; background: #FFFFFF; border: 8px solid #4A7A96; }
+  .zones { display: grid; grid-template-columns: 30fr 20fr 20fr 30fr; }
+  .zones > div { padding: 10px 14px 0; border-left: 2px solid #3A3A40; }
+  .zones h3 { font-size: 36px; font-weight: 650; } .zones p { font-family: var(--mono); font-size: 22px; color: var(--muted); margin-top: 6px; }
+  /* Stacked bar */
+  .stack { display: flex; height: 96px; border-radius: 18px; overflow: hidden; gap: 4px; }
+  .stack > div { display: flex; align-items: center; justify-content: center; gap: 14px; font-size: 30px; font-weight: 600; color: #FFFFFF; background: #3A3A40; }
+  .stack > div .ic { background-color: #FFFFFF; width: 34px; height: 34px; }
+  .stack > div.hi { background: #436F89; }
+  /* Doc rows (prompt sections) */
+  .doc { display: grid; grid-template-columns: 480px 1fr; row-gap: 12px; }
+  .doc .r { display: contents; }
+  .doc .r > div { padding: 18px 26px; font-size: 32px; display: flex; align-items: center; }
+  .light .doc .r > div { background: #FFFFFF; border-top: 2px solid #DCDCD6; border-bottom: 2px solid #DCDCD6; }
+  .dark .doc .r > div { background: #141416; border-top: 2px solid #2A2A2F; border-bottom: 2px solid #2A2A2F; }
+  .doc .r > div:first-child { font-family: var(--mono); font-size: 28px; color: var(--blue); border-radius: 16px 0 0 16px; border-left: 2px solid #DCDCD6; }
+  .light .doc .r > div:first-child { color: var(--blue-deep); }
+  .dark .doc .r > div:first-child { border-left-color: #2A2A2F; }
+  .doc .r > div:last-child { border-radius: 0 16px 16px 0; border-right: 2px solid #DCDCD6; }
+  .dark .doc .r > div:last-child { border-right-color: #2A2A2F; }
+  .light .doc .r > div:last-child { color: #3F3F46; } .dark .doc .r > div:last-child { color: #C9C9CF; }
+  /* Field form mock */
+  .fld { margin-bottom: 18px; }
+  .fld .label { margin-bottom: 8px; display: block; }
+  .fld .val { font-size: 30px; padding: 16px 22px; border-radius: 14px; background: #0B0B0C; border: 2px solid #2A2A2F; color: #EDEDED; }
+  .fld .val.mono { font-family: var(--mono); font-size: 27px; }
+  /* Click-builds: [data-b="N"] appears on the Nth Next press */
+  [data-b] { opacity: 0; transform: translateY(26px); transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.75s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  [data-b].on { opacity: 1; transform: none; }
+  [data-b].pop { transform: scale(0.92); }
+  [data-b].pop.on { transform: none; }
+  [data-b].ghost.on { opacity: 0.3; }
+  .slide.active .page > :not([data-b]) { animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  .slide.active .page > :nth-child(2) { animation-delay: 0.08s; }
+  .slide.active .page > :nth-child(3) { animation-delay: 0.16s; }
+  .slide.active .page > :nth-child(n+4) { animation-delay: 0.24s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+  html.nomotion *, html.nomotion *::before, html.nomotion *::after { animation: none !important; transition: none !important; }
+
+  /* Presenter window (?presenter=1, opened with S): never on the recorded screen */
+  #pv { display: none; }
+  body.pv #stage { position: fixed; left: 24px; top: 24px; right: auto; bottom: auto; width: 62vw; height: calc(62vw * 0.5625); border: 2px solid #2A2A2F; border-radius: 10px; overflow: hidden; }
+  body.pv #pv { display: grid; position: fixed; left: calc(62vw + 48px); right: 24px; top: 24px; bottom: 24px; grid-template-rows: auto auto 1fr auto; gap: 18px; color: #EDEDED; font-family: var(--font); }
+  body.pv #pv .pv-h { font-family: var(--mono); font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); }
+  body.pv #pv .pv-t { font-family: var(--mono); font-size: 44px; font-variant-numeric: tabular-nums; }
+  body.pv #pv ul { list-style: none; overflow: auto; }
+  body.pv #pv li { font-size: 26px; line-height: 1.4; padding: 8px 0 8px 26px; position: relative; color: #E4E4E7; }
+  body.pv #pv li::before { content: ""; position: absolute; left: 2px; top: 22px; width: 10px; height: 10px; border-radius: 50%; background: var(--blue); }
+  body.pv #pv .pv-next { font-size: 20px; color: #A1A1AA; border-top: 2px solid #2A2A2F; padding-top: 14px; }
+  body.pv #pv .pv-next b { color: #EDEDED; font-weight: 600; }
+  body.pv #pvkeys { position: fixed; left: 24px; top: calc(62vw * 0.5625 + 44px); font-family: var(--mono); font-size: 15px; color: #8A8A93; line-height: 1.7; }
+  #pvkeys { display: none; } body.pv #pvkeys { display: block; }
+  body.pv #notes, body.pv #pp { display: none !important; }
+  #notes ul { list-style: none; } #notes li { padding: 2px 0 2px 22px; position: relative; } #notes li::before { content: ""; position: absolute; left: 2px; top: 14px; width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+
+  /* Chrome: drawn by the shell on every slide, above the video. Video renders must not bake these in. */
+  .chrome { position: absolute; z-index: 6; pointer-events: none; }
+  .source { left: 160px; bottom: 64px; max-width: 1060px; font-family: var(--mono); font-size: 22px; line-height: 1.4; letter-spacing: 0.01em; color: #8A8A93; }
+  .light .source { color: #6B6B73; }
+  .brandmark { right: 160px; bottom: 60px; height: 34px; display: flex; align-items: center; }
+  .brandmark img { height: 34px; width: auto; display: block; }
+  .light .brandmark img { height: 34px; }
+  .brandmark .wm { margin-left: 10px; font-size: 31px; font-weight: 600; letter-spacing: -0.025em; line-height: 1; color: var(--text-dark); }
+  .apply-tag { right: 400px; bottom: 58px; display: flex; align-items: center; gap: 14px; height: 38px; padding: 0 20px 0 16px; border-radius: 999px; font-family: var(--mono); font-size: 21px; font-weight: 500; letter-spacing: 0.02em; }
+  .dark .apply-tag { color: var(--text); background: rgba(98,152,182,0.12); border: 1px solid rgba(98,152,182,0.45); }
+  .light .apply-tag { color: var(--text-dark); background: rgba(74,122,150,0.08); border: 1px solid rgba(74,122,150,0.45); }
+  .apply-tag i { width: 10px; height: 10px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 5px rgba(98,152,182,0.2); }
+
+  /* Per-slide video over the static copy */
+  .sv { position: absolute; inset: 0; width: 1920px; height: 1080px; object-fit: cover; z-index: 5; background: transparent; }
+
+  /* LIVE CALL slide: real iframe in a device frame, no video over it */
+  .live .live-copy { position: absolute; left: 160px; top: 0; height: 940px; width: 900px; display: flex; flex-direction: column; justify-content: center; }
+  .live .live-copy h2 { font-size: 104px; }
+  .live .live-copy .lede { font-size: 44px; }
+  .live-pill { display: inline-flex; align-items: center; gap: 14px; }
+  .live-pill i { width: 14px; height: 14px; border-radius: 50%; background: var(--blue); animation: livepulse 2.4s ease-in-out infinite; }
+  @keyframes livepulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(98,152,182,0.55); } 50% { box-shadow: 0 0 0 12px rgba(98,152,182,0); } }
+  /* The demo page draws its own phone (embed=true, transparent background), so the shell adds no frame:
+     the iframe renders at the demo's native 480x780 and is scaled 1.125x to 540x878 on the stage. */
+  .live .glow { position: absolute; right: 30px; top: 40px; width: 1000px; height: 1000px; background: radial-gradient(closest-side, rgba(98,152,182,0.20), rgba(98,152,182,0) 72%); pointer-events: none; }
+  .device { position: absolute; right: 260px; top: 88px; width: 540px; height: 878px; }
+  .device::after { content: ""; position: absolute; left: 70px; right: 70px; bottom: -26px; height: 60px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,0.75), rgba(0,0,0,0)); z-index: 0; pointer-events: none; }
+  .screen { position: relative; width: 540px; height: 878px; z-index: 1; }
+  .screen iframe { position: absolute; left: 0; top: 0; width: 480px; height: 780px; border: 0; z-index: 2; background: transparent; color-scheme: normal; transform: scale(1.125); transform-origin: 0 0; }
+  .screen .idle, .screen .live-poster, .screen .live-rec { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 64px; }
+  .screen .idle { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; color: var(--muted); font-family: var(--mono); font-size: 20px; letter-spacing: 0.08em; text-transform: uppercase; z-index: 1; }
+  .screen .idle img { width: 70px; opacity: 0.9; }
+  .live.loaded .screen .idle { display: none; }
+  .screen .live-poster { object-fit: contain; z-index: 1; display: none; }
+  .screen .live-rec { object-fit: contain; z-index: 3; display: none; }
+  .live.rec .live-rec { display: block; }
+  .live.rec iframe { display: none; }
+  .hot { position: absolute; z-index: 7; right: 176px; width: 64px; height: 64px; border-radius: 50%; border: 1px solid rgba(98,152,182,0.5); background: rgba(20,20,22,0.7); color: var(--text); font: 600 26px var(--font); cursor: pointer; opacity: 0.35; transition: opacity .2s; }
+  .hot:hover, .hot:focus-visible { opacity: 1; }
+  .hot-back { top: 432px; }
+  .hot-next { top: 516px; }
+
+  #snd { position: fixed; right: 24px; bottom: 82px; z-index: 12; display: none; background: rgba(15,15,15,0.85); color: var(--text); border: 1px solid var(--blue); border-radius: 999px; padding: 12px 20px; font: 600 16px var(--font); cursor: pointer; }
+  #snd.on { display: block; }
+  #pp { position: fixed; right: 22px; bottom: 22px; z-index: 12; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(98,152,182,0.7); background: rgba(15,15,15,0.55); color: var(--text); font: 600 18px var(--font); cursor: pointer; opacity: 0.35; transition: opacity .2s; display: none; align-items: center; justify-content: center; padding: 0; }
+  #pp:hover, #pp.paused { opacity: 1; }
+  #pp.on { display: flex; }
+
+  /* Overlays: notes (N), counter */
+  #notes { position: fixed; left: 0; right: 0; bottom: 0; max-height: 42vh; overflow: auto; background: rgba(20,20,22,0.97); color: #E4E4E7; font-size: 22px; line-height: 1.5; padding: 26px 40px 30px; border-top: 2px solid var(--blue); display: none; z-index: 10; }
+  #notes.on { display: block; }
+  #notes .nh { font-family: var(--mono); font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); margin-bottom: 10px; }
+  #count { display: none; }
+  .notes { display: none; }
+
+  /* Print: one slide per 1920x1080 page */
+  @page { size: 1920px 1080px; margin: 0; }
+  @media print {
+    html, body { height: auto; overflow: visible; background: none; }
+    #stage { position: static; display: block; }
+    #deck { transform: none !important; width: 1920px; height: auto; }
+    .slide { display: block !important; position: relative; page-break-after: always; break-after: page; }
+    .slide:last-child { page-break-after: auto; break-after: auto; }
+    #notes, #count, #pp, #snd, .hot, .screen iframe, .screen .live-rec, #pv, #pvkeys { display: none !important; }
+    [data-b] { opacity: 1 !important; transform: none !important; }
+    [data-b].ghost { opacity: 0.3 !important; }
+    .page > * { animation: none !important; }
+    .screen .live-poster { display: block; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div id="stage" tabindex="-1"><div id="deck">
+
+<!-- SLIDES:BEGIN generated by tools/wire.py from slides.json. Edit slides.json, then run: python3 tools/wire.py -->
+
+<section class="slide dark" id="s-title" data-id="title" data-type="page" data-n="1">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Video 4 &middot; Build an agent</div>
+    <h2 class="ttl xl"><span>How to build</span><span class='blue'>a voice agent.</span></h2>
+    <div class='split' style='margin-top:40px'><div class='sub' style='margin-top:0'>Prompt, settings, tools, testing. Then the kit that builds it with you.</div><div class='card'><div class='k'>In this video</div><ol class='agenda tight'><li>The prompt</li><li>Temperature</li><li>Turn-taking (VAD)</li><li>Tools and custom functions</li><li>MCP servers</li><li>Testing</li><li>The Leadlock Agent Kit</li></ol></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">The concepts first. Video 5 is the hands-on build.
+Every agent has the same five parts.
+We end with the free kit.</div>
+</section>
+
+<section class="slide light" id="s-five-parts" data-id="five-parts" data-type="page" data-n="2">
+  <div class="page" data-mbox="copy">
+    <div class="eb">The map</div>
+    <h2 class="ttl">Five parts to every agent.</h2>
+    <div class='fill'><div class='grid c5 grow' style='grid-auto-rows:1fr'><div class='card sm' data-b='1'><div class='k'>01</div><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik04OCw5NmE4LDgsMCwwLDEsOC04aDY0YTgsOCwwLDAsMSwwLDE2SDk2QTgsOCwwLDAsMSw4OCw5NlptOCw0MGg2NGE4LDgsMCwwLDAsMC0xNkg5NmE4LDgsMCwwLDAsMCwxNlptMzIsMTZIOTZhOCw4LDAsMCwwLDAsMTZoMzJhOCw4LDAsMCwwLDAtMTZaTTIyNCw0OFYxNTYuNjlBMTUuODYsMTUuODYsMCwwLDEsMjE5LjMxLDE2OEwxNjgsMjE5LjMxQTE1Ljg2LDE1Ljg2LDAsMCwxLDE1Ni42OSwyMjRINDhhMTYsMTYsMCwwLDEtMTYtMTZWNDhBMTYsMTYsMCwwLDEsNDgsMzJIMjA4QTE2LDE2LDAsMCwxLDIyNCw0OFpNNDgsMjA4SDE1MlYxNjBhOCw4LDAsMCwxLDgtOGg0OFY0OEg0OFptMTIwLTQwdjI4LjdMMTk2LjY5LDE2OFoiLz48L3N2Zz4=)"></i></span><h3 style='margin-top:20px'>Prompt</h3><p>Who it is, what it does</p></div><div class='card sm' data-b='2'><div class='k'>02</div><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik00MCw4OEg3M2EzMiwzMiwwLDAsMCw2MiwwaDgxYTgsOCwwLDAsMCwwLTE2SDEzNWEzMiwzMiwwLDAsMC02MiwwSDQwYTgsOCwwLDAsMCwwLDE2Wm02NC0yNEExNiwxNiwwLDEsMSw4OCw4MCwxNiwxNiwwLDAsMSwxMDQsNjRaTTIxNiwxNjhIMTk5YTMyLDMyLDAsMCwwLTYyLDBINDBhOCw4LDAsMCwwLDAsMTZoOTdhMzIsMzIsMCwwLDAsNjIsMGgxN2E4LDgsMCwwLDAsMC0xNlptLTQ4LDI0YTE2LDE2LDAsMSwxLDE2LTE2QTE2LDE2LDAsMCwxLDE2OCwxOTJaIi8+PC9zdmc+)"></i></span><h3 style='margin-top:20px'>Settings</h3><p>Temperature, turn-taking</p></div><div class='card sm' data-b='3'><div class='k'>03</div><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMDgsMzJIMTg0VjI0YTgsOCwwLDAsMC0xNiwwdjhIODhWMjRhOCw4LDAsMCwwLTE2LDB2OEg0OEExNiwxNiwwLDAsMCwzMiw0OFYyMDhhMTYsMTYsMCwwLDAsMTYsMTZIMjA4YTE2LDE2LDAsMCwwLDE2LTE2VjQ4QTE2LDE2LDAsMCwwLDIwOCwzMlpNNzIsNDh2OGE4LDgsMCwwLDAsMTYsMFY0OGg4MHY4YTgsOCwwLDAsMCwxNiwwVjQ4aDI0VjgwSDQ4VjQ4Wk0yMDgsMjA4SDQ4Vjk2SDIwOFYyMDhabS0zOC4zNC04NS42NmE4LDgsMCwwLDEsMCwxMS4zMmwtNDgsNDhhOCw4LDAsMCwxLTExLjMyLDBsLTI0LTI0YTgsOCwwLDAsMSwxMS4zMi0xMS4zMkwxMTYsMTY0LjY5bDQyLjM0LTQyLjM1QTgsOCwwLDAsMSwxNjkuNjYsMTIyLjM0WiIvPjwvc3ZnPg==)"></i></span><h3 style='margin-top:20px'>Tools</h3><p>Book, text, update the CRM</p></div><div class='card sm' data-b='4'><div class='k'>04</div><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMzcuNjYsMTguMzRhOCw4LDAsMCwwLTExLjMyLDBsLTUyLjQsNTIuNDEtNS4zNy01LjM4YTMyLjA1LDMyLjA1LDAsMCwwLTQ1LjI2LDBMMTAwLDg4LjY5bC02LjM0LTYuMzVBOCw4LDAsMCwwLDgyLjM0LDkzLjY2TDg4LjY5LDEwMCw2NS4zNywxMjMuMzFhMzIsMzIsMCwwLDAsMCw0NS4yNmw1LjM4LDUuMzctNTIuNDEsNTIuNGE4LDgsMCwwLDAsMTEuMzIsMTEuMzJsNTIuNC01Mi40MSw1LjM3LDUuMzhhMzIsMzIsMCwwLDAsNDUuMjYsMEwxNTYsMTY3LjMxbDYuMzQsNi4zNWE4LDgsMCwwLDAsMTEuMzItMTEuMzJMMTY3LjMxLDE1NmwyMy4zMi0yMy4zMWEzMiwzMiwwLDAsMCwwLTQ1LjI2bC01LjM4LTUuMzcsNTIuNDEtNTIuNEE4LDgsMCwwLDAsMjM3LjY2LDE4LjM0Wm0tMTE2LjI5LDE2MWExNiwxNiwwLDAsMS0yMi42MiwwTDc2LjY5LDE1Ny4yNWExNiwxNiwwLDAsMSwwLTIyLjYyTDEwMCwxMTEuMzEsMTQ0LjY5LDE1NlptNTcuOTQtNTcuOTRMMTU2LDE0NC42OSwxMTEuMzEsMTAwbDIzLjMyLTIzLjMxYTE2LDE2LDAsMCwxLDIyLjYyLDBsMjIuMDYsMjJBMTYsMTYsMCwwLDEsMTc5LjMxLDEyMS4zN1pNODguNTcsMzVBOCw4LDAsMCwxLDEwMy40MywyOWw4LDIwQTgsOCwwLDAsMSw5Ni41Nyw1NVpNMjQuNTcsOTNBOCw4LDAsMCwxLDM1LDg4LjU3bDIwLDhBOCw4LDAsMCwxLDQ5LDExMS40M2wtMjAtOEE4LDgsMCwwLDEsMjQuNTcsOTNaTTIzMS40MywxNjNhOCw4LDAsMCwxLTEwLjQsNC40NmwtMjAtOEE4LDgsMCwxLDEsMjA3LDE0NC41N2wyMCw4QTgsOCwwLDAsMSwyMzEuNDMsMTYzWm0tNjQsNTguMDZBOCw4LDAsMCwxLDE1Mi41NywyMjdsLTgtMjBBOCw4LDAsMCwxLDE1OS40MywyMDFaIi8+PC9zdmc+)"></i></span><h3 style='margin-top:20px'>Connections</h3><p>Custom functions, MCP</p></div><div class='card sm hi' data-b='5'><div class='k'>05</div><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjEuNjksMTk5Ljc3LDE2MCw5Ni45MlY0MGg4YTgsOCwwLDAsMCwwLTE2SDg4YTgsOCwwLDAsMCwwLDE2aDhWOTYuOTJMMzQuMzEsMTk5Ljc3QTE2LDE2LDAsMCwwLDQ4LDIyNEgyMDhhMTYsMTYsMCwwLDAsMTMuNzItMjQuMjNaTTExMC44NiwxMDMuMjVBNy45Myw3LjkzLDAsMCwwLDExMiw5OS4xNFY0MGgzMlY5OS4xNGE3LjkzLDcuOTMsMCwwLDAsMS4xNCw0LjExTDE4My4zNiwxNjdjLTEyLDIuMzctMjkuMDcsMS4zNy01MS43NS0xMC4xMS0xNS45MS04LjA1LTMxLjA1LTEyLjMyLTQ1LjIyLTEyLjgxWk00OCwyMDhsMjguNTQtNDcuNThjMTQuMjUtMS43NCwzMC4zMSwxLjg1LDQ3LjgyLDEwLjcyLDE5LDkuNjEsMzUsMTIuODgsNDgsMTIuODhhNjkuODksNjkuODksMCwwLDAsMTkuNTUtMi43TDIwOCwyMDhaIi8+PC9zdmc+)"></i></span><h3 style='margin-top:20px'>Testing</h3><p>Browser, Simulate, a real call</p></div></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">One click per part.
+Most problems are part 1: the prompt.
+Most people skip part 5. Don't.</div>
+</section>
+
+<section class="slide dark" id="s-shorter-wins" data-id="shorter-wins" data-type="page" data-n="3">
+  <div class="page" data-mbox="copy">
+    <div class="eb">The prompt</div>
+    <h2 class="ttl">Shorter wins.</h2>
+    <div class="sub">Every line is something the agent thinks about before it talks.</div>
+    <div class='fill'><div class='label' style='margin-bottom:16px'>Same 39-field intake agent, prompt length</div><div class='bars'><div class='bar' data-b='1'><div class='n'>Written the old way</div><div class='t'><div class='f' style='left:0;width:100%'><span class='v num'>8,000 chars</span></div></div></div><div class='bar' data-b='2'><div class='n blue'>Rewritten short</div><div class='t'><div class='f hi' style='left:0;width:46%'><span class='v num'>3,700 chars</span></div></div></div></div><div class='sub' data-b='3' style='margin-top:40px'>Fewer rules. <span class='blue'>Faster answers, fewer mistakes.</span></div></div>
+  </div>
+  <div class="chrome source">Leadlock agent build notes: a 39-field legal intake, about 8,000 chars written for older realtime models vs 3,700 on Grok think-fast.</div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Newer voice models need less hand-holding.
+Old-style prompts are full of patches. They cause bugs.
+Same job, less than half the words.</div>
+</section>
+
+<section class="slide light" id="s-prompt-sections" data-id="prompt-sections" data-type="page" data-n="4">
+  <div class="page" data-mbox="copy">
+    <div class="eb">The prompt</div>
+    <h2 class="ttl">Section by section.</h2>
+    <div class='fill'><div class='doc grow' style='align-content:space-between'><div class='r' data-b='1'><div># Role and Objective</div><div>Who it is, and the one job on this call</div></div><div class='r' data-b='1'><div># Personality</div><div>Tone, pace, how it sounds</div></div><div class='r' data-b='2'><div># Context</div><div>The business: services, hours, area</div></div><div class='r' data-b='2'><div># Instructions</div><div>How to talk, read things back, use tools</div></div><div class='r' data-b='3'><div># Stages</div><div>The call, step by step</div></div><div class='r' data-b='3'><div># Example interactions</div><div>A few short sample lines, not scripts</div></div><div class='r' data-b='4'><div># Guardrails</div><div>Every &lsquo;never&rsquo; lives here, at the bottom</div></div></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Same headers on every agent. The kit has the template.
+Short sample lines, never long fake transcripts: it copies them.
+All the 'nevers' go in one section at the bottom.</div>
+</section>
+
+<section class="slide dark" id="s-three-questions" data-id="three-questions" data-type="page" data-n="5">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Cutting it down</div>
+    <h2 class="ttl">Every line earns its place.</h2>
+    <div class='fill'><div class='grid c3 grow' style='grid-auto-rows:1fr'><div class='card' data-b='1'><div class='k'>01</div><h3>Does it need this on this call?</h3></div><div class='card' data-b='2'><div class='k'>02</div><h3>Is it already said?</h3></div><div class='card' data-b='3'><div class='k'>03</div><h3>Would a new hire need to be told?</h3></div></div><div class='sub' data-b='4' style='margin-top:30px'>If not, delete it. <span class='blue'>Fix agents by removing lines.</span></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Run every line through these three.
+Company history, repeated politeness rules: gone.
+There's also a Condense Prompt button for a first pass.</div>
+</section>
+
+<section class="slide light" id="s-prompt-rules" data-id="prompt-rules" data-type="page" data-n="6">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Five rules</div>
+    <h2 class="ttl">Rules that save you hours.</h2>
+    <div class='fill'><ul class='bul lg' style='display:flex;flex-direction:column;gap:4px'><li data-b='1'><b>Say what to do.</b> Put every &lsquo;never&rsquo; in Guardrails.</li><li data-b='2'><b>Intent plus the exception,</b> not &lsquo;always&rsquo; and &lsquo;never&rsquo;. It takes them literally.</li><li data-b='3'><b>Don't write the greeting into the prompt.</b> It already speaks it on connect.</li><li data-b='4'><b>Every {{variable}} needs a default,</b> or it gets read out loud.</li><li data-b='5'><b>Bad test call?</b> Find the line that caused it. Remove it before adding anything.</li></ul></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Each one came from a real broken agent.
+'Never hang up with blanks' made an agent refuse to hang up.
+Rule 5 is the big one.</div>
+</section>
+
+<section class="slide dark" id="s-temperature" data-id="temperature" data-type="page" data-n="7">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Settings</div>
+    <h2 class="ttl">Temperature: how creative it gets.</h2>
+    <div class='fill'><div data-b='1'><div class='slider'><div class='zone' style='left:0;width:50%;background:#436F89;border-radius:999px 0 0 999px'></div><div class='knob' style='left:40%'></div></div><div class='zones'><div><h3 class='blue'>Focused</h3><p>0 to 0.3</p></div><div><h3 class='blue'>Balanced</h3><p>to 0.5</p></div><div><h3>Expressive</h3><p>to 0.7</p></div><div><h3>Adventurous</h3><p>above 0.7</p></div></div></div><div class='grid c2' data-b='2' style='margin-top:48px'><div class='card sm'><h3>Low = on script</h3><p>Same answer every time. Good for booking and intake.</p></div><div class='card sm'><h3>High = more varied</h3><p>Sounds looser. Drifts more. Turn it down if it goes off script.</p></div></div></div>
+  </div>
+  <div class="chrome source">Leadlock agent settings, Voice tab: temperature labels and tooltip. Shown for Grok, OpenAI and Gemini voices.</div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Labels straight from the Voice tab.
+Booking agent going off script? Turn it down.
+Only shows for Grok, OpenAI and Gemini voices.</div>
+</section>
+
+<section class="slide light" id="s-turn-taking" data-id="turn-taking" data-type="page" data-n="8">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Settings &middot; VAD</div>
+    <h2 class="ttl">Turn-taking: when it jumps in.</h2>
+    <div class='split' style='margin-top:40px;grid-template-columns:600px 1fr;gap:60px'><div style='display:flex;flex-direction:column;gap:18px' data-b='1'><div class='card sm'><h3>Threshold</h3><p>How loud counts as speech</p></div><div class='card sm hi'><h3>Silence</h3><p>How long a pause before it answers</p></div><div class='card sm'><h3>Padding</h3><p>Audio kept from just before they spoke</p></div></div><div data-b='2'><div class='label' style='margin-bottom:14px'>Presets: silence before it answers</div><div class='bars' style='gap:10px'><div class='bar' style='grid-template-columns:230px 1fr'><div class='n'>Responsive</div><div class='t'><div class='f' style='left:0;width:37.5%'><span class='v num'>300 ms</span></div></div></div><div class='bar' style='grid-template-columns:230px 1fr'><div class='n'>Snappy</div><div class='t'><div class='f' style='left:0;width:50%'><span class='v num'>400 ms</span></div></div></div><div class='bar' style='grid-template-columns:230px 1fr'><div class='n blue'>Balanced</div><div class='t'><div class='f hi' style='left:0;width:62.5%'><span class='v num'>500 ms</span></div></div></div><div class='bar' style='grid-template-columns:230px 1fr'><div class='n'>Patient</div><div class='t'><div class='f' style='left:0;width:87.5%'><span class='v num'>700 ms</span></div></div></div><div class='bar' style='grid-template-columns:230px 1fr'><div class='n'>Interviewer</div><div class='t'><div class='f' style='left:0;width:100%'><span class='v num'>800 ms</span></div></div></div></div><div class='foot' data-b='3' style='margin-top:22px'>Interrupting people? Go Patient. Fast sales calls: Snappy.</div></div></div>
+  </div>
+  <div class="chrome source">Leadlock VAD presets (Voice tab, Voice Activity Detection). Gemini voices: keep Response Speed on High; Low causes 15-30 s delays on calls.</div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">VAD decides when the caller has finished talking.
+Silence is the knob you'll touch most.
+Older callers: Patient. Sales: Snappy.
+On Gemini voices, leave Response Speed on High.</div>
+</section>
+
+<section class="slide dark" id="s-tools" data-id="tools" data-type="page" data-n="9">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Functions</div>
+    <h2 class="ttl">Tools let it do the work.</h2>
+    <div class="sub">21 built in. GoHighLevel works out of the box.</div>
+    <div class='fill'><div class='grid c4 grow' style='grid-auto-rows:1fr'><div class='card sm' data-b='1'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMDgsMzJIMTg0VjI0YTgsOCwwLDAsMC0xNiwwdjhIODhWMjRhOCw4LDAsMCwwLTE2LDB2OEg0OEExNiwxNiwwLDAsMCwzMiw0OFYyMDhhMTYsMTYsMCwwLDAsMTYsMTZIMjA4YTE2LDE2LDAsMCwwLDE2LTE2VjQ4QTE2LDE2LDAsMCwwLDIwOCwzMlpNNzIsNDh2OGE4LDgsMCwwLDAsMTYsMFY0OGg4MHY4YTgsOCwwLDAsMCwxNiwwVjQ4aDI0VjgwSDQ4VjQ4Wk0yMDgsMjA4SDQ4Vjk2SDIwOFYyMDhabS0zOC4zNC04NS42NmE4LDgsMCwwLDEsMCwxMS4zMmwtNDgsNDhhOCw4LDAsMCwxLTExLjMyLDBsLTI0LTI0YTgsOCwwLDAsMSwxMS4zMi0xMS4zMkwxMTYsMTY0LjY5bDQyLjM0LTQyLjM1QTgsOCwwLDAsMSwxNjkuNjYsMTIyLjM0WiIvPjwvc3ZnPg==)"></i></span><h3 style='margin-top:18px'>Calendar</h3><p>Check availability, book, reschedule, cancel</p></div><div class='card sm' data-b='1'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMTYsNDhINDBhOCw4LDAsMCwwLTgsOFYyMDhhMTYsMTYsMCwwLDAsMTYsMTZIODhhMTYsMTYsMCwwLDAsMTYtMTZWMTYwaDQ4djE2YTE2LDE2LDAsMCwwLDE2LDE2aDQwYTE2LDE2LDAsMCwwLDE2LTE2VjU2QTgsOCwwLDAsMCwyMTYsNDhaTTg4LDIwOEg0OFYxMjhIODhabTAtOTZINDhWNjRIODhabTY0LDMySDEwNFY2NGg0OFptNTYsMzJIMTY4VjEyOGg0MFptMC02NEgxNjhWNjRoNDBaIi8+PC9zdmc+)"></i></span><h3 style='margin-top:18px'>CRM</h3><p>Tags, notes, fields, opportunities, workflows</p></div><div class='card sm' data-b='2'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMTYsNDhINDBBMTYsMTYsMCwwLDAsMjQsNjRWMjI0YTE1Ljg1LDE1Ljg1LDAsMCwwLDkuMjQsMTQuNUExNi4xMywxNi4xMywwLDAsMCw0MCwyNDBhMTUuODksMTUuODksMCwwLDAsMTAuMjUtMy43OGwuMDktLjA3TDgzLDIwOEgyMTZhMTYsMTYsMCwwLDAsMTYtMTZWNjRBMTYsMTYsMCwwLDAsMjE2LDQ4Wk00MCwyMjRoMFpNMjE2LDE5Mkg4MGE4LDgsMCwwLDAtNS4yMywxLjk1TDQwLDIyNFY2NEgyMTZaTTg4LDExMmE4LDgsMCwwLDEsOC04aDY0YTgsOCwwLDAsMSwwLDE2SDk2QTgsOCwwLDAsMSw4OCwxMTJabTAsMzJhOCw4LDAsMCwxLDgtOGg2NGE4LDgsMCwxLDEsMCwxNkg5NkE4LDgsMCwwLDEsODgsMTQ0WiIvPjwvc3ZnPg==)"></i></span><h3 style='margin-top:18px'>Messages</h3><p>Send a text, text back later, call out</p></div><div class='card sm' data-b='2'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xNDQuMjcsNDUuOTNhOCw4LDAsMCwxLDkuOC01LjY2LDg2LjIyLDg2LjIyLDAsMCwxLDYxLjY2LDYxLjY2LDgsOCwwLDAsMS01LjY2LDkuOEE4LjIzLDguMjMsMCwwLDEsMjA4LDExMmE4LDgsMCwwLDEtNy43My01Ljk0LDcwLjM1LDcwLjM1LDAsMCwwLTUwLjMzLTUwLjMzQTgsOCwwLDAsMSwxNDQuMjcsNDUuOTNabS0yLjMzLDQxLjhjMTMuNzksMy42OCwyMi42NSwxMi41NCwyNi4zMywyNi4zM0E4LDgsMCwwLDAsMTc2LDEyMGE4LjIzLDguMjMsMCwwLDAsMi4wNy0uMjcsOCw4LDAsMCwwLDUuNjYtOS44Yy01LjEyLTE5LjE2LTE4LjUtMzIuNTQtMzcuNjYtMzcuNjZhOCw4LDAsMSwwLTQuMTMsMTUuNDZabTgxLjk0LDk1LjM1QTU2LjI2LDU2LjI2LDAsMCwxLDE2OCwyMzJDODguNiwyMzIsMjQsMTY3LjQsMjQsODhBNTYuMjYsNTYuMjYsMCwwLDEsNzIuOTIsMzIuMTJhMTYsMTYsMCwwLDEsMTYuNjIsOS41MmwyMS4xMiw0Ny4xNSwwLC4xMkExNiwxNiwwLDAsMSwxMDkuMzksMTA0Yy0uMTguMjctLjM3LjUyLS41Ny43N0w4OCwxMjkuNDVjNy40OSwxNS4yMiwyMy40MSwzMSwzOC44MywzOC41MWwyNC4zNC0yMC43MWE4LjEyLDguMTIsMCwwLDEsLjc1LS41NiwxNiwxNiwwLDAsMSwxNS4xNy0xLjRsLjEzLjA2LDQ3LjExLDIxLjExQTE2LDE2LDAsMCwxLDIyMy44OCwxODMuMDhabS0xNS44OC0ycy0uMDcsMC0uMTEsMGgwbC00Ny0yMS4wNS0yNC4zNSwyMC43MWE4LjQ0LDguNDQsMCwwLDEtLjc0LjU2LDE2LDE2LDAsMCwxLTE1Ljc1LDEuMTRjLTE4LjczLTkuMDUtMzcuNC0yNy41OC00Ni40Ni00Ni4xMWExNiwxNiwwLDAsMSwxLTE1LjcsNi4xMyw2LjEzLDAsMCwxLC41Ny0uNzdMOTYsOTUuMTVsLTIxLTQ3YS42MS42MSwwLDAsMSwwLS4xMkE0MC4yLDQwLjIsMCwwLDAsNDAsODgsMTI4LjE0LDEyOC4xNCwwLDAsMCwxNjgsMjE2LDQwLjIxLDQwLjIxLDAsMCwwLDIwOCwxODEuMDdaIi8+PC9zdmc+)"></i></span><h3 style='margin-top:18px'>Call control</h3><p>End, transfer, schedule a callback</p></div></div><div class='foot' data-b='3' style='margin-top:22px'>Plus knowledge-base search: answers from their own FAQs and SOPs.</div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Turn on only the tools this agent needs.
+Name each enabled tool in the prompt and say when to use it.
+Knowledge base: answers from their own docs.</div>
+</section>
+
+<section class="slide light" id="s-tool-call" data-id="tool-call" data-type="page" data-n="10">
+  <div class="page" data-mbox="copy">
+    <div class="eb">How a tool call sounds</div>
+    <h2 class="ttl">One call, two tools.</h2>
+    <div class='fill'><div class='chat'><div class='msg in' data-b='1'><span class='who'>Caller</span>Can you come out Thursday?</div><div class='tool' data-b='2'>check_availability</div><div class='msg out' data-b='2'><span class='who'>Agent</span>Thursday I have 10 am or 2 pm.</div><div class='msg in' data-b='3'><span class='who'>Caller</span>2 works.</div><div class='tool' data-b='4'>book_appointment &rarr; GoHighLevel</div><div class='msg out' data-b='4'><span class='who'>Agent</span>You're booked for 2 pm Thursday. I'll text you a confirmation.</div></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">The caller never hears the tool. Just a natural answer.
+Click 2: it checks the calendar mid-sentence.
+Click 4: the job lands in GoHighLevel.</div>
+</section>
+
+<section class="slide dark" id="s-custom-functions" data-id="custom-functions" data-type="page" data-n="11">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Anything with an API</div>
+    <h2 class="ttl">Custom functions.</h2>
+    <div class='split' style='margin-top:40px;grid-template-columns:840px 1fr;gap:60px'><div class='card' data-b='1'><div class='fld'><span class='label'>Function name</span><div class='val mono'>book_job</div></div><div class='fld'><span class='label'>Description (read by the agent)</span><div class='val'>Send the caller's name, phone, job type and time to the job board.</div></div><div class='fld'><span class='label'>Parameters</span><div class='val mono'>name &middot; phone &middot; job_type &middot; time</div></div><div class='fld' style='margin-bottom:0'><span class='label'>Webhook</span><div class='val mono'>POST https://your-endpoint</div></div></div><ul class='bul' data-b='2'><li><b>Description:</b> tells it when to use it</li><li><b>Parameters:</b> what it collects first</li><li><b>Speak during execution:</b> no dead air</li><li><b>Send Test Request</b> before a real call</li></ul></div>
+  </div>
+  <div class="chrome source">Leadlock Functions Library: Create Custom Function. You can also generate one from a plain-English sentence.</div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Their software isn't GoHighLevel? This is how you connect it.
+Describe it in one sentence, it drafts the function.
+Test the webhook before you test the agent.</div>
+</section>
+
+<section class="slide light" id="s-mcp" data-id="mcp" data-type="page" data-n="12">
+  <div class="page" data-mbox="copy">
+    <div class="eb">MCP servers</div>
+    <h2 class="ttl">What's an MCP server?</h2>
+    <div class="sub">One plug that hands your agent a whole toolbox.</div>
+    <div class='fill'><div class='flow grow' style='align-items:center'><div class='card' data-b='1' style='flex:0.8'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xNDQsMTY1LjY4YTY4LDY4LDAsMSwwLTcxLjksMGMtMjAuNjUsNi43Ni0zOS4yMywxOS4zOS01NC4xNywzNy4xN2E4LDgsMCwwLDAsMTIuMjUsMTAuM0M1MC4yNSwxODkuMTksNzcuOTEsMTc2LDEwOCwxNzZzNTcuNzUsMTMuMTksNzcuODgsMzcuMTVhOCw4LDAsMSwwLDEyLjI1LTEwLjNDMTgzLjE4LDE4NS4wNywxNjQuNiwxNzIuNDQsMTQ0LDE2NS42OFpNNTYsMTA4YTUyLDUyLDAsMSwxLDUyLDUyQTUyLjA2LDUyLjA2LDAsMCwxLDU2LDEwOFpNMjA3LjM2LDY1LjZhMTA4LjM2LDEwOC4zNiwwLDAsMSwwLDg0LjgsOCw4LDAsMCwxLTcuMzYsNC44Niw4LDgsMCwwLDEtNy4zNi0xMS4xNSw5Mi4yNiw5Mi4yNiwwLDAsMCwwLTcyLjIyLDgsOCwwLDAsMSwxNC43Mi02LjI5Wk0yNDgsMTA4YTEzOSwxMzksMCwwLDEtMTEuMjksNTUuMTUsOCw4LDAsMCwxLTE0LjctNi4zLDEyNC40MywxMjQuNDMsMCwwLDAsMC05Ny43LDgsOCwwLDEsMSwxNC43LTYuM0ExMzksMTM5LDAsMCwxLDI0OCwxMDhaIi8+PC9zdmc+)"></i></span><h3>Your agent</h3><p>On the call</p></div><span data-b='2'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><div class='card hi' data-b='2' style='flex:0.9'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMzcuNjYsNjYuMzRhOCw4LDAsMCwwLTExLjMyLDBMMTkyLDEwMC42OSwxNTUuMzEsNjRsMzQuMzUtMzQuMzRhOCw4LDAsMSwwLTExLjMyLTExLjMyTDE0NCw1Mi42OSwxMTcuNjYsMjYuMzRhOCw4LDAsMCwwLTExLjMyLDExLjMyTDExMi42OSw0NGwtNTMsNTNhNDAsNDAsMCwwLDAsMCw1Ni41N2wxNS43MSwxNS43MUwyNi4zNCwyMTguMzRhOCw4LDAsMCwwLDExLjMyLDExLjMybDQ5LjA5LTQ5LjA5LDE1LjcxLDE1LjcxYTQwLDQwLDAsMCwwLDU2LjU3LDBsNTMtNTMsNi4zNCw2LjM1YTgsOCwwLDAsMCwxMS4zMi0xMS4zMkwyMDMuMzEsMTEybDM0LjM1LTM0LjM0QTgsOCwwLDAsMCwyMzcuNjYsNjYuMzRaTTE0Ny43MiwxODVhMjQsMjQsMCwwLDEtMzMuOTUsMEw3MSwxNDIuMjNhMjQsMjQsMCwwLDEsMC0zMy45NWw1My01M0wyMDAuNjksMTMyWiIvPjwvc3ZnPg==)"></i></span><h3>MCP server</h3><p>One URL, many tools</p></div><span data-b='3'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><div data-b='3' style='flex:1.1;display:flex;flex-direction:column;gap:14px'><span class='chip'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMDgsMzJIMTg0VjI0YTgsOCwwLDAsMC0xNiwwdjhIODhWMjRhOCw4LDAsMCwwLTE2LDB2OEg0OEExNiwxNiwwLDAsMCwzMiw0OFYyMDhhMTYsMTYsMCwwLDAsMTYsMTZIMjA4YTE2LDE2LDAsMCwwLDE2LTE2VjQ4QTE2LDE2LDAsMCwwLDIwOCwzMlpNNzIsNDh2OGE4LDgsMCwwLDAsMTYsMFY0OGg4MHY4YTgsOCwwLDAsMCwxNiwwVjQ4aDI0VjgwSDQ4VjQ4Wk0yMDgsMjA4SDQ4Vjk2SDIwOFYyMDhabS0zOC4zNC04NS42NmE4LDgsMCwwLDEsMCwxMS4zMmwtNDgsNDhhOCw4LDAsMCwxLTExLjMyLDBsLTI0LTI0YTgsOCwwLDAsMSwxMS4zMi0xMS4zMkwxMTYsMTY0LjY5bDQyLjM0LTQyLjM1QTgsOCwwLDAsMSwxNjkuNjYsMTIyLjM0WiIvPjwvc3ZnPg==)"></i>Calendar</span><span class='chip'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMTYsNDhINDBhOCw4LDAsMCwwLTgsOFYyMDhhMTYsMTYsMCwwLDAsMTYsMTZIODhhMTYsMTYsMCwwLDAsMTYtMTZWMTYwaDQ4djE2YTE2LDE2LDAsMCwwLDE2LDE2aDQwYTE2LDE2LDAsMCwwLDE2LTE2VjU2QTgsOCwwLDAsMCwyMTYsNDhaTTg4LDIwOEg0OFYxMjhIODhabTAtOTZINDhWNjRIODhabTY0LDMySDEwNFY2NGg0OFptNTYsMzJIMTY4VjEyOGg0MFptMC02NEgxNjhWNjRoNDBaIi8+PC9zdmc+)"></i>CRM</span><span class='chip'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xMjgsMjRDNzQuMTcsMjQsMzIsNDguNiwzMiw4MHY5NmMwLDMxLjQsNDIuMTcsNTYsOTYsNTZzOTYtMjQuNiw5Ni01NlY4MEMyMjQsNDguNiwxODEuODMsMjQsMTI4LDI0Wm04MCwxMDRjMCw5LjYyLTcuODgsMTkuNDMtMjEuNjEsMjYuOTJDMTcwLjkzLDE2My4zNSwxNTAuMTksMTY4LDEyOCwxNjhzLTQyLjkzLTQuNjUtNTguMzktMTMuMDhDNTUuODgsMTQ3LjQzLDQ4LDEzNy42Miw0OCwxMjhWMTExLjM2YzE3LjA2LDE1LDQ2LjIzLDI0LjY0LDgwLDI0LjY0czYyLjk0LTkuNjgsODAtMjQuNjRaTTY5LjYxLDUzLjA4Qzg1LjA3LDQ0LjY1LDEwNS44MSw0MCwxMjgsNDBzNDIuOTMsNC42NSw1OC4zOSwxMy4wOEMyMDAuMTIsNjAuNTcsMjA4LDcwLjM4LDIwOCw4MHMtNy44OCwxOS40My0yMS42MSwyNi45MkMxNzAuOTMsMTE1LjM1LDE1MC4xOSwxMjAsMTI4LDEyMHMtNDIuOTMtNC42NS01OC4zOS0xMy4wOEM1NS44OCw5OS40Myw0OCw4OS42Miw0OCw4MFM1NS44OCw2MC41Nyw2OS42MSw1My4wOFpNMTg2LjM5LDIwMi45MkMxNzAuOTMsMjExLjM1LDE1MC4xOSwyMTYsMTI4LDIxNnMtNDIuOTMtNC42NS01OC4zOS0xMy4wOEM1NS44OCwxOTUuNDMsNDgsMTg1LjYyLDQ4LDE3NlYxNTkuMzZjMTcuMDYsMTUsNDYuMjMsMjQuNjQsODAsMjQuNjRzNjIuOTQtOS42OCw4MC0yNC42NFYxNzZDMjA4LDE4NS42MiwyMDAuMTIsMTk1LjQzLDE4Ni4zOSwyMDIuOTJaIi8+PC9zdmc+)"></i>Database</span><span class='chip'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik02OS4xMiw5NC4xNSwyOC41LDEyOGw0MC42MiwzMy44NWE4LDgsMCwxLDEtMTAuMjQsMTIuMjlsLTQ4LTQwYTgsOCwwLDAsMSwwLTEyLjI5bDQ4LTQwYTgsOCwwLDAsMSwxMC4yNCwxMi4zWm0xNzYsMjcuNy00OC00MGE4LDgsMCwxLDAtMTAuMjQsMTIuM0wyMjcuNSwxMjhsLTQwLjYyLDMzLjg1YTgsOCwwLDEsMCwxMC4yNCwxMi4yOWw0OC00MGE4LDgsMCwwLDAsMC0xMi4yOVpNMTYyLjczLDMyLjQ4YTgsOCwwLDAsMC0xMC4yNSw0Ljc5bC02NCwxNzZhOCw4LDAsMCwwLDQuNzksMTAuMjZBOC4xNCw4LjE0LDAsMCwwLDk2LDIyNGE4LDgsMCwwLDAsNy41Mi01LjI3bDY0LTE3NkE4LDgsMCwwLDAsMTYyLjczLDMyLjQ4WiIvPjwvc3ZnPg==)"></i>Your own app</span></div></div><div class='foot' data-b='4' style='margin-top:20px'>In Leadlock: Remote MCP servers, on Grok voice agents.</div></div>
+  </div>
+  <div class="chrome source">Leadlock agent settings: Remote MCP servers (xAI voice provider only).</div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Custom function = one tool. MCP server = a whole set at once.
+Point the agent at the server's URL, pick which tools it may use.
+Today it's on Grok voice agents.</div>
+</section>
+
+<section class="slide dark" id="s-testing" data-id="testing" data-type="page" data-n="13">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Testing</div>
+    <h2 class="ttl">Test it three ways.</h2>
+    <div class='fill'><div class='grid c3 grow' style='grid-auto-rows:1fr'><div class='card' data-b='1'><div class='k'>01 &middot; Fastest</div><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xMjgsMjRoMEExMDQsMTA0LDAsMSwwLDIzMiwxMjgsMTA0LjEyLDEwNC4xMiwwLDAsMCwxMjgsMjRabTg4LDEwNGE4Ny42MSw4Ny42MSwwLDAsMS0zLjMzLDI0SDE3NC4xNmExNTcuNDQsMTU3LjQ0LDAsMCwwLDAtNDhoMzguNTFBODcuNjEsODcuNjEsMCwwLDEsMjE2LDEyOFpNMTAyLDE2OEgxNTRhMTE1LjExLDExNS4xMSwwLDAsMS0yNiw0NUExMTUuMjcsMTE1LjI3LDAsMCwxLDEwMiwxNjhabS0zLjktMTZhMTQwLjg0LDE0MC44NCwwLDAsMSwwLTQ4aDU5Ljg4YTE0MC44NCwxNDAuODQsMCwwLDEsMCw0OFpNNDAsMTI4YTg3LjYxLDg3LjYxLDAsMCwxLDMuMzMtMjRIODEuODRhMTU3LjQ0LDE1Ny40NCwwLDAsMCwwLDQ4SDQzLjMzQTg3LjYxLDg3LjYxLDAsMCwxLDQwLDEyOFpNMTU0LDg4SDEwMmExMTUuMTEsMTE1LjExLDAsMCwxLDI2LTQ1QTExNS4yNywxMTUuMjcsMCwwLDEsMTU0LDg4Wm01Mi4zMywwSDE3MC43MWExMzUuMjgsMTM1LjI4LDAsMCwwLTIyLjMtNDUuNkE4OC4yOSw4OC4yOSwwLDAsMSwyMDYuMzcsODhaTTEwNy41OSw0Mi40QTEzNS4yOCwxMzUuMjgsMCwwLDAsODUuMjksODhINDkuNjNBODguMjksODguMjksMCwwLDEsMTA3LjU5LDQyLjRaTTQ5LjYzLDE2OEg4NS4yOWExMzUuMjgsMTM1LjI4LDAsMCwwLDIyLjMsNDUuNkE4OC4yOSw4OC4yOSwwLDAsMSw0OS42MywxNjhabTk4Ljc4LDQ1LjZhMTM1LjI4LDEzNS4yOCwwLDAsMCwyMi4zLTQ1LjZoMzUuNjZBODguMjksODguMjksMCwwLDEsMTQ4LjQxLDIxMy42WiIvPjwvc3ZnPg==)"></i></span><h3 style='margin-top:20px'>Browser test</h3><p>Test page, Voice, Start Conversation.</p></div><div class='card' data-b='2'><div class='k'>02 &middot; At scale</div><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMDAsNDhIMTM2VjE2YTgsOCwwLDAsMC0xNiwwVjQ4SDU2QTMyLDMyLDAsMCwwLDI0LDgwVjE5MmEzMiwzMiwwLDAsMCwzMiwzMkgyMDBhMzIsMzIsMCwwLDAsMzItMzJWODBBMzIsMzIsMCwwLDAsMjAwLDQ4Wm0xNiwxNDRhMTYsMTYsMCwwLDEtMTYsMTZINTZhMTYsMTYsMCwwLDEtMTYtMTZWODBBMTYsMTYsMCwwLDEsNTYsNjRIMjAwYTE2LDE2LDAsMCwxLDE2LDE2Wm0tNTItNTZIOTJhMjgsMjgsMCwwLDAsMCw1Nmg3MmEyOCwyOCwwLDAsMCwwLTU2Wm0tMjQsMTZ2MjRIMTE2VjE1MlpNODAsMTY0YTEyLDEyLDAsMCwxLDEyLTEyaDh2MjRIOTJBMTIsMTIsMCwwLDEsODAsMTY0Wm04NCwxMmgtOFYxNTJoOGExMiwxMiwwLDAsMSwwLDI0Wk03MiwxMDhhMTIsMTIsMCwxLDEsMTIsMTJBMTIsMTIsMCwwLDEsNzIsMTA4Wm04OCwwYTEyLDEyLDAsMSwxLDEyLDEyQTEyLDEyLDAsMCwxLDE2MCwxMDhaIi8+PC9zdmc+)"></i></span><h3 style='margin-top:20px'>Simulate</h3><p>An AI caller runs scenarios against your agent. Agency and Pro plans.</p></div><div class='card hi' data-b='3'><div class='k'>03 &middot; The proof</div><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjIuMzcsMTU4LjQ2bC00Ny4xMS0yMS4xMS0uMTMtLjA2YTE2LDE2LDAsMCwwLTE1LjE3LDEuNCw4LjEyLDguMTIsMCwwLDAtLjc1LjU2TDEzNC44NywxNjBjLTE1LjQyLTcuNDktMzEuMzQtMjMuMjktMzguODMtMzguNTFsMjAuNzgtMjQuNzFjLjItLjI1LjM5LS41LjU3LS43N2ExNiwxNiwwLDAsMCwxLjMyLTE1LjA2bDAtLjEyTDk3LjU0LDMzLjY0YTE2LDE2LDAsMCwwLTE2LjYyLTkuNTJBNTYuMjYsNTYuMjYsMCwwLDAsMzIsODBjMCw3OS40LDY0LjYsMTQ0LDE0NCwxNDRhNTYuMjYsNTYuMjYsMCwwLDAsNTUuODgtNDguOTJBMTYsMTYsMCwwLDAsMjIyLjM3LDE1OC40NlpNMTc2LDIwOEExMjguMTQsMTI4LjE0LDAsMCwxLDQ4LDgwLDQwLjIsNDAuMiwwLDAsMSw4Mi44Nyw0MGEuNjEuNjEsMCwwLDAsMCwuMTJsMjEsNDdMODMuMiwxMTEuODZhNi4xMyw2LjEzLDAsMCwwLS41Ny43NywxNiwxNiwwLDAsMC0xLDE1LjdjOS4wNiwxOC41MywyNy43MywzNy4wNiw0Ni40Niw0Ni4xMWExNiwxNiwwLDAsMCwxNS43NS0xLjE0LDguNDQsOC40NCwwLDAsMCwuNzQtLjU2TDE2OC44OSwxNTJsNDcsMjEuMDVoMHMuMDgsMCwuMTEsMEE0MC4yMSw0MC4yMSwwLDAsMSwxNzYsMjA4WiIvPjwvc3ZnPg==)"></i></span><h3 style='margin-top:20px'>Real test call</h3><p>Call its number from your own phone.</p></div></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Browser test after every prompt change.
+Simulate to try many callers at once.
+Before a client sees it: a real phone call. Always.</div>
+</section>
+
+<section class="slide light" id="s-fix-loop" data-id="fix-loop" data-type="page" data-n="14">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Tuning</div>
+    <h2 class="ttl">The fix loop.</h2>
+    <div class='fill'><div class='grid c5 grow' style='grid-auto-rows:1fr'><div class='card sm' data-b='1'><div class='k'>01</div><h3>Test call</h3></div><div class='card sm' data-b='2'><div class='k'>02</div><h3>Read the transcript</h3></div><div class='card sm' data-b='3'><div class='k'>03</div><h3>Find the line that caused it</h3></div><div class='card sm hi' data-b='4'><div class='k'>04</div><h3>Remove or fix that line</h3></div><div class='card sm' data-b='5'><div class='k'>05</div><h3>Test again</h3></div></div><div class='row' data-b='6' style='margin-top:30px;gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjQsNDhWOTZhOCw4LDAsMCwxLTgsOEgxNjhhOCw4LDAsMCwxLDAtMTZoMjguNjlMMTgyLjA2LDczLjM3YTc5LjU2LDc5LjU2LDAsMCwwLTU2LjEzLTIzLjQzaC0uNDVBNzkuNTIsNzkuNTIsMCwwLDAsNjkuNTksNzIuNzEsOCw4LDAsMCwxLDU4LjQxLDYxLjI3YTk2LDk2LDAsMCwxLDEzNSwuNzlMMjA4LDc2LjY5VjQ4YTgsOCwwLDAsMSwxNiwwWk0xODYuNDEsMTgzLjI5YTgwLDgwLDAsMCwxLTExMi40Ny0uNjZMNTkuMzEsMTY4SDg4YTgsOCwwLDAsMCwwLTE2SDQwYTgsOCwwLDAsMC04LDh2NDhhOCw4LDAsMCwwLDE2LDBWMTc5LjMxbDE0LjYzLDE0LjYzQTk1LjQzLDk1LjQzLDAsMCwwLDEzMCwyMjIuMDZoLjUzYTk1LjM2LDk1LjM2LDAsMCwwLDY3LjA3LTI3LjMzLDgsOCwwLDAsMC0xMS4xOC0xMS40NFoiLz48L3N2Zz4=)"></i><span class='sub' style='margin:0'>Most bad behavior traces back to a line already in the prompt.</span></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Don't add a rule per mistake. That's how prompts bloat.
+Find the line that caused it first.
+Analyze in the app suggests removals from real calls.</div>
+</section>
+
+<section class="slide dark" id="s-agent-kit" data-id="agent-kit" data-type="page" data-n="15">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Free</div>
+    <h2 class="ttl">The Leadlock Agent Kit.</h2>
+    <div class="sub">Claude Code skills that build, tune and test agents with you.</div>
+    <div class='split' style='margin-top:36px;grid-template-columns:1fr 700px;gap:40px'><div class='term' data-b='1'><div class='bar'><i></i><i></i><i></i><span>Claude Code + Leadlock Agent Kit</span></div><div class='tb'><span class='p'>&gt;</span> build an agent for Summit Plumbing<br><br><span class='o'>Found your phone numbers and GoHighLevel calendars.<br>A few questions, then I'll write the prompt and create it.</span><br><br><span class='o'>Illustrative run.</span></div></div><div class='doc' data-b='2' style='grid-template-columns:330px 1fr;row-gap:10px;align-content:start'><div class='r'><div>build-agent</div><div>Guided build</div></div><div class='r'><div>prospect-demo</div><div>Demo from a URL</div></div><div class='r'><div>prompt-tuner</div><div>Tune from real calls</div></div><div class='r'><div>call-audit</div><div>Weekly scorecard</div></div><div class='r'><div>knowledge-base</div><div>FAQs from their site</div></div></div></div><div class='foot' data-b='3' style='margin-top:20px'>leadlock.ai/agent-kit</div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Everything in this video, done with you in Claude Code.
+build-agent asks the questions that matter and writes the prompt.
+Free at leadlock.ai/agent-kit.</div>
+</section>
+
+<section class="slide light" id="s-next" data-id="next" data-type="page" data-n="16">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Up next</div>
+    <h2 class="ttl xl"><span>Now build one.</span><span class='blue'>Live.</span></h2>
+    <div class='split' style='margin-top:40px'><div class='sub' style='margin-top:0'>Video 5: Twilio, a client sub-account, GoHighLevel, your first agent and a real test call.</div><div class='card hi' style='align-self:start'><div class='k'>Remember</div><ol class='agenda'><li>Shorter prompts win</li><li>Match turn-taking to the caller</li><li>Test on a real call</li></ol></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Recap: prompt, settings, tools, connections, testing.
+Fix by removing lines.
+Next: the full setup, start to finish.</div>
+</section>
+
+<!-- SLIDES:END -->
+
+</div></div>
+
+<div id="notes"><div class="nh">Speaker notes · <span id="nn"></span></div><div id="nt"></div></div>
+<div id="count"></div>
+<button id="pp" type="button" title="Pause / play (P)">&#10073;&#10073;</button>
+<button id="snd" type="button">Tap for sound</button>
+<div id="pv"><div class="pv-h" id="pvh"></div><div class="pv-t" id="pvt">00:00</div><ul id="pvn"></ul><div class="pv-next" id="pvx"></div></div>
+<div id="pvkeys">Presenter view. Right / Space: next. Left: back. T: reset timer.<br>Keys here drive the deck window. Record the deck window, not this one.</div>
+
+<script>
+/* ---- Config ---------------------------------------------------------- */
+var DEMO_URL = 'https://app.leadlock.ai/d/sophia-from-leadlock-voiceaidemo-xqit66';
+var WARM_UP = 'prefetch';      // on the slide before a live call: 'prefetch' (preconnect + prefetch), 'premount' (load the iframe hidden), or 'off'
+var RECLAIM_FOCUS_MS = 700;    // after a click inside the live iframe, hand keyboard focus back to the deck after this delay (0 = never)
+/* ---------------------------------------------------------------------- */
+(function () {
+  var params = new URLSearchParams(location.search);
+  var demoOverride = params.get('demo');
+  if (demoOverride && (/^\//.test(demoOverride) || /^https:\/\//.test(demoOverride))) DEMO_URL = demoOverride;
+  function demoSrc() { return DEMO_URL + (DEMO_URL.indexOf('?') < 0 ? '?' : '&') + 'embed=true'; }
+
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var stage = document.getElementById('stage');
+  var deck = document.getElementById('deck');
+  var notes = document.getElementById('notes');
+  var snd = document.getElementById('snd');
+  var pp = document.getElementById('pp');
+  var i = 0;
+
+  /* ---- HTML click-builds: [data-b="N"] shows on the Nth Next press ---- */
+  var step = 0;
+  function stepsOf(el) {
+    if (el._steps == null) {
+      el._steps = 0;
+      Array.prototype.forEach.call(el.querySelectorAll('[data-b]'), function (b) { el._steps = Math.max(el._steps, parseInt(b.dataset.b, 10) || 0); });
+    }
+    return el._steps;
+  }
+  function setStep(k) {
+    var el = slides[i];
+    step = Math.max(0, Math.min(stepsOf(el), k));
+    Array.prototype.forEach.call(el.querySelectorAll('[data-b]'), function (b) { b.classList.toggle('on', (parseInt(b.dataset.b, 10) || 0) <= step); });
+    updateNotesHead(); post();
+  }
+  function buildNext() { if (step < stepsOf(slides[i])) { setStep(step + 1); return true; } return false; }
+  function buildBack() { if (step > 0) { setStep(step - 1); return true; } return false; }
+
+  /* ---- Presenter window (?presenter=1, S opens it): mirrors the deck over a BroadcastChannel ---- */
+  var PRESENTER = params.get('presenter') === '1';
+  var bc = ('BroadcastChannel' in window) ? new BroadcastChannel('lldeck:' + location.pathname) : null;
+  function post() { if (bc && !PRESENTER) bc.postMessage({ state: { i: i, step: step } }); }
+  if (PRESENTER) document.body.classList.add('pv');
+  var t0 = Date.now();
+  function presenterPanel() {
+    if (!PRESENTER) return;
+    var nEl = slides[i].querySelector('.notes');
+    var ul = document.getElementById('pvn'); ul.innerHTML = '';
+    (nEl ? nEl.textContent : '').split('\n').forEach(function (l) { if (l.trim()) { var li = document.createElement('li'); li.textContent = l.replace(/^[-*]\s*/, ''); ul.appendChild(li); } });
+    var steps = stepsOf(slides[i]);
+    document.getElementById('pvh').textContent = 'Slide ' + (i + 1) + ' of ' + slides.length + (steps ? ' · build ' + (step + 1) + ' of ' + (steps + 1) : '');
+    var nx = step < steps ? 'next click: build ' + (step + 2) + ' on this slide' : (slides[i + 1] ? 'next slide: ' : 'end of deck');
+    var nh = slides[i + 1] && step >= steps ? (slides[i + 1].querySelector('.ttl, h1, h2') || {}).textContent || '' : '';
+    document.getElementById('pvx').innerHTML = '';
+    var b = document.createElement('b'); b.textContent = nh;
+    document.getElementById('pvx').append(nx, b);
+  }
+  if (PRESENTER) setInterval(function () {
+    var s = Math.floor((Date.now() - t0) / 1000);
+    document.getElementById('pvt').textContent = ('0' + Math.floor(s / 60)).slice(-2) + ':' + ('0' + s % 60).slice(-2);
+  }, 500);
+
+  // play() returns a promise that rejects when a slide change pauses it first; that is expected, never an error.
+  function play(v, onBlocked) {
+    var p = v.play();
+    if (p && p.catch) p.catch(function (err) { if (onBlocked && err && err.name === 'NotAllowedError') onBlocked(); });
+  }
+  function curVid() { return slides[i].querySelector('video.sv'); }
+  function setPP() {
+    var v = curVid();
+    pp.classList.toggle('on', !!v);
+    var paused = !!(v && ((v._held && !v._cueHold) || (v._cueHold && v._loop && v.paused)));
+    pp.classList.toggle('paused', paused);
+    pp.innerHTML = paused ? '&#9654;' : '&#10073;&#10073;';
+  }
+  function togglePause() {
+    var v = curVid(); if (!v) return;
+    if (v._cueHold && v._loop) { if (v.paused) play(v); else { v._ours = true; v.pause(); } setPP(); return; }
+    if (v._held) { v._held = false; v._cueHold = false; play(v); }
+    else { v._held = true; v._ours = true; v.pause(); }
+    setPP();
+  }
+  pp.addEventListener('click', function (e) { e.stopPropagation(); togglePause(); });
+  snd.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var v = curVid(); if (!v) return;
+    v.muted = false; try { v.currentTime = 0; } catch (x) {} play(v); snd.classList.remove('on');
+  });
+  function fit() {
+    var s = PRESENTER ? stage.clientWidth / 1920 : Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    deck.style.transform = 'scale(' + s + ')';
+  }
+  function focusDeck() {
+    if (document.activeElement && document.activeElement !== document.body) { try { document.activeElement.blur(); } catch (e) {} }
+    stage.focus({ preventScroll: true });
+  }
+
+  /* ---- Click-builds: data-cues="t1,t2,..." -----------------------------
+     Entering the slide plays to t1 and holds. Each Next plays to the next cue
+     and holds; Next on the last cue plays out to the end (then loop or hold).
+     Next pressed mid-segment snaps to that segment's cue. Back steps back one build.
+     data-cue-loops="a1:b1,,a3:b3" (optional, one slot per cue): a hold with a loop keeps
+     playing a..b seamlessly instead of freezing, and the next build plays on from b. */
+  function cuesOf(v) {
+    if (!v || !v.dataset.cues) return null;
+    if (!v._cues) v._cues = v.dataset.cues.split(',').map(parseFloat).filter(function (t) { return !isNaN(t); });
+    return v._cues.length ? v._cues : null;
+  }
+  function loopOf(v, k) {
+    if (!v || !v.dataset.cueLoops) return null;
+    if (!v._loops) v._loops = v.dataset.cueLoops.split(',').map(function (x) {
+      var p = x ? x.split(':').map(parseFloat) : [];
+      return p.length === 2 && p[1] > p[0] ? p : null;
+    });
+    return v._loops[k] || null;
+  }
+  function holdAt(v, k) {
+    var c = cuesOf(v), lp = loopOf(v, k);
+    v._target = -1; v._at = k; v._cueHold = true; v._held = true; v._ours = true;
+    v._loop = lp;
+    try { v.currentTime = c[k]; } catch (e) {}
+    if (lp) { play(v); loopWatch(v, lp); } else v.pause();
+    setPP(); updateNotesHead();
+  }
+  // A living hold: wrap b -> a until the loop is released (next build, back, leaving the slide).
+  function loopWatch(v, lp) {
+    function tick() {
+      if (v._loop !== lp || !v.closest('.slide').classList.contains('active')) return;
+      if (v.currentTime >= lp[1] - 0.02 || v.currentTime < lp[0] - 0.25) { try { v.currentTime = lp[0]; } catch (e) {} }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  // Leaving a living hold: the next build starts where the loop ends.
+  function releaseLoop(v) {
+    var lp = v._loop; v._loop = null;
+    if (lp) { try { v.currentTime = lp[1]; } catch (e) {} }
+  }
+  function playTo(v, k) {
+    releaseLoop(v);
+    v._target = k; v._at = k - 1; v._held = false; v._cueHold = false;
+    play(v);
+    watchCue(v); setPP(); updateNotesHead();
+  }
+  function playOut(v) {
+    var c = cuesOf(v);
+    releaseLoop(v);
+    v._target = -1; v._at = c.length; v._held = false; v._cueHold = false;
+    play(v);
+    setPP(); updateNotesHead();
+  }
+  function watchCue(v) {
+    var c = cuesOf(v);
+    function tick() {
+      if (v._target < 0 || !v.closest('.slide').classList.contains('active')) return;
+      if (v.currentTime >= c[v._target] - 0.02 || v.ended) { holdAt(v, v._target); return; }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  // Returns true when the press was consumed by a build inside the slide.
+  function cueNext() {
+    var v = curVid(), c = cuesOf(v);
+    if (!c) return false;
+    if (v._target >= 0) { holdAt(v, v._target); return true; }
+    if (v._cueHold && v._at < c.length - 1) { playTo(v, v._at + 1); return true; }
+    if (v._cueHold && v._at === c.length - 1) { playOut(v); return true; }
+    return false;
+  }
+  function cueBack() {
+    var v = curVid(), c = cuesOf(v);
+    if (!c) return false;
+    var k = v._target >= 0 ? v._target - 1 : (v._cueHold ? v._at - 1 : c.length - 1);
+    if (k < 0) return false;
+    holdAt(v, k);
+    return true;
+  }
+  function buildLabel() {
+    var v = curVid(), c = cuesOf(v);
+    if (!c) { var n = stepsOf(slides[i]); return n ? ' · build ' + (step + 1) + ' of ' + (n + 1) : ''; }
+    var step = v._target >= 0 ? v._target + 1 : Math.min(v._at + 1, c.length + 1);
+    return ' · build ' + step + ' of ' + (c.length + 1);
+  }
+  function updateNotesHead() {
+    document.getElementById('nn').textContent = 'slide ' + (i + 1) + ' of ' + slides.length + buildLabel();
+    presenterPanel();
+  }
+
+  /* ---- Live call: mount on enter, unmount on leave ------------------- */
+  var warmed = {};
+  function warm(slide) {
+    if (WARM_UP === 'off' || warmed[slide.id]) return;
+    warmed[slide.id] = true;
+    var src = demoSrc();
+    if (WARM_UP === 'premount') { mountLive(slide, true); return; }
+    try {
+      var origin = new URL(src, location.href).origin;
+      if (origin !== location.origin) { var pc = document.createElement('link'); pc.rel = 'preconnect'; pc.href = origin; document.head.appendChild(pc); }
+    } catch (e) {}
+    var pf = document.createElement('link'); pf.rel = 'prefetch'; pf.href = src; pf.as = 'document'; document.head.appendChild(pf);
+  }
+  function mountLive(slide, hidden) {
+    var screen = slide.querySelector('.screen');
+    var f = screen.querySelector('iframe');
+    if (!f) {
+      f = document.createElement('iframe');
+      f.setAttribute('allow', 'microphone; autoplay');
+      f.setAttribute('title', 'Live Leadlock demo');
+      f.addEventListener('load', function () { if (f.getAttribute('src') !== 'about:blank') slide.classList.add('loaded'); });
+      f.src = demoSrc();
+      screen.appendChild(f);
+    }
+    f.style.visibility = hidden ? 'hidden' : 'visible';
+  }
+  function unmountLive(slide) {
+    var f = slide.querySelector('.screen iframe');
+    if (f) { try { f.src = 'about:blank'; } catch (e) {} f.remove(); }
+    slide.classList.remove('loaded');
+    var r = slide.querySelector('.live-rec');
+    if (r && !r.paused) r.pause();
+    slide.classList.remove('rec');
+    warmed[slide.id] = false;
+  }
+  function toggleRecording() {
+    var s = slides[i];
+    if (!s.classList.contains('live')) return;
+    var r = s.querySelector('.live-rec');
+    if (!r) return;
+    if (s.classList.contains('rec')) { s.classList.remove('rec'); r.pause(); mountLive(s, false); }
+    else {
+      var f = s.querySelector('.screen iframe'); if (f) { f.src = 'about:blank'; f.remove(); }
+      s.classList.add('rec'); r.currentTime = 0; r.muted = false;
+      play(r, function () { r.muted = true; play(r); });
+    }
+  }
+  // A click inside the cross-origin iframe takes keyboard focus with it. Hand it back so the clicker keeps working.
+  window.addEventListener('blur', function () {
+    if (!RECLAIM_FOCUS_MS) return;
+    setTimeout(function () {
+      var a = document.activeElement;
+      if (a && a.tagName === 'IFRAME') focusDeck();
+    }, RECLAIM_FOCUS_MS);
+  });
+
+  /* ---- Navigation ------------------------------------------------------ */
+  function show(n, opts) {
+    opts = opts || {};
+    var prev = i;
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function (el, k) { el.classList.toggle('active', k === i); });
+    var av = slides[i].querySelector('video.sv[data-audio]');
+    snd.classList.toggle('on', !!av && /iPhone|iPad|Android/.test(navigator.userAgent));
+    slides.forEach(function (el, k) {
+      if (el.classList.contains('live') && k !== i) unmountLive(el);
+      var v = el.querySelector('video.sv');
+      if (!v) return;
+      if (k === i || k === i + 1 || k === i + 2) {
+        if (v.preload !== 'auto') { v.preload = 'auto'; if (k !== i && v.networkState === 0) v.load(); }
+      }
+      v._held = false; v._cueHold = false; v._target = -1; v._loop = null;
+      if (k === i) {
+        var c = cuesOf(v);
+        v.muted = !v.dataset.audio;
+        if (c && opts.fromEnd) {
+          // Arriving backwards: show the finished build.
+          v._at = c.length;
+          try { v.currentTime = parseFloat(v.dataset.loop) || c[c.length - 1]; } catch (e) {}
+          play(v);
+        } else {
+          try { v.currentTime = 0; } catch (e) {}
+          if (c) { playTo(v, 0); }
+          else {
+            play(v, function () { v.muted = true; play(v); if (v.dataset.audio) snd.classList.add('on'); });
+          }
+        }
+      } else if (!v.paused) { v._ours = true; v.pause(); }
+    });
+    if (slides[i].classList.contains('live')) { mountLive(slides[i], false); }
+    if (slides[i + 1] && slides[i + 1].classList.contains('live')) warm(slides[i + 1]);
+    setPP();
+    var nEl = slides[i].querySelector('.notes');
+    var nt = document.getElementById('nt'); nt.innerHTML = '';
+    var ul = document.createElement('ul');
+    (nEl ? nEl.textContent : '').split('\n').forEach(function (l) { if (l.trim()) { var li = document.createElement('li'); li.textContent = l.replace(/^[-*]\s*/, ''); ul.appendChild(li); } });
+    nt.appendChild(ul);
+    setStep(opts.step != null ? opts.step : (opts.fromEnd ? stepsOf(slides[i]) : 0));
+    document.getElementById('count').textContent = (i + 1) + ' / ' + slides.length;
+    if (location.hash !== '#' + (i + 1)) history.replaceState(null, '', location.pathname + location.search + '#' + (i + 1));
+    if (prev !== i && document.activeElement && document.activeElement.tagName === 'IFRAME') focusDeck();
+  }
+  function next() {
+    if (PRESENTER && bc) { bc.postMessage({ cmd: 'next' }); return; }
+    if (!cueNext() && !buildNext()) show(i + 1);
+  }
+  function back() {
+    if (PRESENTER && bc) { bc.postMessage({ cmd: 'back' }); return; }
+    if (!cueBack() && !buildBack()) { if (i > 0) show(i - 1, { fromEnd: true }); }
+  }
+  if (bc) bc.onmessage = function (ev) {
+    var m = ev.data || {};
+    if (PRESENTER) { if (m.state) { if (m.state.i !== i) show(m.state.i, { step: m.state.step }); else setStep(m.state.step); } return; }
+    if (m.cmd === 'next') next();
+    else if (m.cmd === 'back') back();
+    else if (m.cmd === 'hello') post();
+  };
+
+  document.addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (k === 's' || k === 'S') { if (!PRESENTER) window.open(location.pathname + '?presenter=1' + location.hash, 'lldeck-presenter', 'width=1500,height=900'); return; }
+    if (PRESENTER && (k === 't' || k === 'T')) { t0 = Date.now(); return; }
+    if (k === 'ArrowRight' || k === ' ' || k === 'PageDown' || k === 'ArrowDown' || k === 'Enter') { e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'PageUp' || k === 'ArrowUp' || k === 'Backspace') { e.preventDefault(); back(); }
+    else if (k === 'Home') show(0);
+    else if (k === 'End') show(slides.length - 1);
+    else if (k === 'Escape') focusDeck();
+    else if (k === 'f' || k === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+      else document.exitFullscreen && document.exitFullscreen();
+    }
+    else if (k === 'p' || k === 'P' || k === 'k' || k === 'K') { e.preventDefault(); togglePause(); }
+    else if (k === 'n' || k === 'N') notes.classList.toggle('on');
+    else if (k === 'r' || k === 'R') toggleRecording();
+  });
+  document.addEventListener('click', function (e) {
+    if (notes.contains(e.target) || e.target.closest('.device, button')) return;
+    if (e.clientX < window.innerWidth / 3) back(); else next();
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.hot'), function (b) {
+    b.addEventListener('click', function (e) { e.stopPropagation(); if (b.classList.contains('hot-next')) next(); else back(); focusDeck(); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('video.sv'), function (v) {
+    v.addEventListener('ended', function () {
+      v.muted = true;
+      if (v._target >= 0) return;   // a cue at the very end: watchCue holds it
+      if (v.dataset.hold) return;
+      v.currentTime = parseFloat(v.dataset.loop) || 0; play(v);
+    });
+    v.addEventListener('pause', function () {
+      if (v.ended || v._ours || v._held || !v.closest('.slide').classList.contains('active')) { v._ours = false; return; }
+      v.muted = true; play(v); if (v.dataset.audio) snd.classList.add('on');
+    });
+  });
+  window.addEventListener('resize', fit);
+  window.addEventListener('hashchange', function () { var h = parseInt(location.hash.slice(1), 10); if (h && h - 1 !== i) show(h - 1); });
+  fit();
+  focusDeck();
+  // Read-only handle for tools/check.py.
+  window.__deck = {
+    count: function () { return slides.length; },
+    index: function () { return i; },
+    go: function (n) { show(n); },
+    next: next, back: back,
+    steps: function () { return stepsOf(slides[i]); },
+    step: function () { return step; },
+    setStep: setStep,
+    build: function () { var v = curVid(); return v ? { at: v._at, target: v._target, held: !!v._cueHold, loop: v._loop || null, paused: v.paused, t: v.currentTime } : null; }
+  };
+  var start = parseInt(location.hash.slice(1), 10);
+  show(start ? start - 1 : 0);
+  if (PRESENTER && bc) bc.postMessage({ cmd: 'hello' });
+})();
+</script>
+</body>
+</html>

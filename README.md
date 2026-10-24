@@ -35,6 +35,10 @@ A growing library of Claude Code skills for Leadlock agency owners. Run them wit
 
 More skills land here over time. Drop a new folder under `.claude/skills/<name>/SKILL.md` and Claude Code picks it up.
 
+## Course materials
+
+The slide decks (PDF and interactive), the setup checklist and the n8n outbound-call workflow from the Leadlock course videos live in [`course/`](course/README.md). Everything opens with a double-click: no server, no install.
+
 ## Marketing showcase
 
 `.claude/skills/prospect-demo/showcase.html` is a Leadlock × Claude Code branded slide deck that walks through what the `prospect-demo` skill does — built for YouTube recordings, demo calls, or any time you want to explain the workflow visually.

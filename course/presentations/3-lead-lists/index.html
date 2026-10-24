@@ -1,0 +1,1006 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leadlock course 3: Build your lead list</title>
+<style>
+  @font-face { font-family: "Geist"; src: url(assets/fonts/geist.woff2) format("woff2"); font-weight: 100 900; font-display: block; }
+  @font-face { font-family: "Geist Mono"; src: url(assets/fonts/geist-mono.woff2) format("woff2"); font-weight: 100 900; font-display: block; }
+  :root {
+    --ink: #0F0F0F;
+    --card: #141416;
+    --card-2: #1F1F1F;
+    --line-dark: #26262A;
+    --text: #EDEDED;
+    --muted: #A1A1AA;
+    --paper: #F4F4F1;
+    --paper-card: #FFFFFF;
+    --line-light: #DCDCD6;
+    --text-dark: #0F0F0F;
+    --muted-dark: #5B5B63;
+    --blue: #6298B6;
+    --blue-deep: #4A7A96;
+    --font: "Geist", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #000; overflow: hidden; font-family: var(--font); -webkit-font-smoothing: antialiased; }
+
+  /* Stage: every slide is a fixed 1920x1080 canvas, scaled to fit the window */
+  #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; outline: none; }
+  #deck { width: 1920px; height: 1080px; position: relative; transform-origin: center center; flex: none; }
+  .slide { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; display: none; }
+  .slide.active { display: block; }
+
+  .dark  { background: var(--ink); color: var(--text); }
+  .light { background: var(--paper); color: var(--text-dark); }
+  .accent { color: var(--blue); }
+  .light .accent { color: var(--blue-deep); }
+
+  /* Static copy: the fallback under each video and the PDF source */
+  .pad { position: absolute; left: 0; right: 0; top: 0; height: 940px; padding: 120px 160px 40px; display: flex; flex-direction: column; justify-content: center; }
+  .eyebrow { font-family: var(--mono); font-size: 28px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); margin-bottom: 44px; }
+  .light .eyebrow { color: var(--blue-deep); }
+  h1 { font-size: 128px; line-height: 1.02; font-weight: 700; letter-spacing: -0.04em; }
+  h2 { font-size: 96px; line-height: 1.06; font-weight: 700; letter-spacing: -0.035em; }
+  .lede { font-size: 48px; line-height: 1.3; font-weight: 400; letter-spacing: -0.012em; margin-top: 44px; max-width: 1500px; }
+  .dark .lede { color: #C9C9CF; }
+  .light .lede { color: #3F3F46; }
+
+  .tiles { margin-top: 70px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; width: 1600px; }
+  .tiles.n2, .tiles.n4 { grid-template-columns: repeat(2, 1fr); }
+  .tiles.n5 { grid-template-columns: repeat(6, 1fr); }
+  .tiles.n5 > div { grid-column: span 2; }
+  .tiles.n5 > div:nth-child(n+4) { grid-column: span 3; }
+  .tiles > div { border-radius: 22px; padding: 38px 40px; font-size: 40px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.2; }
+  .dark .tiles > div { background: var(--card); border: 1px solid var(--line-dark); }
+  .light .tiles > div { background: var(--paper-card); border: 1px solid var(--line-light); }
+  .tiles + .lede { margin-top: 48px; }
+  .lede + .tiles { margin-top: 48px; }
+
+  .cols { margin-top: 56px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 1600px; }
+  .col { border-radius: 26px; padding: 40px 48px 42px; }
+  .dark .col { background: var(--card); border: 1px solid var(--line-dark); }
+  .light .col { background: var(--paper-card); border: 1px solid var(--line-light); }
+  .cols.n3 { grid-template-columns: repeat(3, 1fr); gap: 32px; }
+  .cols.n3 .col { padding: 42px 40px 46px; }
+  .cols.n3 .col h3 { font-size: 40px; }
+  .cols.n3 .col li { font-size: 34px; padding-left: 34px; }
+  .cols + .lede { margin-top: 40px; }
+  .col h3 { font-size: 46px; line-height: 1.15; font-weight: 700; letter-spacing: -0.02em; }
+  .col ul { list-style: none; margin-top: 22px; }
+  .col li { font-size: 36px; line-height: 1.3; padding: 9px 0 9px 40px; position: relative; }
+  .col li::before { content: ""; position: absolute; left: 0; top: 50%; width: 14px; height: 14px; margin-top: -7px; border-radius: 50%; background: var(--blue); }
+  .dark .col li { color: #C9C9CF; }
+  .light .col li { color: #3F3F46; }
+
+  /* Dot table (paths compared) */
+  .ptable { margin-top: 56px; width: 1600px; border-collapse: collapse; }
+  .ptable th, .ptable td { font-size: 34px; line-height: 1.2; padding: 20px 0; text-align: left; border-bottom: 1px solid var(--line-dark); }
+  .ptable th { font-weight: 600; color: var(--muted); }
+  .ptable th.win { color: var(--blue); }
+  .ptable td:first-child { width: 520px; color: #C9C9CF; }
+  .dots { display: inline-flex; gap: 12px; }
+  .dots i { width: 22px; height: 22px; border-radius: 50%; background: #3A3A40; }
+  .dots.win i { background: var(--blue); }
+  .ptable + .lede { margin-top: 44px; }
+  .stat-row { display: flex; align-items: flex-end; gap: 80px; }
+  .stat { font-size: 380px; font-weight: 700; letter-spacing: -0.06em; line-height: 0.82; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .stat-lbl { font-size: 58px; line-height: 1.15; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 20px; }
+  .stat-row + h1, .stat-row + h2 { margin-top: 64px; }
+
+  .cmp { margin-top: 80px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 1600px; }
+  .cmp > div { border-radius: 26px; padding: 50px 54px; }
+  .dark .cmp > div { background: var(--card); border: 1px solid var(--line-dark); }
+  .cmp > div.hi { border-color: var(--blue); }
+  .light .cmp > div { background: var(--paper-card); border: 1px solid var(--line-light); }
+  .light .cmp > div.hi { border-color: var(--blue-deep); }
+  .light .cmp .hi .v { color: var(--blue-deep); }
+  .light .cmp .l { color: #3F3F46; }
+  .cmp + .lede { margin-top: 48px; }
+  .cmp .v { font-size: 120px; font-weight: 700; letter-spacing: -0.045em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .cmp .hi .v { color: var(--blue); }
+  .cmp .l { font-size: 38px; margin-top: 24px; color: #C9C9CF; }
+
+  /* ---- Course decks: "page" slides (top-anchored, click-builds) ---------------------- */
+  .page { position: absolute; left: 160px; right: 160px; top: 88px; bottom: 140px; display: flex; flex-direction: column; }
+  .eb { font-family: var(--mono); font-size: 24px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); margin-bottom: 20px; }
+  .light .eb { color: var(--blue-deep); }
+  .ttl { font-size: 88px; line-height: 1.04; font-weight: 700; letter-spacing: -0.04em; }
+  .ttl > span { display: block; }
+  .ttl.md { font-size: 72px; }
+  .ttl.xl { font-size: 132px; line-height: 0.98; letter-spacing: -0.045em; }
+  .sub { font-size: 36px; line-height: 1.35; margin-top: 26px; max-width: 1400px; letter-spacing: -0.01em; }
+  .dark .sub { color: #C9C9CF; } .light .sub { color: #3F3F46; }
+  .muted { color: var(--muted); } .light .muted { color: var(--muted-dark); }
+  .blue { color: var(--blue); } .light .blue { color: var(--blue-deep); }
+  .fill { flex: 1; min-height: 0; margin-top: 52px; display: flex; flex-direction: column; }
+  .center { justify-content: center; }
+  .row { display: flex; align-items: center; gap: 28px; }
+  .grid { display: grid; gap: 28px; }
+  .c2 { grid-template-columns: repeat(2, 1fr); } .c3 { grid-template-columns: repeat(3, 1fr); } .c4 { grid-template-columns: repeat(4, 1fr); }
+  .card { border-radius: 22px; padding: 32px 36px; position: relative; }
+  .dark .card { background: #141416; border: 2px solid #2A2A2F; }
+  .light .card { background: #FFFFFF; border: 2px solid #DCDCD6; box-shadow: 0 10px 30px rgba(15,15,15,0.06); }
+  .dark .card.hi { border-color: var(--blue); } .light .card.hi { border-color: var(--blue-deep); }
+  .light .card.ink { background: #0F0F0F; border-color: #0F0F0F; color: #EDEDED; }
+  .card h3 { font-size: 42px; line-height: 1.15; font-weight: 650; letter-spacing: -0.02em; }
+  .card p { font-size: 32px; line-height: 1.35; margin-top: 14px; }
+  .dark .card p, .light .card.ink p { color: #C9C9CF; } .light .card p { color: #3F3F46; }
+  .card .icb + h3 { margin-top: 22px; }
+  .ic { display: inline-block; width: 52px; height: 52px; flex: none; background-color: var(--blue); -webkit-mask: var(--i) center / contain no-repeat; mask: var(--i) center / contain no-repeat; vertical-align: middle; }
+  .light .ic { background-color: var(--blue-deep); }
+  .icb { width: 92px; height: 92px; border-radius: 22px; display: inline-flex; align-items: center; justify-content: center; flex: none; background: rgba(98,152,182,0.14); }
+  .icb .ic { width: 52px; height: 52px; }
+  .label { font-family: var(--mono); font-size: 22px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .light .label { color: var(--muted-dark); }
+  .chip { display: inline-flex; align-items: center; gap: 12px; height: 54px; padding: 0 24px; border-radius: 999px; font-family: var(--mono); font-size: 24px; font-weight: 500; white-space: nowrap; }
+  .dark .chip { border: 2px solid #2A2A2F; color: #EDEDED; background: #141416; }
+  .light .chip { border: 2px solid #DCDCD6; color: #0F0F0F; background: #FFFFFF; }
+  .chip.on { background: #4A7A96 !important; border-color: #4A7A96 !important; color: #FFFFFF !important; }
+  .chip .ic { width: 28px; height: 28px; }
+  .chip.on .ic { background-color: #FFFFFF; }
+  .chips { display: flex; flex-wrap: wrap; gap: 14px; }
+  .arr { width: 84px; height: 28px; flex: none; fill: none; stroke: var(--muted); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+  .arrd { width: 28px; height: 64px; flex: none; fill: none; stroke: var(--muted); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+  .light .arr, .light .arrd { stroke: #9A9AA2; }
+  .flow { display: flex; align-items: stretch; gap: 18px; }
+  .flow > .arr, .flow > span { align-self: center; display: flex; }
+  .grow { flex: 1; min-height: 0; }
+  .chips.lg .chip { height: 76px; padding: 0 32px; font-size: 30px; gap: 16px; }
+  .chips.lg .chip .ic { width: 36px; height: 36px; }
+  .split { display: grid; grid-template-columns: 1fr 760px; gap: 80px; flex: 1; min-height: 0; }
+  .agenda { counter-reset: ag; list-style: none; }
+  .agenda li { counter-increment: ag; display: flex; align-items: baseline; gap: 22px; font-size: 34px; line-height: 1.3; padding: 13px 0; border-bottom: 2px solid #2A2A2F; }
+  .light .agenda li { border-color: #DCDCD6; }
+  .agenda li::before { content: counter(ag, decimal-leading-zero); font-family: var(--mono); font-size: 24px; color: var(--blue); flex: none; width: 44px; }
+  .agenda li:last-child { border-bottom: 0; }
+  .agenda.tight li { font-size: 30px; padding: 8px 0; }
+  .grow > .card { display: flex; flex-direction: column; }
+  .grow > .card > h3 { margin-top: auto !important; padding-top: 24px; }
+  .grow > .card > h3 + p { min-height: 2.7em; }
+  .term.big .tb { font-size: 36px; line-height: 1.5; padding: 34px 40px; }
+  .doc.lg .r > div { font-size: 40px; padding: 30px 34px; }
+  .doc.lg .r > div:first-child { font-size: 30px; }
+  .bul.lg li { font-size: 42px; padding: 18px 0 18px 46px; }
+  .bul.lg li::before { top: 38px; width: 16px; height: 16px; }
+  .flow .card { flex: 1; }
+  .disp { font-size: 220px; line-height: 0.9; font-weight: 700; letter-spacing: -0.05em; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .light .disp { color: var(--blue-deep); }
+  .num { font-variant-numeric: tabular-nums; }
+  .quote { font-size: 80px; line-height: 1.1; font-weight: 700; letter-spacing: -0.035em; }
+  .bul { list-style: none; }
+  .bul li { position: relative; padding: 10px 0 10px 40px; font-size: 34px; line-height: 1.3; }
+  .bul li::before { content: ""; position: absolute; left: 0; top: 28px; width: 14px; height: 14px; border-radius: 50%; background: var(--blue); }
+  .dark .bul li { color: #C9C9CF; } .light .bul li { color: #3F3F46; }
+  .bul li b { font-weight: 650; } .dark .bul li b { color: #EDEDED; } .light .bul li b { color: #0F0F0F; }
+  /* Terminal mock (typed on screen, illustrative) */
+  .term { border-radius: 20px; overflow: hidden; background: #0B0B0C; border: 2px solid #2A2A2F; color: #EDEDED; font-family: var(--mono); }
+  .term .bar { height: 50px; display: flex; align-items: center; gap: 10px; padding: 0 20px; background: #161618; border-bottom: 2px solid #2A2A2F; }
+  .term .bar i { width: 14px; height: 14px; border-radius: 50%; background: #3A3A40; }
+  .term .bar span { margin-left: 14px; font-size: 20px; color: #A1A1AA; letter-spacing: 0.04em; }
+  .term .tb { padding: 26px 32px; font-size: 28px; line-height: 1.5; }
+  .term .p { color: var(--blue); }
+  .term .o { color: #A1A1AA; }
+  /* Labelled placeholder for a real screenshot still to capture */
+  .ph { border: 3px dashed #8A8A93; border-radius: 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 30px; }
+  .dark .ph { background: rgba(255,255,255,0.02); } .light .ph { background: rgba(15,15,15,0.025); }
+  .ph .label { color: var(--blue); } .light .ph .label { color: var(--blue-deep); }
+  .ph .d { font-size: 30px; line-height: 1.35; max-width: 760px; }
+  .dark .ph .d { color: #C9C9CF; } .light .ph .d { color: #3F3F46; }
+  .foot { font-family: var(--mono); font-size: 22px; line-height: 1.45; letter-spacing: 0.01em; }
+  .dark .foot { color: #A1A1AA; } .light .foot { color: #5B5B63; }
+  .card.sm { padding: 28px 30px; }
+  .card.sm h3 { font-size: 35px; }
+  .card.sm p { font-size: 29px; }
+  .card .k { font-family: var(--mono); font-size: 22px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .light .card .k { color: var(--muted-dark); } .card.hi .k { color: var(--blue); } .light .card.hi .k { color: var(--blue-deep); }
+  /* Two-column comparison (vs) */
+  .vs { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; }
+  .vs .hd { font-family: var(--mono); font-size: 24px; letter-spacing: 0.12em; text-transform: uppercase; padding: 0 0 18px 4px; color: var(--muted); }
+  .vs .hd.a { color: var(--blue); } .light .vs .hd.a { color: var(--blue-deep); }
+  .vs .r { display: contents; }
+  .vs .r > div { font-size: 40px; line-height: 1.25; padding: 30px 34px; margin-bottom: 16px; border-radius: 18px; display: flex; align-items: center; gap: 20px; }
+  .dark .vs .r > div:first-child { background: #141416; color: #A1A1AA; border: 2px solid #2A2A2F; }
+  .dark .vs .r > div:last-child { background: #141416; color: #EDEDED; border: 2px solid var(--blue); }
+  .light .vs .r > div:first-child { background: #FFFFFF; color: #5B5B63; border: 2px solid #DCDCD6; }
+  .light .vs .r > div:last-child { background: #FFFFFF; color: #0F0F0F; border: 2px solid var(--blue-deep); }
+  .vs .r > div .ic { width: 36px; height: 36px; }
+  .vs .r > div:first-child .ic { background-color: #6B6B73; }
+  /* Range / value bars */
+  .bars { display: flex; flex-direction: column; gap: 12px; }
+  .bar { display: grid; grid-template-columns: 380px 1fr; align-items: center; gap: 24px; height: 70px; }
+  .bar .n { font-size: 32px; font-weight: 600; letter-spacing: -0.01em; }
+  .bar .t { position: relative; height: 70px; }
+  .bar .f { position: absolute; top: 6px; bottom: 6px; border-radius: 12px; background: #5B5B63; display: flex; align-items: center; justify-content: flex-end; padding: 0 18px; }
+  .light .bar .f { background: #A1A1AA; }
+  .bar .f.hi { background: #4A7A96; }
+  .bar .f.lo { background: #2A2A2F; } .light .bar .f.lo { background: #DCDCD6; }
+  .bar .v { font-family: var(--mono); font-size: 24px; color: #FFFFFF; white-space: nowrap; }
+  .light .bar .f.lo .v, .bar .f.lo .v { color: #A1A1AA; }
+  .light .bar .f.lo .v { color: #5B5B63; }
+  .bar .v.out { position: absolute; left: calc(100% + 16px); color: var(--muted); }
+  .axis { display: grid; grid-template-columns: 380px 1fr; gap: 24px; margin-top: 10px; }
+  .axis .line { border-top: 2px solid #3A3A40; padding-top: 10px; display: flex; justify-content: space-between; }
+  .light .axis .line { border-color: #C9C9CF; }
+  /* Ladder (rising steps) */
+  .ladder { display: flex; align-items: flex-end; gap: 28px; height: 100%; }
+  .ladder > div { flex: 1; border-radius: 18px 18px 0 0; padding: 26px 28px; display: flex; flex-direction: column; justify-content: flex-start; }
+  .dark .ladder > div { background: #1B1B1E; border: 2px solid #2A2A2F; border-bottom: 0; }
+  .ladder > div.hi { background: #4A7A96 !important; border-color: #4A7A96 !important; }
+  .ladder .lv { font-size: 72px; font-weight: 700; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; line-height: 1; }
+  .ladder .ll { font-family: var(--mono); font-size: 22px; letter-spacing: 0.1em; text-transform: uppercase; color: #A1A1AA; margin-bottom: 14px; }
+  .ladder .hi .ll { color: #FFFFFF; }
+  .ladder .ls { font-size: 26px; color: #C9C9CF; margin-top: 12px; line-height: 1.3; }
+  .ladder .hi .ls { color: #FFFFFF; }
+  .c5 { grid-template-columns: repeat(5, 1fr); gap: 22px; }
+  .flip { transform: scaleX(-1); } .up { transform: rotate(180deg); }
+  .alab { font-family: var(--mono); font-size: 22px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .light .alab { color: var(--muted-dark); }
+  /* Table mock */
+  .tbl { width: 100%; border-collapse: separate; border-spacing: 0; }
+  .tbl th { font-family: var(--mono); font-size: 22px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; text-align: left; padding: 0 22px 16px; color: var(--muted-dark); }
+  .dark .tbl th { color: var(--muted); }
+  .tbl td { font-size: 32px; padding: 36px 24px; white-space: nowrap; }
+  .light .tbl td { background: #FFFFFF; border-top: 2px solid #DCDCD6; border-bottom: 2px solid #DCDCD6; }
+  .dark .tbl td { background: #141416; border-top: 2px solid #2A2A2F; border-bottom: 2px solid #2A2A2F; }
+  .tbl td:first-child { border-left: 2px solid #DCDCD6; border-radius: 16px 0 0 16px; font-weight: 600; }
+  .dark .tbl td:first-child { border-left-color: #2A2A2F; }
+  .tbl td:last-child { border-right: 2px solid #DCDCD6; border-radius: 0 16px 16px 0; }
+  .dark .tbl td:last-child { border-right-color: #2A2A2F; }
+  /* Chat bubbles + tool chips */
+  .chat { display: flex; flex-direction: column; gap: 14px; }
+  .msg { max-width: 1100px; font-size: 34px; line-height: 1.3; padding: 20px 30px; border-radius: 26px; }
+  .msg .who { display: inline-block; font-family: var(--mono); font-size: 20px; letter-spacing: 0.1em; text-transform: uppercase; margin-right: 16px; opacity: 0.75; vertical-align: 3px; }
+  .msg.in { align-self: flex-start; border-bottom-left-radius: 8px; }
+  .light .msg.in { background: #FFFFFF; border: 2px solid #DCDCD6; color: #0F0F0F; }
+  .dark .msg.in { background: #1B1B1E; border: 2px solid #2A2A2F; color: #EDEDED; }
+  .msg.out { align-self: flex-end; background: #436F89; color: #FFFFFF; border-bottom-right-radius: 8px; }
+  .tool { align-self: center; font-family: var(--mono); font-size: 24px; padding: 12px 22px; border-radius: 12px; border: 2px dashed var(--blue); color: var(--blue); }
+  .light .tool { color: var(--blue-deep); border-color: var(--blue-deep); }
+  /* Phone mock (incoming-call demo) */
+  .phone { width: 360px; height: 640px; border-radius: 58px; background: #0F0F0F; border: 10px solid #26262A; box-shadow: 0 30px 60px rgba(15,15,15,0.25); display: flex; flex-direction: column; align-items: center; padding: 70px 26px 44px; color: #EDEDED; text-align: center; }
+  .phone .pl { font-family: var(--mono); font-size: 22px; letter-spacing: 0.1em; text-transform: uppercase; color: #A1A1AA; }
+  .phone .pn { font-size: 46px; font-weight: 700; letter-spacing: -0.02em; margin-top: 20px; line-height: 1.1; }
+  .phone .ps { font-size: 26px; color: #A1A1AA; margin-top: 12px; }
+  .phone .pb { margin-top: auto; display: flex; gap: 60px; }
+  .phone .pb div { display: flex; flex-direction: column; align-items: center; gap: 12px; font-size: 22px; color: #C9C9CF; }
+  .phone .pb i { width: 96px; height: 96px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #3A3A40; }
+  .phone .pb .acc i { background: #436F89; }
+  .phone .pb .ic { width: 44px; height: 44px; background-color: #FFFFFF; }
+  /* Slider (temperature) */
+  .slider { position: relative; height: 22px; border-radius: 999px; background: #2A2A2F; margin: 60px 0 18px; }
+  .slider .zone { position: absolute; top: 0; bottom: 0; }
+  .slider .knob { position: absolute; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%; background: #FFFFFF; border: 8px solid #4A7A96; }
+  .zones { display: grid; grid-template-columns: 30fr 20fr 20fr 30fr; }
+  .zones > div { padding: 10px 14px 0; border-left: 2px solid #3A3A40; }
+  .zones h3 { font-size: 36px; font-weight: 650; } .zones p { font-family: var(--mono); font-size: 22px; color: var(--muted); margin-top: 6px; }
+  /* Stacked bar */
+  .stack { display: flex; height: 96px; border-radius: 18px; overflow: hidden; gap: 4px; }
+  .stack > div { display: flex; align-items: center; justify-content: center; gap: 14px; font-size: 30px; font-weight: 600; color: #FFFFFF; background: #3A3A40; }
+  .stack > div .ic { background-color: #FFFFFF; width: 34px; height: 34px; }
+  .stack > div.hi { background: #436F89; }
+  /* Doc rows (prompt sections) */
+  .doc { display: grid; grid-template-columns: 480px 1fr; row-gap: 12px; }
+  .doc .r { display: contents; }
+  .doc .r > div { padding: 18px 26px; font-size: 32px; display: flex; align-items: center; }
+  .light .doc .r > div { background: #FFFFFF; border-top: 2px solid #DCDCD6; border-bottom: 2px solid #DCDCD6; }
+  .dark .doc .r > div { background: #141416; border-top: 2px solid #2A2A2F; border-bottom: 2px solid #2A2A2F; }
+  .doc .r > div:first-child { font-family: var(--mono); font-size: 28px; color: var(--blue); border-radius: 16px 0 0 16px; border-left: 2px solid #DCDCD6; }
+  .light .doc .r > div:first-child { color: var(--blue-deep); }
+  .dark .doc .r > div:first-child { border-left-color: #2A2A2F; }
+  .doc .r > div:last-child { border-radius: 0 16px 16px 0; border-right: 2px solid #DCDCD6; }
+  .dark .doc .r > div:last-child { border-right-color: #2A2A2F; }
+  .light .doc .r > div:last-child { color: #3F3F46; } .dark .doc .r > div:last-child { color: #C9C9CF; }
+  /* Field form mock */
+  .fld { margin-bottom: 18px; }
+  .fld .label { margin-bottom: 8px; display: block; }
+  .fld .val { font-size: 30px; padding: 16px 22px; border-radius: 14px; background: #0B0B0C; border: 2px solid #2A2A2F; color: #EDEDED; }
+  .fld .val.mono { font-family: var(--mono); font-size: 27px; }
+  /* Third-party logos sit on a white plate so their own colours always read */
+  .logo { display: inline-flex; align-items: center; justify-content: center; gap: 12px; height: 76px; padding: 0 22px; border-radius: 18px; background: #FFFFFF; flex: none; }
+  .light .logo { border: 2px solid #DCDCD6; }
+  .logo img { height: 40px; width: auto; display: block; }
+  .logo.sm { height: 58px; padding: 0 16px; border-radius: 14px; } .logo.sm img { height: 30px; }
+  .logo span { font-size: 28px; font-weight: 650; color: #0F0F0F; letter-spacing: -0.01em; }
+  .logos { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+  /* Real screenshot in a browser frame */
+  .shot { border-radius: 18px; overflow: hidden; background: #FFFFFF; box-shadow: 0 18px 50px rgba(0,0,0,0.25); }
+  .dark .shot { border: 2px solid #2A2A2F; } .light .shot { border: 2px solid #DCDCD6; }
+  .shot .url { height: 46px; display: flex; align-items: center; gap: 10px; padding: 0 18px; background: #EDEDED; border-bottom: 2px solid #DCDCD6; }
+  .shot .url i { width: 13px; height: 13px; border-radius: 50%; background: #C9C9CF; }
+  .shot .url span { margin-left: 12px; font-family: var(--mono); font-size: 20px; color: #3F3F46; background: #FFFFFF; border-radius: 999px; padding: 4px 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .shot img.cap { display: block; width: 100%; height: auto; }
+  .shot.dk .url { background: #1B1B1E; border-bottom-color: #2A2A2F; } .shot.dk .url span { background: #0F0F0F; color: #C9C9CF; }
+  .term pre { font-family: var(--mono); white-space: pre; margin: 0; }
+  /* Click-builds: [data-b="N"] appears on the Nth Next press */
+  [data-b] { opacity: 0; transform: translateY(26px); transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.75s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  [data-b].on { opacity: 1; transform: none; }
+  [data-b].pop { transform: scale(0.92); }
+  [data-b].pop.on { transform: none; }
+  [data-b].ghost.on { opacity: 0.3; }
+  .slide.active .page > :not([data-b]) { animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  .slide.active .page > :nth-child(2) { animation-delay: 0.08s; }
+  .slide.active .page > :nth-child(3) { animation-delay: 0.16s; }
+  .slide.active .page > :nth-child(n+4) { animation-delay: 0.24s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+  html.nomotion *, html.nomotion *::before, html.nomotion *::after { animation: none !important; transition: none !important; }
+
+  /* Presenter window (?presenter=1, opened with S): never on the recorded screen */
+  #pv { display: none; }
+  body.pv #stage { position: fixed; left: 24px; top: 24px; right: auto; bottom: auto; width: 62vw; height: calc(62vw * 0.5625); border: 2px solid #2A2A2F; border-radius: 10px; overflow: hidden; }
+  body.pv #pv { display: grid; position: fixed; left: calc(62vw + 48px); right: 24px; top: 24px; bottom: 24px; grid-template-rows: auto auto 1fr auto; gap: 18px; color: #EDEDED; font-family: var(--font); }
+  body.pv #pv .pv-h { font-family: var(--mono); font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); }
+  body.pv #pv .pv-t { font-family: var(--mono); font-size: 44px; font-variant-numeric: tabular-nums; }
+  body.pv #pv ul { list-style: none; overflow: auto; }
+  body.pv #pv li { font-size: 26px; line-height: 1.4; padding: 8px 0 8px 26px; position: relative; color: #E4E4E7; }
+  body.pv #pv li::before { content: ""; position: absolute; left: 2px; top: 22px; width: 10px; height: 10px; border-radius: 50%; background: var(--blue); }
+  body.pv #pv .pv-next { font-size: 20px; color: #A1A1AA; border-top: 2px solid #2A2A2F; padding-top: 14px; }
+  body.pv #pv .pv-next b { color: #EDEDED; font-weight: 600; }
+  body.pv #pvkeys { position: fixed; left: 24px; top: calc(62vw * 0.5625 + 44px); font-family: var(--mono); font-size: 15px; color: #8A8A93; line-height: 1.7; }
+  #pvkeys { display: none; } body.pv #pvkeys { display: block; }
+  body.pv #notes, body.pv #pp { display: none !important; }
+  #notes ul { list-style: none; } #notes li { padding: 2px 0 2px 22px; position: relative; } #notes li::before { content: ""; position: absolute; left: 2px; top: 14px; width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+
+  /* Chrome: drawn by the shell on every slide, above the video. Video renders must not bake these in. */
+  .chrome { position: absolute; z-index: 6; pointer-events: none; }
+  .source { left: 160px; bottom: 64px; max-width: 1060px; font-family: var(--mono); font-size: 22px; line-height: 1.4; letter-spacing: 0.01em; color: #8A8A93; }
+  .light .source { color: #6B6B73; }
+  .brandmark { right: 160px; bottom: 60px; height: 34px; display: flex; align-items: center; }
+  .brandmark img { height: 34px; width: auto; display: block; }
+  .light .brandmark img { height: 34px; }
+  .brandmark .wm { margin-left: 10px; font-size: 31px; font-weight: 600; letter-spacing: -0.025em; line-height: 1; color: var(--text-dark); }
+  .apply-tag { right: 400px; bottom: 58px; display: flex; align-items: center; gap: 14px; height: 38px; padding: 0 20px 0 16px; border-radius: 999px; font-family: var(--mono); font-size: 21px; font-weight: 500; letter-spacing: 0.02em; }
+  .dark .apply-tag { color: var(--text); background: rgba(98,152,182,0.12); border: 1px solid rgba(98,152,182,0.45); }
+  .light .apply-tag { color: var(--text-dark); background: rgba(74,122,150,0.08); border: 1px solid rgba(74,122,150,0.45); }
+  .apply-tag i { width: 10px; height: 10px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 5px rgba(98,152,182,0.2); }
+
+  /* Per-slide video over the static copy */
+  .sv { position: absolute; inset: 0; width: 1920px; height: 1080px; object-fit: cover; z-index: 5; background: transparent; }
+
+  /* LIVE CALL slide: real iframe in a device frame, no video over it */
+  .live .live-copy { position: absolute; left: 160px; top: 0; height: 940px; width: 900px; display: flex; flex-direction: column; justify-content: center; }
+  .live .live-copy h2 { font-size: 104px; }
+  .live .live-copy .lede { font-size: 44px; }
+  .live-pill { display: inline-flex; align-items: center; gap: 14px; }
+  .live-pill i { width: 14px; height: 14px; border-radius: 50%; background: var(--blue); animation: livepulse 2.4s ease-in-out infinite; }
+  @keyframes livepulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(98,152,182,0.55); } 50% { box-shadow: 0 0 0 12px rgba(98,152,182,0); } }
+  /* The demo page draws its own phone (embed=true, transparent background), so the shell adds no frame:
+     the iframe renders at the demo's native 480x780 and is scaled 1.125x to 540x878 on the stage. */
+  .live .glow { position: absolute; right: 30px; top: 40px; width: 1000px; height: 1000px; background: radial-gradient(closest-side, rgba(98,152,182,0.20), rgba(98,152,182,0) 72%); pointer-events: none; }
+  .device { position: absolute; right: 260px; top: 88px; width: 540px; height: 878px; }
+  .device::after { content: ""; position: absolute; left: 70px; right: 70px; bottom: -26px; height: 60px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,0.75), rgba(0,0,0,0)); z-index: 0; pointer-events: none; }
+  .screen { position: relative; width: 540px; height: 878px; z-index: 1; }
+  .screen iframe { position: absolute; left: 0; top: 0; width: 480px; height: 780px; border: 0; z-index: 2; background: transparent; color-scheme: normal; transform: scale(1.125); transform-origin: 0 0; }
+  .screen .idle, .screen .live-poster, .screen .live-rec { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 64px; }
+  .screen .idle { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; color: var(--muted); font-family: var(--mono); font-size: 20px; letter-spacing: 0.08em; text-transform: uppercase; z-index: 1; }
+  .screen .idle img { width: 70px; opacity: 0.9; }
+  .live.loaded .screen .idle { display: none; }
+  .screen .live-poster { object-fit: contain; z-index: 1; display: none; }
+  .screen .live-rec { object-fit: contain; z-index: 3; display: none; }
+  .live.rec .live-rec { display: block; }
+  .live.rec iframe { display: none; }
+  .hot { position: absolute; z-index: 7; right: 176px; width: 64px; height: 64px; border-radius: 50%; border: 1px solid rgba(98,152,182,0.5); background: rgba(20,20,22,0.7); color: var(--text); font: 600 26px var(--font); cursor: pointer; opacity: 0.35; transition: opacity .2s; }
+  .hot:hover, .hot:focus-visible { opacity: 1; }
+  .hot-back { top: 432px; }
+  .hot-next { top: 516px; }
+
+  #snd { position: fixed; right: 24px; bottom: 82px; z-index: 12; display: none; background: rgba(15,15,15,0.85); color: var(--text); border: 1px solid var(--blue); border-radius: 999px; padding: 12px 20px; font: 600 16px var(--font); cursor: pointer; }
+  #snd.on { display: block; }
+  #pp { position: fixed; right: 22px; bottom: 22px; z-index: 12; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(98,152,182,0.7); background: rgba(15,15,15,0.55); color: var(--text); font: 600 18px var(--font); cursor: pointer; opacity: 0.35; transition: opacity .2s; display: none; align-items: center; justify-content: center; padding: 0; }
+  #pp:hover, #pp.paused { opacity: 1; }
+  #pp.on { display: flex; }
+
+  /* Overlays: notes (N), counter */
+  #notes { position: fixed; left: 0; right: 0; bottom: 0; max-height: 42vh; overflow: auto; background: rgba(20,20,22,0.97); color: #E4E4E7; font-size: 22px; line-height: 1.5; padding: 26px 40px 30px; border-top: 2px solid var(--blue); display: none; z-index: 10; }
+  #notes.on { display: block; }
+  #notes .nh { font-family: var(--mono); font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); margin-bottom: 10px; }
+  #count { display: none; }
+  .notes { display: none; }
+
+  /* Print: one slide per 1920x1080 page */
+  @page { size: 1920px 1080px; margin: 0; }
+  @media print {
+    html, body { height: auto; overflow: visible; background: none; }
+    #stage { position: static; display: block; }
+    #deck { transform: none !important; width: 1920px; height: auto; }
+    .slide { display: block !important; position: relative; page-break-after: always; break-after: page; }
+    .slide:last-child { page-break-after: auto; break-after: auto; }
+    #notes, #count, #pp, #snd, .hot, .screen iframe, .screen .live-rec, #pv, #pvkeys { display: none !important; }
+    [data-b] { opacity: 1 !important; transform: none !important; }
+    [data-b].ghost { opacity: 0.3 !important; }
+    .page > * { animation: none !important; }
+    .screen .live-poster { display: block; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div id="stage" tabindex="-1"><div id="deck">
+
+<!-- SLIDES:BEGIN generated by tools/wire.py from slides.json. Edit slides.json, then run: python3 tools/wire.py -->
+
+<section class="slide dark" id="s-title" data-id="title" data-type="page" data-n="1">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Video 3 &middot; Lead lists</div>
+    <h2 class="ttl xl"><span>Build your</span><span class='blue'>lead list.</span></h2>
+    <div class='split' style='margin-top:40px'><div style='display:flex;flex-direction:column;justify-content:space-between'><div class='sub' style='margin-top:0'>Facebook Ad Library, Google Maps, owner emails, verified. Then Leadlock Lead Finder does it all for you.</div><div><div class='label' style='margin-bottom:16px'>The tools</div><div class='logos'><span class='logo sm'><img src='assets/deck/logos/meta.svg' alt='Meta'></span><span class='logo sm'><img src='assets/deck/logos/google-maps.svg' alt='Google Maps'><span>Google Maps</span></span><span class='logo sm'><img src='assets/deck/logos/apify.svg' alt='Apify'></span><span class='logo sm'><img src='assets/deck/logos/treg-mark.svg' alt='TREG'><span>treg</span></span><span class='logo sm'><img src='assets/deck/logos/reoon.svg' alt='Reoon'></span></div></div></div><div class='card'><div class='k'>In this video</div><ol class='agenda tight'><li>What a good lead looks like</li><li>The flow</li><li>Source 1: Facebook Ad Library</li><li>Source 2: Google Maps</li><li>TREG: the owner's email</li><li>Verify with Reoon</li><li>Leadlock Lead Finder</li></ol></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">List-building is the morning job from Video 2c.
+First the flow, then each step.
+Then the free repo that does it for you.</div>
+</section>
+
+<section class="slide light" id="s-good-lead" data-id="good-lead" data-type="page" data-n="2">
+  <div class="page" data-mbox="copy">
+    <div class="eb">The target</div>
+    <h2 class="ttl">One good lead looks like this.</h2>
+    <div class='fill center'><table class='tbl' data-b='1'><thead><tr><th>Business</th><th>Owner</th><th>Email</th><th>Phone</th><th>Ads</th></tr></thead><tbody><tr><td>Summit Plumbing &amp; Drain</td><td>Mike R.</td><td>mike@summitplumb.com <span class='chip on' style='height:42px;font-size:20px;margin-left:8px'>valid</span></td><td class='num'>(303) 555-0142</td><td class='blue'>Running</td></tr></tbody></table><div class='sub' data-b='2' style='margin-top:40px'>Owner name, verified email, phone. <span class='blue'>Missing one? Still call or DM.</span></div><div class='foot' data-b='2' style='margin-top:18px'>Made-up example row.</div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Business, owner, owner's email, phone.
+'Running ads' is the bonus column: they have budget.
+No email? Phone and DM still work.</div>
+</section>
+
+<section class="slide dark" id="s-the-flow" data-id="the-flow" data-type="page" data-n="3">
+  <div class="page" data-mbox="copy">
+    <div class="eb">The flow</div>
+    <h2 class="ttl">Five steps, one CSV.</h2>
+    <div class='fill'><div class='flow grow' style='align-items:center'><div style='flex:1.5;display:flex;flex-direction:column;gap:12px'><div class='card sm' data-b='1'><span class='logo sm'><img src='assets/deck/logos/meta.svg' alt='Meta'></span><h3 style='margin-top:16px'>Ad Library</h3><p>Who's running ads</p></div><div class='card sm' data-b='1'><div class='logos' style='gap:10px'><span class='logo sm'><img src='assets/deck/logos/google-maps.svg' alt='Google Maps'></span><span class='logo sm'><img src='assets/deck/logos/apify.svg' alt='Apify'></span></div><h3 style='margin-top:16px'>Google Maps</h3><p>Scraped with Apify</p></div></div><span data-b='2'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><div class='card sm' data-b='2'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMzAuNiw0OS41M0ExNS44MSwxNS44MSwwLDAsMCwyMTYsNDBINDBBMTYsMTYsMCwwLDAsMjguMTksNjYuNzZsLjA4LjA5TDk2LDEzOS4xN1YyMTZhMTYsMTYsMCwwLDAsMjQuODcsMTMuMzJsMzItMjEuMzRBMTYsMTYsMCwwLDAsMTYwLDE5NC42NlYxMzkuMTdsNjcuNzQtNzIuMzIuMDgtLjA5QTE1LjgsMTUuOCwwLDAsMCwyMzAuNiw0OS41M1pNNDAsNTZoMFptMTA2LjE4LDc0LjU4QTgsOCwwLDAsMCwxNDQsMTM2djU4LjY2TDExMiwyMTZWMTM2YTgsOCwwLDAsMC0yLjE2LTUuNDdMNDAsNTZIMjE2WiIvPjwvc3ZnPg==)"></i></span><h3 style='margin-top:20px'>Clean</h3><p>Dedupe, keep the right ones</p></div><span data-b='3'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><div class='card sm' data-b='3'><span class='logo sm'><img src='assets/deck/logos/treg-mark.svg' alt='TREG'><span>treg</span></span><h3 style='margin-top:20px'>Owner email</h3><p>Name, then email</p></div><span data-b='4'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><div class='card sm' data-b='4'><span class='logo sm'><img src='assets/deck/logos/reoon.svg' alt='Reoon'></span><h3 style='margin-top:20px'>Verify</h3><p>Valid only</p></div><span data-b='5'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><div class='card sm hi' data-b='5'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik00OCwxODBjMCwxMSw3LjE4LDIwLDE2LDIwYTE0LjI0LDE0LjI0LDAsMCwwLDEwLjIyLTQuNjZBOCw4LDAsMCwxLDg1Ljc4LDIwNi40LDMwLjA2LDMwLjA2LDAsMCwxLDY0LDIxNmMtMTcuNjUsMC0zMi0xNi4xNS0zMi0zNnMxNC4zNS0zNiwzMi0zNmEzMC4wNiwzMC4wNiwwLDAsMSwyMS43OCw5LjYsOCw4LDAsMCwxLTExLjU2LDExLjA2QTE0LjI0LDE0LjI0LDAsMCwwLDY0LDE2MEM1NS4xOCwxNjAsNDgsMTY5LDQ4LDE4MFptNzkuNi04LjY5Yy00LTEuMTYtOC4xNC0yLjM1LTEwLjQ1LTMuODQtMS4yNS0uODEtMS4yMy0xLTEuMTItMS45YTQuNTcsNC41NywwLDAsMSwyLTMuNjdjNC42LTMuMTIsMTUuMzQtMS43MywxOS44Mi0uNTZBOCw4LDAsMCwwLDE0MiwxNDUuODZjLTIuMTItLjU1LTIxLTUuMjItMzIuODQsMi43NmEyMC41OCwyMC41OCwwLDAsMC05LDE0Ljk1Yy0yLDE1Ljg4LDEzLjY1LDIwLjQxLDIzLDIzLjExLDEyLjA2LDMuNDksMTMuMTIsNC45MiwxMi43OCw3LjU5LS4zMSwyLjQxLTEuMjYsMy4zNC0yLjE0LDMuOTMtNC42LDMuMDYtMTUuMTcsMS41Ni0xOS41NS4zNkE4LDgsMCwwLDAsMTA5Ljk0LDIxNGE2MS4zNCw2MS4zNCwwLDAsMCwxNS4xOSwyYzUuODIsMCwxMi4zLTEsMTcuNDktNC40NmEyMC44MiwyMC44MiwwLDAsMCw5LjE5LTE1LjIzQzE1NCwxNzksMTM3LjQ5LDE3NC4xNywxMjcuNiwxNzEuMzFabTgzLjA5LTI2Ljg0YTgsOCwwLDAsMC0xMC4yMyw0Ljg0TDE4OCwxODQuMjFsLTEyLjQ3LTM0LjlhOCw4LDAsMCwwLTE1LjA3LDUuMzhsMjAsNTZhOCw4LDAsMCwwLDE1LjA3LDBsMjAtNTZBOCw4LDAsMCwwLDIxMC42OSwxNDQuNDdaTTIxNiw4OHYyNGE4LDgsMCwwLDEtMTYsMFY5NkgxNTJhOCw4LDAsMCwxLTgtOFY0MEg1NnY3MmE4LDgsMCwwLDEtMTYsMFY0MEExNiwxNiwwLDAsMSw1NiwyNGg5NmE4LDgsMCwwLDEsNS42NiwyLjM0bDU2LDU2QTgsOCwwLDAsMSwyMTYsODhabS0yNy4zMS04TDE2MCw1MS4zMVY4MFoiLz48L3N2Zz4=)"></i></span><h3 style='margin-top:20px'>Ready list</h3><p>Into outreach</p></div></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Two sources, one pipeline.
+One click per step.
+End state: a CSV you can call, email and DM from.</div>
+</section>
+
+<section class="slide light" id="s-source-ad-library" data-id="source-ad-library" data-type="page" data-n="4">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Source 1</div>
+    <h2 class="ttl">Facebook Ad Library.</h2>
+    <div class="sub">Who's running ads right now is who's paying for leads.</div>
+    <div class='split' style='margin-top:36px;grid-template-columns:700px 1fr;gap:50px'><div><div data-b='1' style='margin-bottom:22px'><span class='logo'><img src='assets/deck/logos/meta.svg' alt='Meta'></span></div><ol class='agenda tight' data-b='1'><li>facebook.com/ads/library</li><li>United States, All ads</li><li>Search a trade and a city</li><li>Open each advertiser: website and phone</li></ol><div class='foot' data-b='3' style='margin-top:20px'>At scale: Apify's Facebook Ads Scraper (apify/facebook-ads-scraper).</div></div><div data-b='2' class='shot ' style='align-self:start'><div class='url'><i></i><i></i><i></i><span>facebook.com/ads/library &middot; roofing austin</span></div><img class='cap' src='assets/deck/shots/ad-library-roofing-austin.png' alt=''></div></div>
+  </div>
+  <div class="chrome source">Meta Ad Library, public search, 2026-10-20. A private person's ad and customer photos are blurred.</div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">No login needed. Country, All ads, then a trade and a city.
+Real search: 'roofing austin', about 260 active ads.
+Every business here is paying for leads right now.
+Do your first 50 by hand, then scrape with Apify.</div>
+</section>
+
+<section class="slide dark" id="s-source-maps" data-id="source-maps" data-type="page" data-n="5">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Source 2</div>
+    <h2 class="ttl">Google Maps, with Apify.</h2>
+    <div class='split' style='margin-top:34px;grid-template-columns:1fr 1fr;gap:36px'><div data-b='1'><div class='shot dk' style=''><div class='url'><i></i><i></i><i></i><span>apify.com/compass/crawler-google-places</span></div><img class='cap' src='assets/deck/shots/apify-google-maps-scraper.png' alt=''></div></div><div style='display:flex;flex-direction:column;gap:20px'><div data-b='2'><div class='shot dk' style=''><div class='url'><i></i><i></i><i></i><span>console.apify.com &middot; run output, table view</span></div><img class='cap' src='assets/deck/shots/apify-results-table.png' alt=''></div></div><div class='card sm' data-b='3'><div class='row' style='gap:16px'><span class='logo sm'><img src='assets/deck/logos/google-maps.svg' alt='Google Maps'></span><h3>Phone and website</h3></div><p>The two columns everything else hangs off.</p></div></div></div>
+  </div>
+  <div class="chrome source">Apify Store page (public) and an existing run's output table, 2026-10-20. Apify lists it from $1.50 per 1,000 places; your plan sets the rate.</div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Search 'plumber' plus a city, set a max, run.
+Pay per place scraped. From $1.50 per 1,000 on Apify's page.
+Export the table as CSV. Phone and website matter most.</div>
+</section>
+
+<section class="slide light" id="s-keep-the-good" data-id="keep-the-good" data-type="page" data-n="6">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Clean</div>
+    <h2 class="ttl">Keep the good ones.</h2>
+    <div class='fill center'><div class='vs'><div class='hd'>Drop</div><div class='hd a'>Keep</div><div class='r'><div data-b='1'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xNjUuNjYsMTAxLjY2LDEzOS4zMSwxMjhsMjYuMzUsMjYuMzRhOCw4LDAsMCwxLTExLjMyLDExLjMyTDEyOCwxMzkuMzFsLTI2LjM0LDI2LjM1YTgsOCwwLDAsMS0xMS4zMi0xMS4zMkwxMTYuNjksMTI4LDkwLjM0LDEwMS42NmE4LDgsMCwwLDEsMTEuMzItMTEuMzJMMTI4LDExNi42OWwyNi4zNC0yNi4zNWE4LDgsMCwwLDEsMTEuMzIsMTEuMzJaTTIzMiwxMjhBMTA0LDEwNCwwLDEsMSwxMjgsMjQsMTA0LjExLDEwNC4xMSwwLDAsMSwyMzIsMTI4Wm0tMTYsMGE4OCw4OCwwLDEsMC04OCw4OEE4OC4xLDg4LjEsMCwwLDAsMjE2LDEyOFoiLz48L3N2Zz4=)"></i>No website, no phone</div><div data-b='1'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xNzMuNjYsOTguMzRhOCw4LDAsMCwxLDAsMTEuMzJsLTU2LDU2YTgsOCwwLDAsMS0xMS4zMiwwbC0yNC0yNGE4LDgsMCwwLDEsMTEuMzItMTEuMzJMMTEyLDE0OC42OWw1MC4zNC01MC4zNUE4LDgsMCwwLDEsMTczLjY2LDk4LjM0Wk0yMzIsMTI4QTEwNCwxMDQsMCwxLDEsMTI4LDI0LDEwNC4xMSwxMDQuMTEsMCwwLDEsMjMyLDEyOFptLTE2LDBhODgsODgsMCwxLDAtODgsODhBODguMSw4OC4xLDAsMCwwLDIxNiwxMjhaIi8+PC9zdmc+)"></i>Website and phone</div></div><div class='r'><div data-b='2'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xNjUuNjYsMTAxLjY2LDEzOS4zMSwxMjhsMjYuMzUsMjYuMzRhOCw4LDAsMCwxLTExLjMyLDExLjMyTDEyOCwxMzkuMzFsLTI2LjM0LDI2LjM1YTgsOCwwLDAsMS0xMS4zMi0xMS4zMkwxMTYuNjksMTI4LDkwLjM0LDEwMS42NmE4LDgsMCwwLDEsMTEuMzItMTEuMzJMMTI4LDExNi42OWwyNi4zNC0yNi4zNWE4LDgsMCwwLDEsMTEuMzIsMTEuMzJaTTIzMiwxMjhBMTA0LDEwNCwwLDEsMSwxMjgsMjQsMTA0LjExLDEwNC4xMSwwLDAsMSwyMzIsMTI4Wm0tMTYsMGE4OCw4OCwwLDEsMC04OCw4OEE4OC4xLDg4LjEsMCwwLDAsMjE2LDEyOFoiLz48L3N2Zz4=)"></i>National brand or call center</div><div data-b='2'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xNzMuNjYsOTguMzRhOCw4LDAsMCwxLDAsMTEuMzJsLTU2LDU2YTgsOCwwLDAsMS0xMS4zMiwwbC0yNC0yNGE4LDgsMCwwLDEsMTEuMzItMTEuMzJMMTEyLDE0OC42OWw1MC4zNC01MC4zNUE4LDgsMCwwLDEsMTczLjY2LDk4LjM0Wk0yMzIsMTI4QTEwNCwxMDQsMCwxLDEsMTI4LDI0LDEwNC4xMSwxMDQuMTEsMCwwLDEsMjMyLDEyOFptLTE2LDBhODgsODgsMCwxLDAtODgsODhBODguMSw4OC4xLDAsMCwwLDIxNiwxMjhaIi8+PC9zdmc+)"></i>Owner-run, local</div></div><div class='r'><div data-b='3'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xNjUuNjYsMTAxLjY2LDEzOS4zMSwxMjhsMjYuMzUsMjYuMzRhOCw4LDAsMCwxLTExLjMyLDExLjMyTDEyOCwxMzkuMzFsLTI2LjM0LDI2LjM1YTgsOCwwLDAsMS0xMS4zMi0xMS4zMkwxMTYuNjksMTI4LDkwLjM0LDEwMS42NmE4LDgsMCwwLDEsMTEuMzItMTEuMzJMMTI4LDExNi42OWwyNi4zNC0yNi4zNWE4LDgsMCwwLDEsMTEuMzIsMTEuMzJaTTIzMiwxMjhBMTA0LDEwNCwwLDEsMSwxMjgsMjQsMTA0LjExLDEwNC4xMSwwLDAsMSwyMzIsMTI4Wm0tMTYsMGE4OCw4OCwwLDEsMC04OCw4OEE4OC4xLDg4LjEsMCwwLDAsMjE2LDEyOFoiLz48L3N2Zz4=)"></i>Everything else</div><div data-b='3'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xNzMuNjYsOTguMzRhOCw4LDAsMCwxLDAsMTEuMzJsLTU2LDU2YTgsOCwwLDAsMS0xMS4zMiwwbC0yNC0yNGE4LDgsMCwwLDEsMTEuMzItMTEuMzJMMTEyLDE0OC42OWw1MC4zNC01MC4zNUE4LDgsMCwwLDEsMTczLjY2LDk4LjM0Wk0yMzIsMTI4QTEwNCwxMDQsMCwxLDEsMTI4LDI0LDEwNC4xMSwxMDQuMTEsMCwwLDEsMjMyLDEyOFptLTE2LDBhODgsODgsMCwxLDAtODgsODhBODguMSw4OC4xLDAsMCwwLDIxNiwxMjhaIi8+PC9zdmc+)"></i>Your target trade</div></div></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Same test as Video 2a: the owner's phone has to ring.
+Dedupe businesses that show up in both sources.
+A smaller clean list beats a big messy one.</div>
+</section>
+
+<section class="slide dark" id="s-treg" data-id="treg" data-type="page" data-n="7">
+  <div class="page" data-mbox="copy">
+    <div class="eb">The owner's email</div>
+    <h2 class="ttl">TREG: one key, many email finders.</h2>
+    <div class='split' style='margin-top:34px;grid-template-columns:600px 1fr;gap:44px'><div style='display:flex;flex-direction:column;gap:18px'><div data-b='1'><span class='logo'><img src='assets/deck/logos/treg-mark.svg' alt='TREG'><span>treg</span></span></div><div class='card sm' data-b='1'><h3>What it does</h3><p>Give it a business website or name. It finds the owner's name, then their work email.</p></div><div class='card sm hi' data-b='3'><div class='k'>Published price, per hit</div><h3 class='num'>$0.00049 to $0.15</h3><p>Depends on which provider answers. New accounts get $1.00 free, once.</p></div></div><div data-b='2' style='align-self:start'><div class='shot ' style=''><div class='url'><i></i><i></i><i></i><span>treg.to/search &middot; find work email</span></div><img class='cap' src='assets/deck/shots/treg-find-work-email.png' alt=''></div></div></div>
+  </div>
+  <div class="chrome source">treg.to catalog, 2026-10-20: treg.people.email.find $0.000495 to $0.15 per hit; treg.people.search $0 to $0.30 per hit; $1.00 free once for new verified accounts.</div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">TREG routes one request to dozens of email-finder providers.
+You don't sign up for each provider. One token, pay per lookup.
+Prices are per hit, fractions of a cent on the cheap providers.</div>
+</section>
+
+<section class="slide light" id="s-treg-in-the-pipeline" data-id="treg-in-the-pipeline" data-type="page" data-n="8">
+  <div class="page" data-mbox="copy">
+    <div class="eb">How I use TREG</div>
+    <h2 class="ttl">Domain in. Owner's email out.</h2>
+    <div class='fill'><div class='flow'><div class='card sm' data-b='1'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xMjgsMjRoMEExMDQsMTA0LDAsMSwwLDIzMiwxMjgsMTA0LjEyLDEwNC4xMiwwLDAsMCwxMjgsMjRabTg4LDEwNGE4Ny42MSw4Ny42MSwwLDAsMS0zLjMzLDI0SDE3NC4xNmExNTcuNDQsMTU3LjQ0LDAsMCwwLDAtNDhoMzguNTFBODcuNjEsODcuNjEsMCwwLDEsMjE2LDEyOFpNMTAyLDE2OEgxNTRhMTE1LjExLDExNS4xMSwwLDAsMS0yNiw0NUExMTUuMjcsMTE1LjI3LDAsMCwxLDEwMiwxNjhabS0zLjktMTZhMTQwLjg0LDE0MC44NCwwLDAsMSwwLTQ4aDU5Ljg4YTE0MC44NCwxNDAuODQsMCwwLDEsMCw0OFpNNDAsMTI4YTg3LjYxLDg3LjYxLDAsMCwxLDMuMzMtMjRIODEuODRhMTU3LjQ0LDE1Ny40NCwwLDAsMCwwLDQ4SDQzLjMzQTg3LjYxLDg3LjYxLDAsMCwxLDQwLDEyOFpNMTU0LDg4SDEwMmExMTUuMTEsMTE1LjExLDAsMCwxLDI2LTQ1QTExNS4yNywxMTUuMjcsMCwwLDEsMTU0LDg4Wm01Mi4zMywwSDE3MC43MWExMzUuMjgsMTM1LjI4LDAsMCwwLTIyLjMtNDUuNkE4OC4yOSw4OC4yOSwwLDAsMSwyMDYuMzcsODhaTTEwNy41OSw0Mi40QTEzNS4yOCwxMzUuMjgsMCwwLDAsODUuMjksODhINDkuNjNBODguMjksODguMjksMCwwLDEsMTA3LjU5LDQyLjRaTTQ5LjYzLDE2OEg4NS4yOWExMzUuMjgsMTM1LjI4LDAsMCwwLDIyLjMsNDUuNkE4OC4yOSw4OC4yOSwwLDAsMSw0OS42MywxNjhabTk4Ljc4LDQ1LjZhMTM1LjI4LDEzNS4yOCwwLDAsMCwyMi4zLTQ1LjZoMzUuNjZBODguMjksODguMjksMCwwLDEsMTQ4LjQxLDIxMy42WiIvPjwvc3ZnPg==)"></i></span><h3>Website domain</h3><p>From the Google Maps row</p></div><span data-b='2'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><div class='card sm' data-b='2'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xMjgsMjRBMTA0LDEwNCwwLDEsMCwyMzIsMTI4LDEwNC4xMSwxMDQuMTEsMCwwLDAsMTI4LDI0Wk03NC4wOCwxOTcuNWE2NCw2NCwwLDAsMSwxMDcuODQsMCw4Ny44Myw4Ny44MywwLDAsMS0xMDcuODQsMFpNOTYsMTIwYTMyLDMyLDAsMSwxLDMyLDMyQTMyLDMyLDAsMCwxLDk2LDEyMFptOTcuNzYsNjYuNDFhNzkuNjYsNzkuNjYsMCwwLDAtMzYuMDYtMjguNzUsNDgsNDgsMCwxLDAtNTkuNCwwLDc5LjY2LDc5LjY2LDAsMCwwLTM2LjA2LDI4Ljc1LDg4LDg4LDAsMSwxLDEzMS41MiwwWiIvPjwvc3ZnPg==)"></i></span><h3>Owner's name</h3><p>TREG people search</p></div><span data-b='3'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><div class='card sm' data-b='3'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjQsNDhIMzJhOCw4LDAsMCwwLTgsOFYxOTJhMTYsMTYsMCwwLDAsMTYsMTZIMjE2YTE2LDE2LDAsMCwwLDE2LTE2VjU2QTgsOCwwLDAsMCwyMjQsNDhaTTIwMy40Myw2NCwxMjgsMTMzLjE1LDUyLjU3LDY0Wk0yMTYsMTkySDQwVjc0LjE5bDgyLjU5LDc1LjcxYTgsOCwwLDAsMCwxMC44MiwwTDIxNiw3NC4xOVYxOTJaIi8+PC9zdmc+)"></i></span><h3>Owner's email</h3><p>TREG email finder</p></div><span data-b='4'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><div class='card sm hi' data-b='4'><span class='logo sm'><img src='assets/deck/logos/reoon.svg' alt='Reoon'></span><h3 style='margin-top:20px'>Checked</h3><p>Reoon, next slide</p></div></div><div class='grid c2' data-b='5' style='margin-top:30px'><div class='card sm'><div class='k'>One real run</div><h3 class='num'>$0.84 &rarr; 13 owner names, 9 new verified emails</h3></div><div class='card sm'><div class='k'>Skip</div><h3>info@ and office@</h3><p>Owners rarely read them.</p></div></div></div>
+  </div>
+  <div class="chrome source">One Leadlock list run, 2026-09-10: 157 rows, $0.84 of TREG credit, 13 owner names, 9 new verified addresses.</div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Cheapest first: free email patterns, then TREG.
+Set a budget per run so it can't run away.
+Real run: under a dollar for 13 owners and 9 verified emails.</div>
+</section>
+
+<section class="slide light" id="s-verify" data-id="verify" data-type="page" data-n="9">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Verify</div>
+    <h2 class="ttl">Verify before you send.</h2>
+    <div class='split' style='margin-top:34px;grid-template-columns:560px 1fr;gap:44px'><div style='display:flex;flex-direction:column;gap:16px'><div data-b='1'><span class='logo'><img src='assets/deck/logos/reoon.svg' alt='Reoon'></span></div><div class='card sm hi' data-b='1'><h3>Valid: send</h3></div><div class='card sm' data-b='2'><h3>Catch-all: careful</h3><p>Small batches only.</p></div><div class='card sm' data-b='3'><h3>Invalid: drop</h3><p>Bounces hurt your sender reputation.</p></div></div><div data-b='1' style='align-self:start'><div class='shot dk' style=''><div class='url'><i></i><i></i><i></i><span>emailverifier.reoon.com</span></div><img class='cap' src='assets/deck/shots/reoon-single-verify.png' alt=''></div></div></div>
+  </div>
+  <div class="chrome source">Reoon's own product screenshot (sample data). Reoon offers up to 600 free verifications every month (reoon.com, 2026-10-20).</div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">I verify everything with Reoon before it goes in a campaign.
+Safe: send. Catch-all: careful. Invalid: drop.
+Up to 600 free checks a month to start.</div>
+</section>
+
+<section class="slide dark" id="s-expect-gaps" data-id="expect-gaps" data-type="page" data-n="10">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Real numbers</div>
+    <h2 class="ttl">Not every row gets an email.</h2>
+    <div class='fill'><div class='bars' data-b='1'><div class='bar'><div class='n'>Owners named</div><div class='t'><div class='f' style='left:0;width:100%'><span class='v'>75</span></div></div></div><div class='bar'><div class='n blue'>Safe emails found</div><div class='t'><div class='f hi' style='left:0;width:12%'><span class='v'>9</span></div></div></div></div><div class='row' data-b='2' style='margin-top:48px;gap:34px;align-items:baseline'><span class='disp' style='font-size:160px'>1 in 8</span><span class='sub' style='margin:0'>named owners got a safe email</span></div><div class='sub' data-b='3' style='margin-top:30px'>That's normal. <span class='blue'>Call and DM the rest.</span></div></div>
+  </div>
+  <div class="chrome source">One Leadlock list run, 2026-09-10: pattern guess plus verification, 75 named owners, 9 safe addresses.</div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Real run, real numbers: about 1 in 8.
+Don't stall on email. Phone and DMs cover the rest.
+Better finders raise it. It never hits 100%.</div>
+</section>
+
+<section class="slide dark" id="s-lead-finder" data-id="lead-finder" data-type="page" data-n="11">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Leadlock Lead Finder</div>
+    <h2 class="ttl md">Leadlock Lead Finder does all of this for you.</h2>
+    <div class='fill'><div class='grid c3' style='grid-auto-rows:1fr'><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yNDgsMTIwYTQ4LjA1LDQ4LjA1LDAsMCwwLTQ4LTQ4SDE2MC4yYy0yLjkxLS4xNy01My42Mi0zLjc0LTEwMS45MS00NC4yNEExNiwxNiwwLDAsMCwzMiw0MFYyMDBhMTYsMTYsMCwwLDAsMjYuMjksMTIuMjVjMzcuNzctMzEuNjgsNzctNDAuNzYsOTMuNzEtNDMuM3YzMS43MkExNiwxNiwwLDAsMCwxNTkuMTIsMjE0bDExLDcuMzNBMTYsMTYsMCwwLDAsMTk0LjUsMjEybDExLjc3LTQ0LjM2QTQ4LjA3LDQ4LjA3LDAsMCwwLDI0OCwxMjBaTTQ4LDE5OS45M1Y0MGgwYzQyLjgxLDM1LjkxLDg2LjYzLDQ1LDEwNCw0Ny4yNHY2NS40OEMxMzQuNjUsMTU1LDkwLjg0LDE2NC4wNyw0OCwxOTkuOTNabTEzMSw4LDAsLjExLTExLTcuMzNWMTY4aDIxLjZaTTIwMCwxNTJIMTY4Vjg4aDMyYTMyLDMyLDAsMSwxLDAsNjRaIi8+PC9zdmc+)"></i><h3>Finds who's running ads</h3></div><p>Facebook Ad Library, your niche and city</p></div><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xMjgsNjRhNDAsNDAsMCwxLDAsNDAsNDBBNDAsNDAsMCwwLDAsMTI4LDY0Wm0wLDY0YTI0LDI0LDAsMSwxLDI0LTI0QTI0LDI0LDAsMCwxLDEyOCwxMjhabTAtMTEyYTg4LjEsODguMSwwLDAsMC04OCw4OGMwLDMxLjQsMTQuNTEsNjQuNjgsNDIsOTYuMjVhMjU0LjE5LDI1NC4xOSwwLDAsMCw0MS40NSwzOC4zLDgsOCwwLDAsMCw5LjE4LDBBMjU0LjE5LDI1NC4xOSwwLDAsMCwxNzQsMjAwLjI1YzI3LjQ1LTMxLjU3LDQyLTY0Ljg1LDQyLTk2LjI1QTg4LjEsODguMSwwLDAsMCwxMjgsMTZabTAsMjA2Yy0xNi41My0xMy03Mi02MC43NS03Mi0xMThhNzIsNzIsMCwwLDEsMTQ0LDBDMjAwLDE2MS4yMywxNDQuNTMsMjA5LDEyOCwyMjJaIi8+PC9zdmc+)"></i><h3>Finds every business</h3></div><p>Google Maps: website, phone, rating</p></div><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMzAuNiw0OS41M0ExNS44MSwxNS44MSwwLDAsMCwyMTYsNDBINDBBMTYsMTYsMCwwLDAsMjguMTksNjYuNzZsLjA4LjA5TDk2LDEzOS4xN1YyMTZhMTYsMTYsMCwwLDAsMjQuODcsMTMuMzJsMzItMjEuMzRBMTYsMTYsMCwwLDAsMTYwLDE5NC42NlYxMzkuMTdsNjcuNzQtNzIuMzIuMDgtLjA5QTE1LjgsMTUuOCwwLDAsMCwyMzAuNiw0OS41M1pNNDAsNTZoMFptMTA2LjE4LDc0LjU4QTgsOCwwLDAsMCwxNDQsMTM2djU4LjY2TDExMiwyMTZWMTM2YTgsOCwwLDAsMC0yLjE2LTUuNDdMNDAsNTZIMjE2WiIvPjwvc3ZnPg==)"></i><h3>Removes the doubles</h3></div><p>One row per business</p></div><div class='card sm' data-b='2'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xMjgsMjRBMTA0LDEwNCwwLDEsMCwyMzIsMTI4LDEwNC4xMSwxMDQuMTEsMCwwLDAsMTI4LDI0Wk03NC4wOCwxOTcuNWE2NCw2NCwwLDAsMSwxMDcuODQsMCw4Ny44Myw4Ny44MywwLDAsMS0xMDcuODQsMFpNOTYsMTIwYTMyLDMyLDAsMSwxLDMyLDMyQTMyLDMyLDAsMCwxLDk2LDEyMFptOTcuNzYsNjYuNDFhNzkuNjYsNzkuNjYsMCwwLDAtMzYuMDYtMjguNzUsNDgsNDgsMCwxLDAtNTkuNCwwLDc5LjY2LDc5LjY2LDAsMCwwLTM2LjA2LDI4Ljc1LDg4LDg4LDAsMSwxLDEzMS41MiwwWiIvPjwvc3ZnPg==)"></i><h3>Finds the owner</h3></div><p>Owner's name, then their own email</p></div><div class='card sm' data-b='2'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjUuODYsMTAyLjgyYy0zLjc3LTMuOTQtNy42Ny04LTkuMTQtMTEuNTctMS4zNi0zLjI3LTEuNDQtOC42OS0xLjUyLTEzLjk0LS4xNS05Ljc2LS4zMS0yMC44Mi04LTI4LjUxcy0xOC43NS03Ljg1LTI4LjUxLThjLTUuMjUtLjA4LTEwLjY3LS4xNi0xMy45NC0xLjUyLTMuNTYtMS40Ny03LjYzLTUuMzctMTEuNTctOS4xNEMxNDYuMjgsMjMuNTEsMTM4LjQ0LDE2LDEyOCwxNnMtMTguMjcsNy41MS0yNS4xOCwxNC4xNGMtMy45NCwzLjc3LTgsNy42Ny0xMS41Nyw5LjE0Qzg4LDQwLjY0LDgyLjU2LDQwLjcyLDc3LjMxLDQwLjhjLTkuNzYuMTUtMjAuODIuMzEtMjguNTEsOFM0MSw2Ny41NSw0MC44LDc3LjMxYy0uMDgsNS4yNS0uMTYsMTAuNjctMS41MiwxMy45NC0xLjQ3LDMuNTYtNS4zNyw3LjYzLTkuMTQsMTEuNTdDMjMuNTEsMTA5LjcyLDE2LDExNy41NiwxNiwxMjhzNy41MSwxOC4yNywxNC4xNCwyNS4xOGMzLjc3LDMuOTQsNy42Nyw4LDkuMTQsMTEuNTcsMS4zNiwzLjI3LDEuNDQsOC42OSwxLjUyLDEzLjk0LjE1LDkuNzYuMzEsMjAuODIsOCwyOC41MXMxOC43NSw3Ljg1LDI4LjUxLDhjNS4yNS4wOCwxMC42Ny4xNiwxMy45NCwxLjUyLDMuNTYsMS40Nyw3LjYzLDUuMzcsMTEuNTcsOS4xNEMxMDkuNzIsMjMyLjQ5LDExNy41NiwyNDAsMTI4LDI0MHMxOC4yNy03LjUxLDI1LjE4LTE0LjE0YzMuOTQtMy43Nyw4LTcuNjcsMTEuNTctOS4xNCwzLjI3LTEuMzYsOC42OS0xLjQ0LDEzLjk0LTEuNTIsOS43Ni0uMTUsMjAuODItLjMxLDI4LjUxLThzNy44NS0xOC43NSw4LTI4LjUxYy4wOC01LjI1LjE2LTEwLjY3LDEuNTItMTMuOTQsMS40Ny0zLjU2LDUuMzctNy42Myw5LjE0LTExLjU3QzIzMi40OSwxNDYuMjgsMjQwLDEzOC40NCwyNDAsMTI4UzIzMi40OSwxMDkuNzMsMjI1Ljg2LDEwMi44MlptLTExLjU1LDM5LjI5Yy00Ljc5LDUtOS43NSwxMC4xNy0xMi4zOCwxNi41Mi0yLjUyLDYuMS0yLjYzLDEzLjA3LTIuNzMsMTkuODItLjEsNy0uMjEsMTQuMzMtMy4zMiwxNy40M3MtMTAuMzksMy4yMi0xNy40MywzLjMyYy02Ljc1LjEtMTMuNzIuMjEtMTkuODIsMi43My02LjM1LDIuNjMtMTEuNTIsNy41OS0xNi41MiwxMi4zOFMxMzIsMjI0LDEyOCwyMjRzLTkuMTUtNC45Mi0xNC4xMS05LjY5LTEwLjE3LTkuNzUtMTYuNTItMTIuMzhjLTYuMS0yLjUyLTEzLjA3LTIuNjMtMTkuODItMi43My03LS4xLTE0LjMzLS4yMS0xNy40My0zLjMycy0zLjIyLTEwLjM5LTMuMzItMTcuNDNjLS4xLTYuNzUtLjIxLTEzLjcyLTIuNzMtMTkuODItMi42My02LjM1LTcuNTktMTEuNTItMTIuMzgtMTYuNTJTMzIsMTMyLDMyLDEyOHM0LjkyLTkuMTUsOS42OS0xNC4xMSw5Ljc1LTEwLjE3LDEyLjM4LTE2LjUyYzIuNTItNi4xLDIuNjMtMTMuMDcsMi43My0xOS44Mi4xLTcsLjIxLTE0LjMzLDMuMzItMTcuNDNTNzAuNTEsNTYuOSw3Ny41NSw1Ni44YzYuNzUtLjEsMTMuNzItLjIxLDE5LjgyLTIuNzMsNi4zNS0yLjYzLDExLjUyLTcuNTksMTYuNTItMTIuMzhTMTI0LDMyLDEyOCwzMnM5LjE1LDQuOTIsMTQuMTEsOS42OSwxMC4xNyw5Ljc1LDE2LjUyLDEyLjM4YzYuMSwyLjUyLDEzLjA3LDIuNjMsMTkuODIsMi43Myw3LC4xLDE0LjMzLjIxLDE3LjQzLDMuMzJzMy4yMiwxMC4zOSwzLjMyLDE3LjQzYy4xLDYuNzUuMjEsMTMuNzIsMi43MywxOS44MiwyLjYzLDYuMzUsNy41OSwxMS41MiwxMi4zOCwxNi41MlMyMjQsMTI0LDIyNCwxMjgsMjE5LjA4LDEzNy4xNSwyMTQuMzEsMTQyLjExWk0xNzMuNjYsOTguMzRhOCw4LDAsMCwxLDAsMTEuMzJsLTU2LDU2YTgsOCwwLDAsMS0xMS4zMiwwbC0yNC0yNGE4LDgsMCwwLDEsMTEuMzItMTEuMzJMMTEyLDE0OC42OWw1MC4zNC01MC4zNUE4LDgsMCwwLDEsMTczLjY2LDk4LjM0WiIvPjwvc3ZnPg==)"></i><h3>Checks every email</h3></div><p>Only safe addresses marked ready</p></div><div class='card sm hi' data-b='2'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMDgsNDBINDhBMTYsMTYsMCwwLDAsMzIsNTZ2NTZjMCw1Mi43MiwyNS41Miw4NC42Nyw0Ni45MywxMDIuMTksMjMuMDYsMTguODYsNDYsMjUuMjYsNDcsMjUuNTNhOCw4LDAsMCwwLDQuMiwwYzEtLjI3LDIzLjkxLTYuNjcsNDctMjUuNTNDMTk4LjQ4LDE5Ni42NywyMjQsMTY0LjcyLDIyNCwxMTJWNTZBMTYsMTYsMCwwLDAsMjA4LDQwWm0wLDcyYzAsMzcuMDctMTMuNjYsNjcuMTYtNDAuNiw4OS40MkExMjkuMywxMjkuMywwLDAsMSwxMjgsMjIzLjYyYTEyOC4yNSwxMjguMjUsMCwwLDEtMzguOTItMjEuODFDNjEuODIsMTc5LjUxLDQ4LDE0OS4zLDQ4LDExMmwwLTU2LDE2MCwwWk04Mi4zNCwxNDEuNjZhOCw4LDAsMCwxLDExLjMyLTExLjMyTDExMiwxNDguNjlsNTAuMzQtNTAuMzVhOCw4LDAsMCwxLDExLjMyLDExLjMybC01Niw1NmE4LDgsMCwwLDEtMTEuMzIsMFoiLz48L3N2Zz4=)"></i><h3>Shows the cost first</h3></div><p>Worst case before a run; --max-spend stops it at your cap</p></div></div><div class='chips lg' data-b='3' style='margin-top:40px;gap:20px;align-items:center'><span class='chip on'>Included in the Launch Bundle</span><span class='label'>at signup</span><span class='chip'>or on its own</span></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Everything we just did by hand, in one run.
+You give it a niche, a city and how many leads. You get a CSV.
+It never sends anything. The spreadsheet is the end.
+In the Launch Bundle at signup, or on its own.</div>
+</section>
+
+<section class="slide light" id="s-lead-finder-usage" data-id="lead-finder-usage" data-type="page" data-n="12">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Leadlock Lead Finder &middot; the whole run</div>
+    <h2 class="ttl">One command, five steps.</h2>
+    <div class='fill'><div class='term' data-b='1'><div class='bar'><i></i><i></i><i></i><span>Terminal &middot; leadlock-lead-finder</span></div><div class='tb' style='font-size:21px;padding:20px 30px;line-height:1.45'><pre><span class='p'>$</span> python3 scripts/pipeline.py --help
+<span class='o'>usage: pipeline.py [-h] --niche NICHE --city CITY --state STATE
+                   [--leads LEADS] [--max-spend MAX_SPEND]
+                   [--max-verifications MAX_VERIFICATIONS]
+                   [--max-candidates MAX_CANDIDATES] [--ads-only] [--skip-ads]
+                   [--skip-maps] [--skip-owner] [--country COUNTRY]
+                   [--workers WORKERS] [--out OUT] [--dry-run] [--yes]
+
+Leadlock Lead Finder: the whole run, start to finish.
+
+    1. Facebook Ad Library  -&gt; local businesses running ads right now
+    2. Google Maps          -&gt; every business of that type in the city
+    3. Match + dedupe       -&gt; one row per business (by website, then phone, then name)
+    4. Owner + email        -&gt; owner name (Treg), owner email (patterns + Reoon, then Treg)
+    5. CSV                  -&gt; output/&lt;niche&gt;-&lt;city&gt;-&lt;state&gt;-&lt;time&gt;-ready.csv
+
+Nothing is ever emailed, messaged or uploaded anywhere. The CSV is the end.</span></pre></div></div></div>
+  </div>
+  <div class="chrome source">Real --help output from Leadlock Lead Finder, 2026-10-20 (first 16 lines).</div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Or just ask Claude Code: 'find me 25 roofer leads in Dallas, TX'.
+Ads, Maps, dedupe, owner and email, CSV.
+Nothing is emailed or uploaded. You decide what to do with the list.</div>
+</section>
+
+<section class="slide dark" id="s-lead-finder-dry-run" data-id="lead-finder-dry-run" data-type="page" data-n="13">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Leadlock Lead Finder &middot; dry run</div>
+    <h2 class="ttl">See the worst-case cost first.</h2>
+    <div class='fill'><div class='term' data-b='1'><div class='bar'><i></i><i></i><i></i><span>Terminal &middot; leadlock-lead-finder</span></div><div class='tb' style='font-size:20px;padding:22px 28px;line-height:1.55'><pre style='white-space:pre-wrap'><span class='p'>$</span> python3 scripts/pipeline.py --niche roofer --city Austin --state TX --leads 25 --max-spend 5 --dry-run
+<span class='o'>PLAN: 25 'roofer' leads in Austin, TX
+  1. Facebook Ad Library [Apify] actor=apify/facebook-ads-scraper, actor_runs=1, max_results=100, max_cost_usd=0.58
+  2. Google Maps search [Apify] actor=compass/crawler-google-places, actor_runs=1, max_results=100, max_cost_usd=0.6
+  3. Google Maps lookup of advertisers with no website [Apify] actor=compass/crawler-google-places, actor_runs=1, max_results=25, max_cost_usd=0.15
+  4. Owner name + owner email [Treg] businesses_checked_at_most=100, max_cost_usd=5.5
+  5. Email verification [Reoon] verifications_at_most=300, approx_cost_usd_if_paid_credits=0.36
+  Apify actor runs: 3
+  Worst case (Apify + Treg): $6.83   Your cap: $5.00
+  The run stops the moment the spend cap is reached.
+
+Dry run: nothing was called and nothing was spent.</span></pre></div></div><div class='grid c2' data-b='2' style='margin-top:22px'><div class='card sm'><h3>Nothing runs until you say yes</h3><p>The dry run calls nothing and spends nothing.</p></div><div class='card sm hi'><h3>--max-spend is a hard cap</h3><p>The run stops the moment it's reached.</p></div></div></div>
+  </div>
+  <div class="chrome source">Real dry-run output from Leadlock Lead Finder, 2026-10-20. No network calls, no keys.</div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">25 roofer leads in Austin: here's the plan and the worst case.
+Your cap wins: the run stops at $5 even if the worst case is higher.
+Expect 1 in 5 to 1 in 10 businesses to end with a verified owner email.</div>
+</section>
+
+<section class="slide dark" id="s-next" data-id="next" data-type="page" data-n="14">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Up next</div>
+    <h2 class="ttl xl"><span>List done.</span><span class='blue'>Now 100 a day.</span></h2>
+    <div class='split' style='margin-top:40px'><div class='sub' style='margin-top:0'>Then Video 4: how to build the agent you're selling.</div><div class='card hi' style='align-self:start'><div class='k'>Every morning</div><ol class='agenda'><li>Pull today's list</li><li>Clean it, find emails</li><li>Verify, then reach out</li></ol></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Build the list in the morning.
+Then the 100 touches.
+Next: building the agent.</div>
+</section>
+
+<!-- SLIDES:END -->
+
+</div></div>
+
+<div id="notes"><div class="nh">Speaker notes · <span id="nn"></span></div><div id="nt"></div></div>
+<div id="count"></div>
+<button id="pp" type="button" title="Pause / play (P)">&#10073;&#10073;</button>
+<button id="snd" type="button">Tap for sound</button>
+<div id="pv"><div class="pv-h" id="pvh"></div><div class="pv-t" id="pvt">00:00</div><ul id="pvn"></ul><div class="pv-next" id="pvx"></div></div>
+<div id="pvkeys">Presenter view. Right / Space: next. Left: back. T: reset timer.<br>Keys here drive the deck window. Record the deck window, not this one.</div>
+
+<script>
+/* ---- Config ---------------------------------------------------------- */
+var DEMO_URL = 'https://app.leadlock.ai/d/sophia-from-leadlock-voiceaidemo-xqit66';
+var WARM_UP = 'prefetch';      // on the slide before a live call: 'prefetch' (preconnect + prefetch), 'premount' (load the iframe hidden), or 'off'
+var RECLAIM_FOCUS_MS = 700;    // after a click inside the live iframe, hand keyboard focus back to the deck after this delay (0 = never)
+/* ---------------------------------------------------------------------- */
+(function () {
+  var params = new URLSearchParams(location.search);
+  var demoOverride = params.get('demo');
+  if (demoOverride && (/^\//.test(demoOverride) || /^https:\/\//.test(demoOverride))) DEMO_URL = demoOverride;
+  function demoSrc() { return DEMO_URL + (DEMO_URL.indexOf('?') < 0 ? '?' : '&') + 'embed=true'; }
+
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var stage = document.getElementById('stage');
+  var deck = document.getElementById('deck');
+  var notes = document.getElementById('notes');
+  var snd = document.getElementById('snd');
+  var pp = document.getElementById('pp');
+  var i = 0;
+
+  /* ---- HTML click-builds: [data-b="N"] shows on the Nth Next press ---- */
+  var step = 0;
+  function stepsOf(el) {
+    if (el._steps == null) {
+      el._steps = 0;
+      Array.prototype.forEach.call(el.querySelectorAll('[data-b]'), function (b) { el._steps = Math.max(el._steps, parseInt(b.dataset.b, 10) || 0); });
+    }
+    return el._steps;
+  }
+  function setStep(k) {
+    var el = slides[i];
+    step = Math.max(0, Math.min(stepsOf(el), k));
+    Array.prototype.forEach.call(el.querySelectorAll('[data-b]'), function (b) { b.classList.toggle('on', (parseInt(b.dataset.b, 10) || 0) <= step); });
+    updateNotesHead(); post();
+  }
+  function buildNext() { if (step < stepsOf(slides[i])) { setStep(step + 1); return true; } return false; }
+  function buildBack() { if (step > 0) { setStep(step - 1); return true; } return false; }
+
+  /* ---- Presenter window (?presenter=1, S opens it): mirrors the deck over a BroadcastChannel ---- */
+  var PRESENTER = params.get('presenter') === '1';
+  var bc = ('BroadcastChannel' in window) ? new BroadcastChannel('lldeck:' + location.pathname) : null;
+  function post() { if (bc && !PRESENTER) bc.postMessage({ state: { i: i, step: step } }); }
+  if (PRESENTER) document.body.classList.add('pv');
+  var t0 = Date.now();
+  function presenterPanel() {
+    if (!PRESENTER) return;
+    var nEl = slides[i].querySelector('.notes');
+    var ul = document.getElementById('pvn'); ul.innerHTML = '';
+    (nEl ? nEl.textContent : '').split('\n').forEach(function (l) { if (l.trim()) { var li = document.createElement('li'); li.textContent = l.replace(/^[-*]\s*/, ''); ul.appendChild(li); } });
+    var steps = stepsOf(slides[i]);
+    document.getElementById('pvh').textContent = 'Slide ' + (i + 1) + ' of ' + slides.length + (steps ? ' · build ' + (step + 1) + ' of ' + (steps + 1) : '');
+    var nx = step < steps ? 'next click: build ' + (step + 2) + ' on this slide' : (slides[i + 1] ? 'next slide: ' : 'end of deck');
+    var nh = slides[i + 1] && step >= steps ? (slides[i + 1].querySelector('.ttl, h1, h2') || {}).textContent || '' : '';
+    document.getElementById('pvx').innerHTML = '';
+    var b = document.createElement('b'); b.textContent = nh;
+    document.getElementById('pvx').append(nx, b);
+  }
+  if (PRESENTER) setInterval(function () {
+    var s = Math.floor((Date.now() - t0) / 1000);
+    document.getElementById('pvt').textContent = ('0' + Math.floor(s / 60)).slice(-2) + ':' + ('0' + s % 60).slice(-2);
+  }, 500);
+
+  // play() returns a promise that rejects when a slide change pauses it first; that is expected, never an error.
+  function play(v, onBlocked) {
+    var p = v.play();
+    if (p && p.catch) p.catch(function (err) { if (onBlocked && err && err.name === 'NotAllowedError') onBlocked(); });
+  }
+  function curVid() { return slides[i].querySelector('video.sv'); }
+  function setPP() {
+    var v = curVid();
+    pp.classList.toggle('on', !!v);
+    var paused = !!(v && ((v._held && !v._cueHold) || (v._cueHold && v._loop && v.paused)));
+    pp.classList.toggle('paused', paused);
+    pp.innerHTML = paused ? '&#9654;' : '&#10073;&#10073;';
+  }
+  function togglePause() {
+    var v = curVid(); if (!v) return;
+    if (v._cueHold && v._loop) { if (v.paused) play(v); else { v._ours = true; v.pause(); } setPP(); return; }
+    if (v._held) { v._held = false; v._cueHold = false; play(v); }
+    else { v._held = true; v._ours = true; v.pause(); }
+    setPP();
+  }
+  pp.addEventListener('click', function (e) { e.stopPropagation(); togglePause(); });
+  snd.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var v = curVid(); if (!v) return;
+    v.muted = false; try { v.currentTime = 0; } catch (x) {} play(v); snd.classList.remove('on');
+  });
+  function fit() {
+    var s = PRESENTER ? stage.clientWidth / 1920 : Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    deck.style.transform = 'scale(' + s + ')';
+  }
+  function focusDeck() {
+    if (document.activeElement && document.activeElement !== document.body) { try { document.activeElement.blur(); } catch (e) {} }
+    stage.focus({ preventScroll: true });
+  }
+
+  /* ---- Click-builds: data-cues="t1,t2,..." -----------------------------
+     Entering the slide plays to t1 and holds. Each Next plays to the next cue
+     and holds; Next on the last cue plays out to the end (then loop or hold).
+     Next pressed mid-segment snaps to that segment's cue. Back steps back one build.
+     data-cue-loops="a1:b1,,a3:b3" (optional, one slot per cue): a hold with a loop keeps
+     playing a..b seamlessly instead of freezing, and the next build plays on from b. */
+  function cuesOf(v) {
+    if (!v || !v.dataset.cues) return null;
+    if (!v._cues) v._cues = v.dataset.cues.split(',').map(parseFloat).filter(function (t) { return !isNaN(t); });
+    return v._cues.length ? v._cues : null;
+  }
+  function loopOf(v, k) {
+    if (!v || !v.dataset.cueLoops) return null;
+    if (!v._loops) v._loops = v.dataset.cueLoops.split(',').map(function (x) {
+      var p = x ? x.split(':').map(parseFloat) : [];
+      return p.length === 2 && p[1] > p[0] ? p : null;
+    });
+    return v._loops[k] || null;
+  }
+  function holdAt(v, k) {
+    var c = cuesOf(v), lp = loopOf(v, k);
+    v._target = -1; v._at = k; v._cueHold = true; v._held = true; v._ours = true;
+    v._loop = lp;
+    try { v.currentTime = c[k]; } catch (e) {}
+    if (lp) { play(v); loopWatch(v, lp); } else v.pause();
+    setPP(); updateNotesHead();
+  }
+  // A living hold: wrap b -> a until the loop is released (next build, back, leaving the slide).
+  function loopWatch(v, lp) {
+    function tick() {
+      if (v._loop !== lp || !v.closest('.slide').classList.contains('active')) return;
+      if (v.currentTime >= lp[1] - 0.02 || v.currentTime < lp[0] - 0.25) { try { v.currentTime = lp[0]; } catch (e) {} }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  // Leaving a living hold: the next build starts where the loop ends.
+  function releaseLoop(v) {
+    var lp = v._loop; v._loop = null;
+    if (lp) { try { v.currentTime = lp[1]; } catch (e) {} }
+  }
+  function playTo(v, k) {
+    releaseLoop(v);
+    v._target = k; v._at = k - 1; v._held = false; v._cueHold = false;
+    play(v);
+    watchCue(v); setPP(); updateNotesHead();
+  }
+  function playOut(v) {
+    var c = cuesOf(v);
+    releaseLoop(v);
+    v._target = -1; v._at = c.length; v._held = false; v._cueHold = false;
+    play(v);
+    setPP(); updateNotesHead();
+  }
+  function watchCue(v) {
+    var c = cuesOf(v);
+    function tick() {
+      if (v._target < 0 || !v.closest('.slide').classList.contains('active')) return;
+      if (v.currentTime >= c[v._target] - 0.02 || v.ended) { holdAt(v, v._target); return; }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  // Returns true when the press was consumed by a build inside the slide.
+  function cueNext() {
+    var v = curVid(), c = cuesOf(v);
+    if (!c) return false;
+    if (v._target >= 0) { holdAt(v, v._target); return true; }
+    if (v._cueHold && v._at < c.length - 1) { playTo(v, v._at + 1); return true; }
+    if (v._cueHold && v._at === c.length - 1) { playOut(v); return true; }
+    return false;
+  }
+  function cueBack() {
+    var v = curVid(), c = cuesOf(v);
+    if (!c) return false;
+    var k = v._target >= 0 ? v._target - 1 : (v._cueHold ? v._at - 1 : c.length - 1);
+    if (k < 0) return false;
+    holdAt(v, k);
+    return true;
+  }
+  function buildLabel() {
+    var v = curVid(), c = cuesOf(v);
+    if (!c) { var n = stepsOf(slides[i]); return n ? ' · build ' + (step + 1) + ' of ' + (n + 1) : ''; }
+    var step = v._target >= 0 ? v._target + 1 : Math.min(v._at + 1, c.length + 1);
+    return ' · build ' + step + ' of ' + (c.length + 1);
+  }
+  function updateNotesHead() {
+    document.getElementById('nn').textContent = 'slide ' + (i + 1) + ' of ' + slides.length + buildLabel();
+    presenterPanel();
+  }
+
+  /* ---- Live call: mount on enter, unmount on leave ------------------- */
+  var warmed = {};
+  function warm(slide) {
+    if (WARM_UP === 'off' || warmed[slide.id]) return;
+    warmed[slide.id] = true;
+    var src = demoSrc();
+    if (WARM_UP === 'premount') { mountLive(slide, true); return; }
+    try {
+      var origin = new URL(src, location.href).origin;
+      if (origin !== location.origin) { var pc = document.createElement('link'); pc.rel = 'preconnect'; pc.href = origin; document.head.appendChild(pc); }
+    } catch (e) {}
+    var pf = document.createElement('link'); pf.rel = 'prefetch'; pf.href = src; pf.as = 'document'; document.head.appendChild(pf);
+  }
+  function mountLive(slide, hidden) {
+    var screen = slide.querySelector('.screen');
+    var f = screen.querySelector('iframe');
+    if (!f) {
+      f = document.createElement('iframe');
+      f.setAttribute('allow', 'microphone; autoplay');
+      f.setAttribute('title', 'Live Leadlock demo');
+      f.addEventListener('load', function () { if (f.getAttribute('src') !== 'about:blank') slide.classList.add('loaded'); });
+      f.src = demoSrc();
+      screen.appendChild(f);
+    }
+    f.style.visibility = hidden ? 'hidden' : 'visible';
+  }
+  function unmountLive(slide) {
+    var f = slide.querySelector('.screen iframe');
+    if (f) { try { f.src = 'about:blank'; } catch (e) {} f.remove(); }
+    slide.classList.remove('loaded');
+    var r = slide.querySelector('.live-rec');
+    if (r && !r.paused) r.pause();
+    slide.classList.remove('rec');
+    warmed[slide.id] = false;
+  }
+  function toggleRecording() {
+    var s = slides[i];
+    if (!s.classList.contains('live')) return;
+    var r = s.querySelector('.live-rec');
+    if (!r) return;
+    if (s.classList.contains('rec')) { s.classList.remove('rec'); r.pause(); mountLive(s, false); }
+    else {
+      var f = s.querySelector('.screen iframe'); if (f) { f.src = 'about:blank'; f.remove(); }
+      s.classList.add('rec'); r.currentTime = 0; r.muted = false;
+      play(r, function () { r.muted = true; play(r); });
+    }
+  }
+  // A click inside the cross-origin iframe takes keyboard focus with it. Hand it back so the clicker keeps working.
+  window.addEventListener('blur', function () {
+    if (!RECLAIM_FOCUS_MS) return;
+    setTimeout(function () {
+      var a = document.activeElement;
+      if (a && a.tagName === 'IFRAME') focusDeck();
+    }, RECLAIM_FOCUS_MS);
+  });
+
+  /* ---- Navigation ------------------------------------------------------ */
+  function show(n, opts) {
+    opts = opts || {};
+    var prev = i;
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function (el, k) { el.classList.toggle('active', k === i); });
+    var av = slides[i].querySelector('video.sv[data-audio]');
+    snd.classList.toggle('on', !!av && /iPhone|iPad|Android/.test(navigator.userAgent));
+    slides.forEach(function (el, k) {
+      if (el.classList.contains('live') && k !== i) unmountLive(el);
+      var v = el.querySelector('video.sv');
+      if (!v) return;
+      if (k === i || k === i + 1 || k === i + 2) {
+        if (v.preload !== 'auto') { v.preload = 'auto'; if (k !== i && v.networkState === 0) v.load(); }
+      }
+      v._held = false; v._cueHold = false; v._target = -1; v._loop = null;
+      if (k === i) {
+        var c = cuesOf(v);
+        v.muted = !v.dataset.audio;
+        if (c && opts.fromEnd) {
+          // Arriving backwards: show the finished build.
+          v._at = c.length;
+          try { v.currentTime = parseFloat(v.dataset.loop) || c[c.length - 1]; } catch (e) {}
+          play(v);
+        } else {
+          try { v.currentTime = 0; } catch (e) {}
+          if (c) { playTo(v, 0); }
+          else {
+            play(v, function () { v.muted = true; play(v); if (v.dataset.audio) snd.classList.add('on'); });
+          }
+        }
+      } else if (!v.paused) { v._ours = true; v.pause(); }
+    });
+    if (slides[i].classList.contains('live')) { mountLive(slides[i], false); }
+    if (slides[i + 1] && slides[i + 1].classList.contains('live')) warm(slides[i + 1]);
+    setPP();
+    var nEl = slides[i].querySelector('.notes');
+    var nt = document.getElementById('nt'); nt.innerHTML = '';
+    var ul = document.createElement('ul');
+    (nEl ? nEl.textContent : '').split('\n').forEach(function (l) { if (l.trim()) { var li = document.createElement('li'); li.textContent = l.replace(/^[-*]\s*/, ''); ul.appendChild(li); } });
+    nt.appendChild(ul);
+    setStep(opts.step != null ? opts.step : (opts.fromEnd ? stepsOf(slides[i]) : 0));
+    document.getElementById('count').textContent = (i + 1) + ' / ' + slides.length;
+    if (location.hash !== '#' + (i + 1)) history.replaceState(null, '', location.pathname + location.search + '#' + (i + 1));
+    if (prev !== i && document.activeElement && document.activeElement.tagName === 'IFRAME') focusDeck();
+  }
+  function next() {
+    if (PRESENTER && bc) { bc.postMessage({ cmd: 'next' }); return; }
+    if (!cueNext() && !buildNext()) show(i + 1);
+  }
+  function back() {
+    if (PRESENTER && bc) { bc.postMessage({ cmd: 'back' }); return; }
+    if (!cueBack() && !buildBack()) { if (i > 0) show(i - 1, { fromEnd: true }); }
+  }
+  if (bc) bc.onmessage = function (ev) {
+    var m = ev.data || {};
+    if (PRESENTER) { if (m.state) { if (m.state.i !== i) show(m.state.i, { step: m.state.step }); else setStep(m.state.step); } return; }
+    if (m.cmd === 'next') next();
+    else if (m.cmd === 'back') back();
+    else if (m.cmd === 'hello') post();
+  };
+
+  document.addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (k === 's' || k === 'S') { if (!PRESENTER) window.open(location.pathname + '?presenter=1' + location.hash, 'lldeck-presenter', 'width=1500,height=900'); return; }
+    if (PRESENTER && (k === 't' || k === 'T')) { t0 = Date.now(); return; }
+    if (k === 'ArrowRight' || k === ' ' || k === 'PageDown' || k === 'ArrowDown' || k === 'Enter') { e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'PageUp' || k === 'ArrowUp' || k === 'Backspace') { e.preventDefault(); back(); }
+    else if (k === 'Home') show(0);
+    else if (k === 'End') show(slides.length - 1);
+    else if (k === 'Escape') focusDeck();
+    else if (k === 'f' || k === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+      else document.exitFullscreen && document.exitFullscreen();
+    }
+    else if (k === 'p' || k === 'P' || k === 'k' || k === 'K') { e.preventDefault(); togglePause(); }
+    else if (k === 'n' || k === 'N') notes.classList.toggle('on');
+    else if (k === 'r' || k === 'R') toggleRecording();
+  });
+  document.addEventListener('click', function (e) {
+    if (notes.contains(e.target) || e.target.closest('.device, button')) return;
+    if (e.clientX < window.innerWidth / 3) back(); else next();
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.hot'), function (b) {
+    b.addEventListener('click', function (e) { e.stopPropagation(); if (b.classList.contains('hot-next')) next(); else back(); focusDeck(); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('video.sv'), function (v) {
+    v.addEventListener('ended', function () {
+      v.muted = true;
+      if (v._target >= 0) return;   // a cue at the very end: watchCue holds it
+      if (v.dataset.hold) return;
+      v.currentTime = parseFloat(v.dataset.loop) || 0; play(v);
+    });
+    v.addEventListener('pause', function () {
+      if (v.ended || v._ours || v._held || !v.closest('.slide').classList.contains('active')) { v._ours = false; return; }
+      v.muted = true; play(v); if (v.dataset.audio) snd.classList.add('on');
+    });
+  });
+  window.addEventListener('resize', fit);
+  window.addEventListener('hashchange', function () { var h = parseInt(location.hash.slice(1), 10); if (h && h - 1 !== i) show(h - 1); });
+  fit();
+  focusDeck();
+  // Read-only handle for tools/check.py.
+  window.__deck = {
+    count: function () { return slides.length; },
+    index: function () { return i; },
+    go: function (n) { show(n); },
+    next: next, back: back,
+    steps: function () { return stepsOf(slides[i]); },
+    step: function () { return step; },
+    setStep: setStep,
+    build: function () { var v = curVid(); return v ? { at: v._at, target: v._target, held: !!v._cueHold, loop: v._loop || null, paused: v.paused, t: v.currentTime } : null; }
+  };
+  var start = parseInt(location.hash.slice(1), 10);
+  show(start ? start - 1 : 0);
+  if (PRESENTER && bc) bc.postMessage({ cmd: 'hello' });
+})();
+</script>
+</body>
+</html>

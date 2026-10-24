@@ -1,0 +1,958 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leadlock course 2b: Pick your offer</title>
+<style>
+  @font-face { font-family: "Geist"; src: url(assets/fonts/geist.woff2) format("woff2"); font-weight: 100 900; font-display: block; }
+  @font-face { font-family: "Geist Mono"; src: url(assets/fonts/geist-mono.woff2) format("woff2"); font-weight: 100 900; font-display: block; }
+  :root {
+    --ink: #0F0F0F;
+    --card: #141416;
+    --card-2: #1F1F1F;
+    --line-dark: #26262A;
+    --text: #EDEDED;
+    --muted: #A1A1AA;
+    --paper: #F4F4F1;
+    --paper-card: #FFFFFF;
+    --line-light: #DCDCD6;
+    --text-dark: #0F0F0F;
+    --muted-dark: #5B5B63;
+    --blue: #6298B6;
+    --blue-deep: #4A7A96;
+    --font: "Geist", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #000; overflow: hidden; font-family: var(--font); -webkit-font-smoothing: antialiased; }
+
+  /* Stage: every slide is a fixed 1920x1080 canvas, scaled to fit the window */
+  #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; outline: none; }
+  #deck { width: 1920px; height: 1080px; position: relative; transform-origin: center center; flex: none; }
+  .slide { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; display: none; }
+  .slide.active { display: block; }
+
+  .dark  { background: var(--ink); color: var(--text); }
+  .light { background: var(--paper); color: var(--text-dark); }
+  .accent { color: var(--blue); }
+  .light .accent { color: var(--blue-deep); }
+
+  /* Static copy: the fallback under each video and the PDF source */
+  .pad { position: absolute; left: 0; right: 0; top: 0; height: 940px; padding: 120px 160px 40px; display: flex; flex-direction: column; justify-content: center; }
+  .eyebrow { font-family: var(--mono); font-size: 28px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); margin-bottom: 44px; }
+  .light .eyebrow { color: var(--blue-deep); }
+  h1 { font-size: 128px; line-height: 1.02; font-weight: 700; letter-spacing: -0.04em; }
+  h2 { font-size: 96px; line-height: 1.06; font-weight: 700; letter-spacing: -0.035em; }
+  .lede { font-size: 48px; line-height: 1.3; font-weight: 400; letter-spacing: -0.012em; margin-top: 44px; max-width: 1500px; }
+  .dark .lede { color: #C9C9CF; }
+  .light .lede { color: #3F3F46; }
+
+  .tiles { margin-top: 70px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; width: 1600px; }
+  .tiles.n2, .tiles.n4 { grid-template-columns: repeat(2, 1fr); }
+  .tiles.n5 { grid-template-columns: repeat(6, 1fr); }
+  .tiles.n5 > div { grid-column: span 2; }
+  .tiles.n5 > div:nth-child(n+4) { grid-column: span 3; }
+  .tiles > div { border-radius: 22px; padding: 38px 40px; font-size: 40px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.2; }
+  .dark .tiles > div { background: var(--card); border: 1px solid var(--line-dark); }
+  .light .tiles > div { background: var(--paper-card); border: 1px solid var(--line-light); }
+  .tiles + .lede { margin-top: 48px; }
+  .lede + .tiles { margin-top: 48px; }
+
+  .cols { margin-top: 56px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 1600px; }
+  .col { border-radius: 26px; padding: 40px 48px 42px; }
+  .dark .col { background: var(--card); border: 1px solid var(--line-dark); }
+  .light .col { background: var(--paper-card); border: 1px solid var(--line-light); }
+  .cols.n3 { grid-template-columns: repeat(3, 1fr); gap: 32px; }
+  .cols.n3 .col { padding: 42px 40px 46px; }
+  .cols.n3 .col h3 { font-size: 40px; }
+  .cols.n3 .col li { font-size: 34px; padding-left: 34px; }
+  .cols + .lede { margin-top: 40px; }
+  .col h3 { font-size: 46px; line-height: 1.15; font-weight: 700; letter-spacing: -0.02em; }
+  .col ul { list-style: none; margin-top: 22px; }
+  .col li { font-size: 36px; line-height: 1.3; padding: 9px 0 9px 40px; position: relative; }
+  .col li::before { content: ""; position: absolute; left: 0; top: 50%; width: 14px; height: 14px; margin-top: -7px; border-radius: 50%; background: var(--blue); }
+  .dark .col li { color: #C9C9CF; }
+  .light .col li { color: #3F3F46; }
+
+  /* Dot table (paths compared) */
+  .ptable { margin-top: 56px; width: 1600px; border-collapse: collapse; }
+  .ptable th, .ptable td { font-size: 34px; line-height: 1.2; padding: 20px 0; text-align: left; border-bottom: 1px solid var(--line-dark); }
+  .ptable th { font-weight: 600; color: var(--muted); }
+  .ptable th.win { color: var(--blue); }
+  .ptable td:first-child { width: 520px; color: #C9C9CF; }
+  .dots { display: inline-flex; gap: 12px; }
+  .dots i { width: 22px; height: 22px; border-radius: 50%; background: #3A3A40; }
+  .dots.win i { background: var(--blue); }
+  .ptable + .lede { margin-top: 44px; }
+  .stat-row { display: flex; align-items: flex-end; gap: 80px; }
+  .stat { font-size: 380px; font-weight: 700; letter-spacing: -0.06em; line-height: 0.82; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .stat-lbl { font-size: 58px; line-height: 1.15; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 20px; }
+  .stat-row + h1, .stat-row + h2 { margin-top: 64px; }
+
+  .cmp { margin-top: 80px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 1600px; }
+  .cmp > div { border-radius: 26px; padding: 50px 54px; }
+  .dark .cmp > div { background: var(--card); border: 1px solid var(--line-dark); }
+  .cmp > div.hi { border-color: var(--blue); }
+  .light .cmp > div { background: var(--paper-card); border: 1px solid var(--line-light); }
+  .light .cmp > div.hi { border-color: var(--blue-deep); }
+  .light .cmp .hi .v { color: var(--blue-deep); }
+  .light .cmp .l { color: #3F3F46; }
+  .cmp + .lede { margin-top: 48px; }
+  .cmp .v { font-size: 120px; font-weight: 700; letter-spacing: -0.045em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .cmp .hi .v { color: var(--blue); }
+  .cmp .l { font-size: 38px; margin-top: 24px; color: #C9C9CF; }
+
+  /* ---- Course decks: "page" slides (top-anchored, click-builds) ---------------------- */
+  .page { position: absolute; left: 160px; right: 160px; top: 88px; bottom: 140px; display: flex; flex-direction: column; }
+  .eb { font-family: var(--mono); font-size: 24px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); margin-bottom: 20px; }
+  .light .eb { color: var(--blue-deep); }
+  .ttl { font-size: 88px; line-height: 1.04; font-weight: 700; letter-spacing: -0.04em; }
+  .ttl > span { display: block; }
+  .ttl.md { font-size: 72px; }
+  .ttl.xl { font-size: 132px; line-height: 0.98; letter-spacing: -0.045em; }
+  .sub { font-size: 36px; line-height: 1.35; margin-top: 26px; max-width: 1400px; letter-spacing: -0.01em; }
+  .dark .sub { color: #C9C9CF; } .light .sub { color: #3F3F46; }
+  .muted { color: var(--muted); } .light .muted { color: var(--muted-dark); }
+  .blue { color: var(--blue); } .light .blue { color: var(--blue-deep); }
+  .fill { flex: 1; min-height: 0; margin-top: 52px; display: flex; flex-direction: column; }
+  .center { justify-content: center; }
+  .row { display: flex; align-items: center; gap: 28px; }
+  .grid { display: grid; gap: 28px; }
+  .c2 { grid-template-columns: repeat(2, 1fr); } .c3 { grid-template-columns: repeat(3, 1fr); } .c4 { grid-template-columns: repeat(4, 1fr); }
+  .card { border-radius: 22px; padding: 32px 36px; position: relative; }
+  .dark .card { background: #141416; border: 2px solid #2A2A2F; }
+  .light .card { background: #FFFFFF; border: 2px solid #DCDCD6; box-shadow: 0 10px 30px rgba(15,15,15,0.06); }
+  .dark .card.hi { border-color: var(--blue); } .light .card.hi { border-color: var(--blue-deep); }
+  .light .card.ink { background: #0F0F0F; border-color: #0F0F0F; color: #EDEDED; }
+  .card h3 { font-size: 42px; line-height: 1.15; font-weight: 650; letter-spacing: -0.02em; }
+  .card p { font-size: 32px; line-height: 1.35; margin-top: 14px; }
+  .dark .card p, .light .card.ink p { color: #C9C9CF; } .light .card p { color: #3F3F46; }
+  .card .icb + h3 { margin-top: 22px; }
+  .ic { display: inline-block; width: 52px; height: 52px; flex: none; background-color: var(--blue); -webkit-mask: var(--i) center / contain no-repeat; mask: var(--i) center / contain no-repeat; vertical-align: middle; }
+  .light .ic { background-color: var(--blue-deep); }
+  .icb { width: 92px; height: 92px; border-radius: 22px; display: inline-flex; align-items: center; justify-content: center; flex: none; background: rgba(98,152,182,0.14); }
+  .icb .ic { width: 52px; height: 52px; }
+  .label { font-family: var(--mono); font-size: 22px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .light .label { color: var(--muted-dark); }
+  .chip { display: inline-flex; align-items: center; gap: 12px; height: 54px; padding: 0 24px; border-radius: 999px; font-family: var(--mono); font-size: 24px; font-weight: 500; white-space: nowrap; }
+  .dark .chip { border: 2px solid #2A2A2F; color: #EDEDED; background: #141416; }
+  .light .chip { border: 2px solid #DCDCD6; color: #0F0F0F; background: #FFFFFF; }
+  .chip.on { background: #4A7A96 !important; border-color: #4A7A96 !important; color: #FFFFFF !important; }
+  .chip .ic { width: 28px; height: 28px; }
+  .chip.on .ic { background-color: #FFFFFF; }
+  .chips { display: flex; flex-wrap: wrap; gap: 14px; }
+  .arr { width: 84px; height: 28px; flex: none; fill: none; stroke: var(--muted); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+  .arrd { width: 28px; height: 64px; flex: none; fill: none; stroke: var(--muted); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+  .light .arr, .light .arrd { stroke: #9A9AA2; }
+  .flow { display: flex; align-items: stretch; gap: 18px; }
+  .flow > .arr, .flow > span { align-self: center; display: flex; }
+  .grow { flex: 1; min-height: 0; }
+  .chips.lg .chip { height: 76px; padding: 0 32px; font-size: 30px; gap: 16px; }
+  .chips.lg .chip .ic { width: 36px; height: 36px; }
+  .split { display: grid; grid-template-columns: 1fr 760px; gap: 80px; flex: 1; min-height: 0; }
+  .agenda { counter-reset: ag; list-style: none; }
+  .agenda li { counter-increment: ag; display: flex; align-items: baseline; gap: 22px; font-size: 34px; line-height: 1.3; padding: 13px 0; border-bottom: 2px solid #2A2A2F; }
+  .light .agenda li { border-color: #DCDCD6; }
+  .agenda li::before { content: counter(ag, decimal-leading-zero); font-family: var(--mono); font-size: 24px; color: var(--blue); flex: none; width: 44px; }
+  .agenda li:last-child { border-bottom: 0; }
+  .agenda.tight li { font-size: 30px; padding: 8px 0; }
+  .grow > .card { display: flex; flex-direction: column; }
+  .grow > .card > h3 { margin-top: auto !important; padding-top: 24px; }
+  .grow > .card > h3 + p { min-height: 2.7em; }
+  .term.big .tb { font-size: 36px; line-height: 1.5; padding: 34px 40px; }
+  .doc.lg .r > div { font-size: 40px; padding: 30px 34px; }
+  .doc.lg .r > div:first-child { font-size: 30px; }
+  .bul.lg li { font-size: 42px; padding: 18px 0 18px 46px; }
+  .bul.lg li::before { top: 38px; width: 16px; height: 16px; }
+  .flow .card { flex: 1; }
+  .disp { font-size: 220px; line-height: 0.9; font-weight: 700; letter-spacing: -0.05em; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .light .disp { color: var(--blue-deep); }
+  .num { font-variant-numeric: tabular-nums; }
+  .quote { font-size: 80px; line-height: 1.1; font-weight: 700; letter-spacing: -0.035em; }
+  .bul { list-style: none; }
+  .bul li { position: relative; padding: 10px 0 10px 40px; font-size: 34px; line-height: 1.3; }
+  .bul li::before { content: ""; position: absolute; left: 0; top: 28px; width: 14px; height: 14px; border-radius: 50%; background: var(--blue); }
+  .dark .bul li { color: #C9C9CF; } .light .bul li { color: #3F3F46; }
+  .bul li b { font-weight: 650; } .dark .bul li b { color: #EDEDED; } .light .bul li b { color: #0F0F0F; }
+  /* Terminal mock (typed on screen, illustrative) */
+  .term { border-radius: 20px; overflow: hidden; background: #0B0B0C; border: 2px solid #2A2A2F; color: #EDEDED; font-family: var(--mono); }
+  .term .bar { height: 50px; display: flex; align-items: center; gap: 10px; padding: 0 20px; background: #161618; border-bottom: 2px solid #2A2A2F; }
+  .term .bar i { width: 14px; height: 14px; border-radius: 50%; background: #3A3A40; }
+  .term .bar span { margin-left: 14px; font-size: 20px; color: #A1A1AA; letter-spacing: 0.04em; }
+  .term .tb { padding: 26px 32px; font-size: 28px; line-height: 1.5; }
+  .term .p { color: var(--blue); }
+  .term .o { color: #A1A1AA; }
+  /* Labelled placeholder for a real screenshot still to capture */
+  .ph { border: 3px dashed #8A8A93; border-radius: 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 30px; }
+  .dark .ph { background: rgba(255,255,255,0.02); } .light .ph { background: rgba(15,15,15,0.025); }
+  .ph .label { color: var(--blue); } .light .ph .label { color: var(--blue-deep); }
+  .ph .d { font-size: 30px; line-height: 1.35; max-width: 760px; }
+  .dark .ph .d { color: #C9C9CF; } .light .ph .d { color: #3F3F46; }
+  .foot { font-family: var(--mono); font-size: 22px; line-height: 1.45; letter-spacing: 0.01em; }
+  .dark .foot { color: #A1A1AA; } .light .foot { color: #5B5B63; }
+  .card.sm { padding: 28px 30px; }
+  .card.sm h3 { font-size: 35px; }
+  .card.sm p { font-size: 29px; }
+  .card .k { font-family: var(--mono); font-size: 22px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .light .card .k { color: var(--muted-dark); } .card.hi .k { color: var(--blue); } .light .card.hi .k { color: var(--blue-deep); }
+  /* Two-column comparison (vs) */
+  .vs { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; }
+  .vs .hd { font-family: var(--mono); font-size: 24px; letter-spacing: 0.12em; text-transform: uppercase; padding: 0 0 18px 4px; color: var(--muted); }
+  .vs .hd.a { color: var(--blue); } .light .vs .hd.a { color: var(--blue-deep); }
+  .vs .r { display: contents; }
+  .vs .r > div { font-size: 40px; line-height: 1.25; padding: 30px 34px; margin-bottom: 16px; border-radius: 18px; display: flex; align-items: center; gap: 20px; }
+  .dark .vs .r > div:first-child { background: #141416; color: #A1A1AA; border: 2px solid #2A2A2F; }
+  .dark .vs .r > div:last-child { background: #141416; color: #EDEDED; border: 2px solid var(--blue); }
+  .light .vs .r > div:first-child { background: #FFFFFF; color: #5B5B63; border: 2px solid #DCDCD6; }
+  .light .vs .r > div:last-child { background: #FFFFFF; color: #0F0F0F; border: 2px solid var(--blue-deep); }
+  .vs .r > div .ic { width: 36px; height: 36px; }
+  .vs .r > div:first-child .ic { background-color: #6B6B73; }
+  /* Range / value bars */
+  .bars { display: flex; flex-direction: column; gap: 12px; }
+  .bar { display: grid; grid-template-columns: 380px 1fr; align-items: center; gap: 24px; height: 70px; }
+  .bar .n { font-size: 32px; font-weight: 600; letter-spacing: -0.01em; }
+  .bar .t { position: relative; height: 70px; }
+  .bar .f { position: absolute; top: 6px; bottom: 6px; border-radius: 12px; background: #5B5B63; display: flex; align-items: center; justify-content: flex-end; padding: 0 18px; }
+  .light .bar .f { background: #A1A1AA; }
+  .bar .f.hi { background: #4A7A96; }
+  .bar .f.lo { background: #2A2A2F; } .light .bar .f.lo { background: #DCDCD6; }
+  .bar .v { font-family: var(--mono); font-size: 24px; color: #FFFFFF; white-space: nowrap; }
+  .light .bar .f.lo .v, .bar .f.lo .v { color: #A1A1AA; }
+  .light .bar .f.lo .v { color: #5B5B63; }
+  .bar .v.out { position: absolute; left: calc(100% + 16px); color: var(--muted); }
+  .axis { display: grid; grid-template-columns: 380px 1fr; gap: 24px; margin-top: 10px; }
+  .axis .line { border-top: 2px solid #3A3A40; padding-top: 10px; display: flex; justify-content: space-between; }
+  .light .axis .line { border-color: #C9C9CF; }
+  /* Ladder (rising steps) */
+  .ladder { display: flex; align-items: flex-end; gap: 28px; height: 100%; }
+  .ladder > div { flex: 1; border-radius: 18px 18px 0 0; padding: 26px 28px; display: flex; flex-direction: column; justify-content: flex-start; }
+  .dark .ladder > div { background: #1B1B1E; border: 2px solid #2A2A2F; border-bottom: 0; }
+  .ladder > div.hi { background: #4A7A96 !important; border-color: #4A7A96 !important; }
+  .ladder .lv { font-size: 72px; font-weight: 700; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; line-height: 1; }
+  .ladder .ll { font-family: var(--mono); font-size: 22px; letter-spacing: 0.1em; text-transform: uppercase; color: #A1A1AA; margin-bottom: 14px; }
+  .ladder .hi .ll { color: #FFFFFF; }
+  .ladder .ls { font-size: 26px; color: #C9C9CF; margin-top: 12px; line-height: 1.3; }
+  .ladder .hi .ls { color: #FFFFFF; }
+  .c5 { grid-template-columns: repeat(5, 1fr); gap: 22px; }
+  .flip { transform: scaleX(-1); } .up { transform: rotate(180deg); }
+  .alab { font-family: var(--mono); font-size: 22px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .light .alab { color: var(--muted-dark); }
+  /* Table mock */
+  .tbl { width: 100%; border-collapse: separate; border-spacing: 0; }
+  .tbl th { font-family: var(--mono); font-size: 22px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; text-align: left; padding: 0 22px 16px; color: var(--muted-dark); }
+  .dark .tbl th { color: var(--muted); }
+  .tbl td { font-size: 32px; padding: 36px 24px; white-space: nowrap; }
+  .light .tbl td { background: #FFFFFF; border-top: 2px solid #DCDCD6; border-bottom: 2px solid #DCDCD6; }
+  .dark .tbl td { background: #141416; border-top: 2px solid #2A2A2F; border-bottom: 2px solid #2A2A2F; }
+  .tbl td:first-child { border-left: 2px solid #DCDCD6; border-radius: 16px 0 0 16px; font-weight: 600; }
+  .dark .tbl td:first-child { border-left-color: #2A2A2F; }
+  .tbl td:last-child { border-right: 2px solid #DCDCD6; border-radius: 0 16px 16px 0; }
+  .dark .tbl td:last-child { border-right-color: #2A2A2F; }
+  /* Chat bubbles + tool chips */
+  .chat { display: flex; flex-direction: column; gap: 14px; }
+  .msg { max-width: 1100px; font-size: 34px; line-height: 1.3; padding: 20px 30px; border-radius: 26px; }
+  .msg .who { display: inline-block; font-family: var(--mono); font-size: 20px; letter-spacing: 0.1em; text-transform: uppercase; margin-right: 16px; opacity: 0.75; vertical-align: 3px; }
+  .msg.in { align-self: flex-start; border-bottom-left-radius: 8px; }
+  .light .msg.in { background: #FFFFFF; border: 2px solid #DCDCD6; color: #0F0F0F; }
+  .dark .msg.in { background: #1B1B1E; border: 2px solid #2A2A2F; color: #EDEDED; }
+  .msg.out { align-self: flex-end; background: #436F89; color: #FFFFFF; border-bottom-right-radius: 8px; }
+  .tool { align-self: center; font-family: var(--mono); font-size: 24px; padding: 12px 22px; border-radius: 12px; border: 2px dashed var(--blue); color: var(--blue); }
+  .light .tool { color: var(--blue-deep); border-color: var(--blue-deep); }
+  /* Phone mock (incoming-call demo) */
+  .phone { width: 360px; height: 640px; border-radius: 58px; background: #0F0F0F; border: 10px solid #26262A; box-shadow: 0 30px 60px rgba(15,15,15,0.25); display: flex; flex-direction: column; align-items: center; padding: 70px 26px 44px; color: #EDEDED; text-align: center; }
+  .phone .pl { font-family: var(--mono); font-size: 22px; letter-spacing: 0.1em; text-transform: uppercase; color: #A1A1AA; }
+  .phone .pn { font-size: 46px; font-weight: 700; letter-spacing: -0.02em; margin-top: 20px; line-height: 1.1; }
+  .phone .ps { font-size: 26px; color: #A1A1AA; margin-top: 12px; }
+  .phone .pb { margin-top: auto; display: flex; gap: 60px; }
+  .phone .pb div { display: flex; flex-direction: column; align-items: center; gap: 12px; font-size: 22px; color: #C9C9CF; }
+  .phone .pb i { width: 96px; height: 96px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #3A3A40; }
+  .phone .pb .acc i { background: #436F89; }
+  .phone .pb .ic { width: 44px; height: 44px; background-color: #FFFFFF; }
+  /* Slider (temperature) */
+  .slider { position: relative; height: 22px; border-radius: 999px; background: #2A2A2F; margin: 60px 0 18px; }
+  .slider .zone { position: absolute; top: 0; bottom: 0; }
+  .slider .knob { position: absolute; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%; background: #FFFFFF; border: 8px solid #4A7A96; }
+  .zones { display: grid; grid-template-columns: 30fr 20fr 20fr 30fr; }
+  .zones > div { padding: 10px 14px 0; border-left: 2px solid #3A3A40; }
+  .zones h3 { font-size: 36px; font-weight: 650; } .zones p { font-family: var(--mono); font-size: 22px; color: var(--muted); margin-top: 6px; }
+  /* Stacked bar */
+  .stack { display: flex; height: 96px; border-radius: 18px; overflow: hidden; gap: 4px; }
+  .stack > div { display: flex; align-items: center; justify-content: center; gap: 14px; font-size: 30px; font-weight: 600; color: #FFFFFF; background: #3A3A40; }
+  .stack > div .ic { background-color: #FFFFFF; width: 34px; height: 34px; }
+  .stack > div.hi { background: #436F89; }
+  /* Doc rows (prompt sections) */
+  .doc { display: grid; grid-template-columns: 480px 1fr; row-gap: 12px; }
+  .doc .r { display: contents; }
+  .doc .r > div { padding: 18px 26px; font-size: 32px; display: flex; align-items: center; }
+  .light .doc .r > div { background: #FFFFFF; border-top: 2px solid #DCDCD6; border-bottom: 2px solid #DCDCD6; }
+  .dark .doc .r > div { background: #141416; border-top: 2px solid #2A2A2F; border-bottom: 2px solid #2A2A2F; }
+  .doc .r > div:first-child { font-family: var(--mono); font-size: 28px; color: var(--blue); border-radius: 16px 0 0 16px; border-left: 2px solid #DCDCD6; }
+  .light .doc .r > div:first-child { color: var(--blue-deep); }
+  .dark .doc .r > div:first-child { border-left-color: #2A2A2F; }
+  .doc .r > div:last-child { border-radius: 0 16px 16px 0; border-right: 2px solid #DCDCD6; }
+  .dark .doc .r > div:last-child { border-right-color: #2A2A2F; }
+  .light .doc .r > div:last-child { color: #3F3F46; } .dark .doc .r > div:last-child { color: #C9C9CF; }
+  /* Field form mock */
+  .fld { margin-bottom: 18px; }
+  .fld .label { margin-bottom: 8px; display: block; }
+  .fld .val { font-size: 30px; padding: 16px 22px; border-radius: 14px; background: #0B0B0C; border: 2px solid #2A2A2F; color: #EDEDED; }
+  .fld .val.mono { font-family: var(--mono); font-size: 27px; }
+  /* Click-builds: [data-b="N"] appears on the Nth Next press */
+  [data-b] { opacity: 0; transform: translateY(26px); transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.75s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  [data-b].on { opacity: 1; transform: none; }
+  [data-b].pop { transform: scale(0.92); }
+  [data-b].pop.on { transform: none; }
+  [data-b].ghost.on { opacity: 0.3; }
+  .slide.active .page > :not([data-b]) { animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  .slide.active .page > :nth-child(2) { animation-delay: 0.08s; }
+  .slide.active .page > :nth-child(3) { animation-delay: 0.16s; }
+  .slide.active .page > :nth-child(n+4) { animation-delay: 0.24s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+  html.nomotion *, html.nomotion *::before, html.nomotion *::after { animation: none !important; transition: none !important; }
+
+  /* Presenter window (?presenter=1, opened with S): never on the recorded screen */
+  #pv { display: none; }
+  body.pv #stage { position: fixed; left: 24px; top: 24px; right: auto; bottom: auto; width: 62vw; height: calc(62vw * 0.5625); border: 2px solid #2A2A2F; border-radius: 10px; overflow: hidden; }
+  body.pv #pv { display: grid; position: fixed; left: calc(62vw + 48px); right: 24px; top: 24px; bottom: 24px; grid-template-rows: auto auto 1fr auto; gap: 18px; color: #EDEDED; font-family: var(--font); }
+  body.pv #pv .pv-h { font-family: var(--mono); font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); }
+  body.pv #pv .pv-t { font-family: var(--mono); font-size: 44px; font-variant-numeric: tabular-nums; }
+  body.pv #pv ul { list-style: none; overflow: auto; }
+  body.pv #pv li { font-size: 26px; line-height: 1.4; padding: 8px 0 8px 26px; position: relative; color: #E4E4E7; }
+  body.pv #pv li::before { content: ""; position: absolute; left: 2px; top: 22px; width: 10px; height: 10px; border-radius: 50%; background: var(--blue); }
+  body.pv #pv .pv-next { font-size: 20px; color: #A1A1AA; border-top: 2px solid #2A2A2F; padding-top: 14px; }
+  body.pv #pv .pv-next b { color: #EDEDED; font-weight: 600; }
+  body.pv #pvkeys { position: fixed; left: 24px; top: calc(62vw * 0.5625 + 44px); font-family: var(--mono); font-size: 15px; color: #8A8A93; line-height: 1.7; }
+  #pvkeys { display: none; } body.pv #pvkeys { display: block; }
+  body.pv #notes, body.pv #pp { display: none !important; }
+  #notes ul { list-style: none; } #notes li { padding: 2px 0 2px 22px; position: relative; } #notes li::before { content: ""; position: absolute; left: 2px; top: 14px; width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+
+  /* Chrome: drawn by the shell on every slide, above the video. Video renders must not bake these in. */
+  .chrome { position: absolute; z-index: 6; pointer-events: none; }
+  .source { left: 160px; bottom: 64px; max-width: 1060px; font-family: var(--mono); font-size: 22px; line-height: 1.4; letter-spacing: 0.01em; color: #8A8A93; }
+  .light .source { color: #6B6B73; }
+  .brandmark { right: 160px; bottom: 60px; height: 34px; display: flex; align-items: center; }
+  .brandmark img { height: 34px; width: auto; display: block; }
+  .light .brandmark img { height: 34px; }
+  .brandmark .wm { margin-left: 10px; font-size: 31px; font-weight: 600; letter-spacing: -0.025em; line-height: 1; color: var(--text-dark); }
+  .apply-tag { right: 400px; bottom: 58px; display: flex; align-items: center; gap: 14px; height: 38px; padding: 0 20px 0 16px; border-radius: 999px; font-family: var(--mono); font-size: 21px; font-weight: 500; letter-spacing: 0.02em; }
+  .dark .apply-tag { color: var(--text); background: rgba(98,152,182,0.12); border: 1px solid rgba(98,152,182,0.45); }
+  .light .apply-tag { color: var(--text-dark); background: rgba(74,122,150,0.08); border: 1px solid rgba(74,122,150,0.45); }
+  .apply-tag i { width: 10px; height: 10px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 5px rgba(98,152,182,0.2); }
+
+  /* Per-slide video over the static copy */
+  .sv { position: absolute; inset: 0; width: 1920px; height: 1080px; object-fit: cover; z-index: 5; background: transparent; }
+
+  /* LIVE CALL slide: real iframe in a device frame, no video over it */
+  .live .live-copy { position: absolute; left: 160px; top: 0; height: 940px; width: 900px; display: flex; flex-direction: column; justify-content: center; }
+  .live .live-copy h2 { font-size: 104px; }
+  .live .live-copy .lede { font-size: 44px; }
+  .live-pill { display: inline-flex; align-items: center; gap: 14px; }
+  .live-pill i { width: 14px; height: 14px; border-radius: 50%; background: var(--blue); animation: livepulse 2.4s ease-in-out infinite; }
+  @keyframes livepulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(98,152,182,0.55); } 50% { box-shadow: 0 0 0 12px rgba(98,152,182,0); } }
+  /* The demo page draws its own phone (embed=true, transparent background), so the shell adds no frame:
+     the iframe renders at the demo's native 480x780 and is scaled 1.125x to 540x878 on the stage. */
+  .live .glow { position: absolute; right: 30px; top: 40px; width: 1000px; height: 1000px; background: radial-gradient(closest-side, rgba(98,152,182,0.20), rgba(98,152,182,0) 72%); pointer-events: none; }
+  .device { position: absolute; right: 260px; top: 88px; width: 540px; height: 878px; }
+  .device::after { content: ""; position: absolute; left: 70px; right: 70px; bottom: -26px; height: 60px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,0.75), rgba(0,0,0,0)); z-index: 0; pointer-events: none; }
+  .screen { position: relative; width: 540px; height: 878px; z-index: 1; }
+  .screen iframe { position: absolute; left: 0; top: 0; width: 480px; height: 780px; border: 0; z-index: 2; background: transparent; color-scheme: normal; transform: scale(1.125); transform-origin: 0 0; }
+  .screen .idle, .screen .live-poster, .screen .live-rec { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 64px; }
+  .screen .idle { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; color: var(--muted); font-family: var(--mono); font-size: 20px; letter-spacing: 0.08em; text-transform: uppercase; z-index: 1; }
+  .screen .idle img { width: 70px; opacity: 0.9; }
+  .live.loaded .screen .idle { display: none; }
+  .screen .live-poster { object-fit: contain; z-index: 1; display: none; }
+  .screen .live-rec { object-fit: contain; z-index: 3; display: none; }
+  .live.rec .live-rec { display: block; }
+  .live.rec iframe { display: none; }
+  .hot { position: absolute; z-index: 7; right: 176px; width: 64px; height: 64px; border-radius: 50%; border: 1px solid rgba(98,152,182,0.5); background: rgba(20,20,22,0.7); color: var(--text); font: 600 26px var(--font); cursor: pointer; opacity: 0.35; transition: opacity .2s; }
+  .hot:hover, .hot:focus-visible { opacity: 1; }
+  .hot-back { top: 432px; }
+  .hot-next { top: 516px; }
+
+  #snd { position: fixed; right: 24px; bottom: 82px; z-index: 12; display: none; background: rgba(15,15,15,0.85); color: var(--text); border: 1px solid var(--blue); border-radius: 999px; padding: 12px 20px; font: 600 16px var(--font); cursor: pointer; }
+  #snd.on { display: block; }
+  #pp { position: fixed; right: 22px; bottom: 22px; z-index: 12; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(98,152,182,0.7); background: rgba(15,15,15,0.55); color: var(--text); font: 600 18px var(--font); cursor: pointer; opacity: 0.35; transition: opacity .2s; display: none; align-items: center; justify-content: center; padding: 0; }
+  #pp:hover, #pp.paused { opacity: 1; }
+  #pp.on { display: flex; }
+
+  /* Overlays: notes (N), counter */
+  #notes { position: fixed; left: 0; right: 0; bottom: 0; max-height: 42vh; overflow: auto; background: rgba(20,20,22,0.97); color: #E4E4E7; font-size: 22px; line-height: 1.5; padding: 26px 40px 30px; border-top: 2px solid var(--blue); display: none; z-index: 10; }
+  #notes.on { display: block; }
+  #notes .nh { font-family: var(--mono); font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); margin-bottom: 10px; }
+  #count { display: none; }
+  .notes { display: none; }
+
+  /* Print: one slide per 1920x1080 page */
+  @page { size: 1920px 1080px; margin: 0; }
+  @media print {
+    html, body { height: auto; overflow: visible; background: none; }
+    #stage { position: static; display: block; }
+    #deck { transform: none !important; width: 1920px; height: auto; }
+    .slide { display: block !important; position: relative; page-break-after: always; break-after: page; }
+    .slide:last-child { page-break-after: auto; break-after: auto; }
+    #notes, #count, #pp, #snd, .hot, .screen iframe, .screen .live-rec, #pv, #pvkeys { display: none !important; }
+    [data-b] { opacity: 1 !important; transform: none !important; }
+    [data-b].ghost { opacity: 0.3 !important; }
+    .page > * { animation: none !important; }
+    .screen .live-poster { display: block; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div id="stage" tabindex="-1"><div id="deck">
+
+<!-- SLIDES:BEGIN generated by tools/wire.py from slides.json. Edit slides.json, then run: python3 tools/wire.py -->
+
+<section class="slide dark" id="s-title" data-id="title" data-type="page" data-n="1">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Video 2b &middot; Pick your offer</div>
+    <h2 class="ttl xl"><span>Speed beats</span><span class='blue'>everything.</span></h2>
+    <div class='split' style='margin-top:40px'><div style='display:flex;flex-direction:column;justify-content:space-between'><div class='sub' style='margin-top:0'>Pick an offer in the next hour. Then go sell it.</div><div class='chips' style='flex-direction:column;align-items:flex-start'><span class='chip'>2a &middot; Voice agents 101</span><span class='chip on'>2b &middot; Pick your offer</span><span class='chip'>2c &middot; Get your first clients</span></div></div><div class='card'><div class='k'>In this part</div><ol class='agenda'><li>Why speed wins</li><li>What you can sell</li><li>The forever follow-up funnel</li><li>What to charge</li><li>Pick yours in four questions</li></ol></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">You'll figure this out as you go.
+This part: what to sell and what to charge.
+By the end you have an offer. Today.</div>
+</section>
+
+<section class="slide light" id="s-sell-first" data-id="sell-first" data-type="page" data-n="2">
+  <div class="page" data-mbox="copy">
+    <div class="eb">The rule</div>
+    <h2 class="ttl">Sell first. Perfect later.</h2>
+    <div class='fill center'><div class='card ink' data-b='1' style='padding:56px 64px'><div class='quote' style='font-size:66px'>&ldquo;Come up with an offer in an hour. From now. <span class='blue'>Until you actually sell it, you don't know what you're doing.</span>&rdquo;</div><div class='label' style='margin-top:30px;color:#A1A1AA'>Dan Gauerke</div></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Most people spend months building. Then nobody buys.
+Your first offer will be wrong. That's fine.
+Selling is how you find out what's right.</div>
+</section>
+
+<section class="slide dark" id="s-the-loop" data-id="the-loop" data-type="page" data-n="3">
+  <div class="page" data-mbox="copy">
+    <div class="eb">How you actually learn</div>
+    <h2 class="ttl">The fastest loop wins.</h2>
+    <div class='fill'><div class='grid c5 grow' style='grid-auto-rows:1fr'><div class='card sm' data-b='1'><div class='k'>01</div><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjEuODcsODMuMTZBMTA0LjEsMTA0LjEsMCwxLDEsMTk1LjY3LDQ5bDIyLjY3LTIyLjY4YTgsOCwwLDAsMSwxMS4zMiwxMS4zMmwtOTYsOTZhOCw4LDAsMCwxLTExLjMyLTExLjMybDI3LjcyLTI3LjcyYTQwLDQwLDAsMSwwLDE3Ljg3LDMxLjA5LDgsOCwwLDEsMSwxNi0uOSw1Niw1NiwwLDEsMS0yMi4zOC00MS42NUwxODQuMyw2MC4zOWE4Ny44OCw4Ny44OCwwLDEsMCwyMy4xMywyOS42Nyw4LDgsMCwwLDEsMTQuNDQtNi45WiIvPjwvc3ZnPg==)"></i></span><h3 style='margin-top:20px'>Pick an offer</h3><p>In one hour</p></div><div class='card sm' data-b='2'><div class='k'>02</div><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yNDgsMTIwYTQ4LjA1LDQ4LjA1LDAsMCwwLTQ4LTQ4SDE2MC4yYy0yLjkxLS4xNy01My42Mi0zLjc0LTEwMS45MS00NC4yNEExNiwxNiwwLDAsMCwzMiw0MFYyMDBhMTYsMTYsMCwwLDAsMjYuMjksMTIuMjVjMzcuNzctMzEuNjgsNzctNDAuNzYsOTMuNzEtNDMuM3YzMS43MkExNiwxNiwwLDAsMCwxNTkuMTIsMjE0bDExLDcuMzNBMTYsMTYsMCwwLDAsMTk0LjUsMjEybDExLjc3LTQ0LjM2QTQ4LjA3LDQ4LjA3LDAsMCwwLDI0OCwxMjBaTTQ4LDE5OS45M1Y0MGgwYzQyLjgxLDM1LjkxLDg2LjYzLDQ1LDEwNCw0Ny4yNHY2NS40OEMxMzQuNjUsMTU1LDkwLjg0LDE2NC4wNyw0OCwxOTkuOTNabTEzMSw4LDAsLjExLTExLTcuMzNWMTY4aDIxLjZaTTIwMCwxNTJIMTY4Vjg4aDMyYTMyLDMyLDAsMSwxLDAsNjRaIi8+PC9zdmc+)"></i></span><h3 style='margin-top:20px'>Reach out</h3><p>100 people a day</p></div><div class='card sm hi' data-b='3'><div class='k'>03</div><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjUuODYsMTAyLjgyYy0zLjc3LTMuOTQtNy42Ny04LTkuMTQtMTEuNTctMS4zNi0zLjI3LTEuNDQtOC42OS0xLjUyLTEzLjk0LS4xNS05Ljc2LS4zMS0yMC44Mi04LTI4LjUxcy0xOC43NS03Ljg1LTI4LjUxLThjLTUuMjUtLjA4LTEwLjY3LS4xNi0xMy45NC0xLjUyLTMuNTYtMS40Ny03LjYzLTUuMzctMTEuNTctOS4xNEMxNDYuMjgsMjMuNTEsMTM4LjQ0LDE2LDEyOCwxNnMtMTguMjcsNy41MS0yNS4xOCwxNC4xNGMtMy45NCwzLjc3LTgsNy42Ny0xMS41Nyw5LjE0Qzg4LDQwLjY0LDgyLjU2LDQwLjcyLDc3LjMxLDQwLjhjLTkuNzYuMTUtMjAuODIuMzEtMjguNTEsOFM0MSw2Ny41NSw0MC44LDc3LjMxYy0uMDgsNS4yNS0uMTYsMTAuNjctMS41MiwxMy45NC0xLjQ3LDMuNTYtNS4zNyw3LjYzLTkuMTQsMTEuNTdDMjMuNTEsMTA5LjcyLDE2LDExNy41NiwxNiwxMjhzNy41MSwxOC4yNywxNC4xNCwyNS4xOGMzLjc3LDMuOTQsNy42Nyw4LDkuMTQsMTEuNTcsMS4zNiwzLjI3LDEuNDQsOC42OSwxLjUyLDEzLjk0LjE1LDkuNzYuMzEsMjAuODIsOCwyOC41MXMxOC43NSw3Ljg1LDI4LjUxLDhjNS4yNS4wOCwxMC42Ny4xNiwxMy45NCwxLjUyLDMuNTYsMS40Nyw3LjYzLDUuMzcsMTEuNTcsOS4xNEMxMDkuNzIsMjMyLjQ5LDExNy41NiwyNDAsMTI4LDI0MHMxOC4yNy03LjUxLDI1LjE4LTE0LjE0YzMuOTQtMy43Nyw4LTcuNjcsMTEuNTctOS4xNCwzLjI3LTEuMzYsOC42OS0xLjQ0LDEzLjk0LTEuNTIsOS43Ni0uMTUsMjAuODItLjMxLDI4LjUxLThzNy44NS0xOC43NSw4LTI4LjUxYy4wOC01LjI1LjE2LTEwLjY3LDEuNTItMTMuOTQsMS40Ny0zLjU2LDUuMzctNy42Myw5LjE0LTExLjU3QzIzMi40OSwxNDYuMjgsMjQwLDEzOC40NCwyNDAsMTI4UzIzMi40OSwxMDkuNzMsMjI1Ljg2LDEwMi44MlptLTExLjU1LDM5LjI5Yy00Ljc5LDUtOS43NSwxMC4xNy0xMi4zOCwxNi41Mi0yLjUyLDYuMS0yLjYzLDEzLjA3LTIuNzMsMTkuODItLjEsNy0uMjEsMTQuMzMtMy4zMiwxNy40M3MtMTAuMzksMy4yMi0xNy40MywzLjMyYy02Ljc1LjEtMTMuNzIuMjEtMTkuODIsMi43My02LjM1LDIuNjMtMTEuNTIsNy41OS0xNi41MiwxMi4zOFMxMzIsMjI0LDEyOCwyMjRzLTkuMTUtNC45Mi0xNC4xMS05LjY5LTEwLjE3LTkuNzUtMTYuNTItMTIuMzhjLTYuMS0yLjUyLTEzLjA3LTIuNjMtMTkuODItMi43My03LS4xLTE0LjMzLS4yMS0xNy40My0zLjMycy0zLjIyLTEwLjM5LTMuMzItMTcuNDNjLS4xLTYuNzUtLjIxLTEzLjcyLTIuNzMtMTkuODItMi42My02LjM1LTcuNTktMTEuNTItMTIuMzgtMTYuNTJTMzIsMTMyLDMyLDEyOHM0LjkyLTkuMTUsOS42OS0xNC4xMSw5Ljc1LTEwLjE3LDEyLjM4LTE2LjUyYzIuNTItNi4xLDIuNjMtMTMuMDcsMi43My0xOS44Mi4xLTcsLjIxLTE0LjMzLDMuMzItMTcuNDNTNzAuNTEsNTYuOSw3Ny41NSw1Ni44YzYuNzUtLjEsMTMuNzItLjIxLDE5LjgyLTIuNzMsNi4zNS0yLjYzLDExLjUyLTcuNTksMTYuNTItMTIuMzhTMTI0LDMyLDEyOCwzMnM5LjE1LDQuOTIsMTQuMTEsOS42OSwxMC4xNyw5Ljc1LDE2LjUyLDEyLjM4YzYuMSwyLjUyLDEzLjA3LDIuNjMsMTkuODIsMi43Myw3LC4xLDE0LjMzLjIxLDE3LjQzLDMuMzJzMy4yMiwxMC4zOSwzLjMyLDE3LjQzYy4xLDYuNzUuMjEsMTMuNzIsMi43MywxOS44MiwyLjYzLDYuMzUsNy41OSwxMS41MiwxMi4zOCwxNi41MlMyMjQsMTI0LDIyNCwxMjgsMjE5LjA4LDEzNy4xNSwyMTQuMzEsMTQyLjExWk0xNzMuNjYsOTguMzRhOCw4LDAsMCwxLDAsMTEuMzJsLTU2LDU2YTgsOCwwLDAsMS0xMS4zMiwwbC0yNC0yNGE4LDgsMCwwLDEsMTEuMzItMTEuMzJMMTEyLDE0OC42OWw1MC4zNC01MC4zNUE4LDgsMCwwLDEsMTczLjY2LDk4LjM0WiIvPjwvc3ZnPg==)"></i></span><h3 style='margin-top:20px'>Sell one</h3><p>Your first client</p></div><div class='card sm' data-b='4'><div class='k'>04</div><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMTYsMTA0YTgsOCwwLDAsMS0xNiwwLDcyLDcyLDAsMCwwLTE0NCwwYzAsMjYuNyw4LjUzLDM0LjkyLDE3LjU3LDQzLjY0QzgyLjIxLDE1Niw5MiwxNjUuNDEsOTIsMTg4YTM2LDM2LDAsMCwwLDM2LDM2YzEwLjI0LDAsMTguNDUtNC4xNiwyNS44My0xMy4wOWE4LDgsMCwxLDEsMTIuMzQsMTAuMThDMTU1LjgxLDIzMy42NCwxNDMsMjQwLDEyOCwyNDBhNTIuMDYsNTIuMDYsMCwwLDEtNTItNTJjMC0xNS43OS01LjY4LTIxLjI3LTEzLjU0LTI4Ljg0QzUyLjQ2LDE0OS41LDQwLDEzNy41LDQwLDEwNGE4OCw4OCwwLDAsMSwxNzYsMFptLTM4LjEzLDU3LjA4QTgsOCwwLDAsMCwxNjYuOTMsMTY0LDgsOCwwLDAsMSwxNTIsMTYwYzAtOS4zMyw0LjgyLTE1Ljc2LDEwLjQtMjMuMiw2LjM3LTguNSwxMy42LTE4LjEzLDEzLjYtMzIuOGE0OCw0OCwwLDAsMC05NiwwLDgsOCwwLDAsMCwxNiwwLDMyLDMyLDAsMCwxLDY0LDBjMCw5LjMzLTQuODIsMTUuNzYtMTAuNCwyMy4yLTYuMzcsOC41LTEzLjYsMTguMTMtMTMuNiwzMi44YTI0LDI0LDAsMCwwLDQ0Ljc4LDEyQTgsOCwwLDAsMCwxNzcuODcsMTYxLjA4WiIvPjwvc3ZnPg==)"></i></span><h3 style='margin-top:20px'>Learn</h3><p>What they really want</p></div><div class='card sm' data-b='5'><div class='k'>05</div><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik00MCw4OEg3M2EzMiwzMiwwLDAsMCw2MiwwaDgxYTgsOCwwLDAsMCwwLTE2SDEzNWEzMiwzMiwwLDAsMC02MiwwSDQwYTgsOCwwLDAsMCwwLDE2Wm02NC0yNEExNiwxNiwwLDEsMSw4OCw4MCwxNiwxNiwwLDAsMSwxMDQsNjRaTTIxNiwxNjhIMTk5YTMyLDMyLDAsMCwwLTYyLDBINDBhOCw4LDAsMCwwLDAsMTZoOTdhMzIsMzIsMCwwLDAsNjIsMGgxN2E4LDgsMCwwLDAsMC0xNlptLTQ4LDI0YTE2LDE2LDAsMSwxLDE2LTE2QTE2LDE2LDAsMCwxLDE2OCwxOTJaIi8+PC9zdmc+)"></i></span><h3 style='margin-top:20px'>Sharpen</h3><p>Tweak the offer</p></div></div><div class='row' data-b='6' style='margin-top:30px;gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjQsNDhWOTZhOCw4LDAsMCwxLTgsOEgxNjhhOCw4LDAsMCwxLDAtMTZoMjguNjlMMTgyLjA2LDczLjM3YTc5LjU2LDc5LjU2LDAsMCwwLTU2LjEzLTIzLjQzaC0uNDVBNzkuNTIsNzkuNTIsMCwwLDAsNjkuNTksNzIuNzEsOCw4LDAsMCwxLDU4LjQxLDYxLjI3YTk2LDk2LDAsMCwxLDEzNSwuNzlMMjA4LDc2LjY5VjQ4YTgsOCwwLDAsMSwxNiwwWk0xODYuNDEsMTgzLjI5YTgwLDgwLDAsMCwxLTExMi40Ny0uNjZMNTkuMzEsMTY4SDg4YTgsOCwwLDAsMCwwLTE2SDQwYTgsOCwwLDAsMC04LDh2NDhhOCw4LDAsMCwwLDE2LDBWMTc5LjMxbDE0LjYzLDE0LjYzQTk1LjQzLDk1LjQzLDAsMCwwLDEzMCwyMjIuMDZoLjUzYTk1LjM2LDk1LjM2LDAsMCwwLDY3LjA3LTI3LjMzLDgsOCwwLDAsMC0xMS4xOC0xMS40NFoiLz48L3N2Zz4=)"></i><span class='sub' style='margin:0'>Then go round again. Every week.</span></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">One click per step.
+The sale is step 3, not step 30.
+Each lap makes the offer sharper.</div>
+</section>
+
+<section class="slide light" id="s-what-you-can-sell" data-id="what-you-can-sell" data-type="page" data-n="4">
+  <div class="page" data-mbox="copy">
+    <div class="eb">What you can sell with Leadlock</div>
+    <h2 class="ttl">Seven things. All live today.</h2>
+    <div class='fill'><div class='grid c4 grow' style='grid-auto-rows:1fr'><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjIuMzcsMTU4LjQ2bC00Ny4xMS0yMS4xMS0uMTMtLjA2YTE2LDE2LDAsMCwwLTE1LjE3LDEuNCw4LjEyLDguMTIsMCwwLDAtLjc1LjU2TDEzNC44NywxNjBjLTE1LjQyLTcuNDktMzEuMzQtMjMuMjktMzguODMtMzguNTFsMjAuNzgtMjQuNzFjLjItLjI1LjM5LS41LjU3LS43N2ExNiwxNiwwLDAsMCwxLjMyLTE1LjA2bDAtLjEyTDk3LjU0LDMzLjY0YTE2LDE2LDAsMCwwLTE2LjYyLTkuNTJBNTYuMjYsNTYuMjYsMCwwLDAsMzIsODBjMCw3OS40LDY0LjYsMTQ0LDE0NCwxNDRhNTYuMjYsNTYuMjYsMCwwLDAsNTUuODgtNDguOTJBMTYsMTYsMCwwLDAsMjIyLjM3LDE1OC40NlpNMTc2LDIwOEExMjguMTQsMTI4LjE0LDAsMCwxLDQ4LDgwLDQwLjIsNDAuMiwwLDAsMSw4Mi44Nyw0MGEuNjEuNjEsMCwwLDAsMCwuMTJsMjEsNDdMODMuMiwxMTEuODZhNi4xMyw2LjEzLDAsMCwwLS41Ny43NywxNiwxNiwwLDAsMC0xLDE1LjdjOS4wNiwxOC41MywyNy43MywzNy4wNiw0Ni40Niw0Ni4xMWExNiwxNiwwLDAsMCwxNS43NS0xLjE0LDguNDQsOC40NCwwLDAsMCwuNzQtLjU2TDE2OC44OSwxNTJsNDcsMjEuMDVoMHMuMDgsMCwuMTEsMEE0MC4yMSw0MC4yMSwwLDAsMSwxNzYsMjA4WiIvPjwvc3ZnPg==)"></i><h3>Phone and text agent</h3></div><p>Answers, qualifies, books into their software</p></div><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjQsNDhWOTZhOCw4LDAsMCwxLTgsOEgxNjhhOCw4LDAsMCwxLDAtMTZoMjguNjlMMTgyLjA2LDczLjM3YTc5LjU2LDc5LjU2LDAsMCwwLTU2LjEzLTIzLjQzaC0uNDVBNzkuNTIsNzkuNTIsMCwwLDAsNjkuNTksNzIuNzEsOCw4LDAsMCwxLDU4LjQxLDYxLjI3YTk2LDk2LDAsMCwxLDEzNSwuNzlMMjA4LDc2LjY5VjQ4YTgsOCwwLDAsMSwxNiwwWk0xODYuNDEsMTgzLjI5YTgwLDgwLDAsMCwxLTExMi40Ny0uNjZMNTkuMzEsMTY4SDg4YTgsOCwwLDAsMCwwLTE2SDQwYTgsOCwwLDAsMC04LDh2NDhhOCw4LDAsMCwwLDE2LDBWMTc5LjMxbDE0LjYzLDE0LjYzQTk1LjQzLDk1LjQzLDAsMCwwLDEzMCwyMjIuMDZoLjUzYTk1LjM2LDk1LjM2LDAsMCwwLDY3LjA3LTI3LjMzLDgsOCwwLDAsMC0xMS4xOC0xMS40NFoiLz48L3N2Zz4=)"></i><h3>Forever follow-up</h3></div><p>Plug-and-play GoHighLevel snapshot</p></div><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjQsMTI4YTk2LDk2LDAsMCwxLTk0LjcxLDk2SDEyOEE5NS4zOCw5NS4zOCwwLDAsMSw2Mi4xLDE5Ny44YTgsOCwwLDAsMSwxMS0xMS42M0E4MCw4MCwwLDEsMCw3MS40Myw3MS4zOWEzLjA3LDMuMDcsMCwwLDEtLjI2LjI1TDQ0LjU5LDk2SDcyYTgsOCwwLDAsMSwwLDE2SDI0YTgsOCwwLDAsMS04LThWNTZhOCw4LDAsMCwxLDE2LDBWODUuOEw2MC4yNSw2MEE5Niw5NiwwLDAsMSwyMjQsMTI4WiIvPjwvc3ZnPg==)"></i><h3>Lead reactivation</h3></div><p>Works the old leads in their CRM</p></div><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMTUuNzksMTE4LjE3YTgsOCwwLDAsMC01LTUuNjZMMTUzLjE4LDkwLjlsMTQuNjYtNzMuMzNhOCw4LDAsMCwwLTEzLjY5LTdsLTExMiwxMjBhOCw4LDAsMCwwLDMsMTNsNTcuNjMsMjEuNjFMODguMTYsMjM4LjQzYTgsOCwwLDAsMCwxMy42OSw3bDExMi0xMjBBOCw4LDAsMCwwLDIxNS43OSwxMTguMTdaTTEwOS4zNywyMTRsMTAuNDctNTIuMzhhOCw4LDAsMCwwLTUtOS4wNkw2MiwxMzIuNzFsODQuNjItOTAuNjZMMTM2LjE2LDk0LjQzYTgsOCwwLDAsMCw1LDkuMDZsNTIuOCwxOS44WiIvPjwvc3ZnPg==)"></i><h3>Speed-to-lead calls</h3></div><p>Calls every new lead right away</p></div><div class='card sm' data-b='2'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xMjgsMjRBMTA0LDEwNCwwLDEsMCwyMzIsMTI4LDEwNC4xMSwxMDQuMTEsMCwwLDAsMTI4LDI0Wm0wLDE5MmE4OCw4OCwwLDEsMSw4OC04OEE4OC4xLDg4LjEsMCwwLDEsMTI4LDIxNlptNDguMjQtOTQuNzgtNjQtNDBBOCw4LDAsMCwwLDEwMCw4OHY4MGE4LDgsMCwwLDAsMTIuMjQsNi43OGw2NC00MGE4LDgsMCwwLDAsMC0xMy41NlpNMTE2LDE1My41N1YxMDIuNDNMMTU2LjkxLDEyOFoiLz48L3N2Zz4=)"></i><h3>Demo links</h3></div><p>Open like an incoming call on their phone</p></div><div class='card sm' data-b='2'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xNDAsMTI4YTEyLDEyLDAsMSwxLTEyLTEyQTEyLDEyLDAsMCwxLDE0MCwxMjhaTTg0LDExNmExMiwxMiwwLDEsMCwxMiwxMkExMiwxMiwwLDAsMCw4NCwxMTZabTg4LDBhMTIsMTIsMCwxLDAsMTIsMTJBMTIsMTIsMCwwLDAsMTcyLDExNlptNjAsMTJBMTA0LDEwNCwwLDAsMSw3OS4xMiwyMTkuODJMNDUuMDcsMjMxLjE3YTE2LDE2LDAsMCwxLTIwLjI0LTIwLjI0bDExLjM1LTM0LjA1QTEwNCwxMDQsMCwxLDEsMjMyLDEyOFptLTE2LDBBODgsODgsMCwxLDAsNTEuODEsMTcyLjA2YTgsOCwwLDAsMSwuNjYsNi41NEw0MCwyMTYsNzcuNCwyMDMuNTNhNy44NSw3Ljg1LDAsMCwxLDIuNTMtLjQyLDgsOCwwLDAsMSw0LDEuMDhBODgsODgsMCwwLDAsMjE2LDEyOFoiLz48L3N2Zz4=)"></i><h3>Every channel</h3></div><p>SMS, WhatsApp, Instagram, Facebook, web chat</p></div><div class='card sm' data-b='2'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik04My4xOSwxNzQuNGE4LDgsMCwwLDAsMTEuMjEtMS42LDUyLDUyLDAsMCwxLDgzLjIsMCw4LDgsMCwxLDAsMTIuOC05LjZBNjcuODgsNjcuODgsMCwwLDAsMTYzLDE0MS41MWE0MCw0MCwwLDEsMC01My45NCwwQTY3Ljg4LDY3Ljg4LDAsMCwwLDgxLjYsMTYzLjIsOCw4LDAsMCwwLDgzLjE5LDE3NC40Wk0xMTIsMTEyYTI0LDI0LDAsMSwxLDI0LDI0QTI0LDI0LDAsMCwxLDExMiwxMTJabTk2LTg4SDY0QTE2LDE2LDAsMCwwLDQ4LDQwVjY0SDMyYTgsOCwwLDAsMCwwLDE2SDQ4djQwSDMyYTgsOCwwLDAsMCwwLDE2SDQ4djQwSDMyYTgsOCwwLDAsMCwwLDE2SDQ4djI0YTE2LDE2LDAsMCwwLDE2LDE2SDIwOGExNiwxNiwwLDAsMCwxNi0xNlY0MEExNiwxNiwwLDAsMCwyMDgsMjRabTAsMTkySDY0VjQwSDIwOFoiLz48L3N2Zz4=)"></i><h3>Contact Intelligence</h3></div><p>Remembers every lead and every call</p></div><div class='card sm hi' data-b='3'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjUuODYsMTAyLjgyYy0zLjc3LTMuOTQtNy42Ny04LTkuMTQtMTEuNTctMS4zNi0zLjI3LTEuNDQtOC42OS0xLjUyLTEzLjk0LS4xNS05Ljc2LS4zMS0yMC44Mi04LTI4LjUxcy0xOC43NS03Ljg1LTI4LjUxLThjLTUuMjUtLjA4LTEwLjY3LS4xNi0xMy45NC0xLjUyLTMuNTYtMS40Ny03LjYzLTUuMzctMTEuNTctOS4xNEMxNDYuMjgsMjMuNTEsMTM4LjQ0LDE2LDEyOCwxNnMtMTguMjcsNy41MS0yNS4xOCwxNC4xNGMtMy45NCwzLjc3LTgsNy42Ny0xMS41Nyw5LjE0Qzg4LDQwLjY0LDgyLjU2LDQwLjcyLDc3LjMxLDQwLjhjLTkuNzYuMTUtMjAuODIuMzEtMjguNTEsOFM0MSw2Ny41NSw0MC44LDc3LjMxYy0uMDgsNS4yNS0uMTYsMTAuNjctMS41MiwxMy45NC0xLjQ3LDMuNTYtNS4zNyw3LjYzLTkuMTQsMTEuNTdDMjMuNTEsMTA5LjcyLDE2LDExNy41NiwxNiwxMjhzNy41MSwxOC4yNywxNC4xNCwyNS4xOGMzLjc3LDMuOTQsNy42Nyw4LDkuMTQsMTEuNTcsMS4zNiwzLjI3LDEuNDQsOC42OSwxLjUyLDEzLjk0LjE1LDkuNzYuMzEsMjAuODIsOCwyOC41MXMxOC43NSw3Ljg1LDI4LjUxLDhjNS4yNS4wOCwxMC42Ny4xNiwxMy45NCwxLjUyLDMuNTYsMS40Nyw3LjYzLDUuMzcsMTEuNTcsOS4xNEMxMDkuNzIsMjMyLjQ5LDExNy41NiwyNDAsMTI4LDI0MHMxOC4yNy03LjUxLDI1LjE4LTE0LjE0YzMuOTQtMy43Nyw4LTcuNjcsMTEuNTctOS4xNCwzLjI3LTEuMzYsOC42OS0xLjQ0LDEzLjk0LTEuNTIsOS43Ni0uMTUsMjAuODItLjMxLDI4LjUxLThzNy44NS0xOC43NSw4LTI4LjUxYy4wOC01LjI1LjE2LTEwLjY3LDEuNTItMTMuOTQsMS40Ny0zLjU2LDUuMzctNy42Myw5LjE0LTExLjU3QzIzMi40OSwxNDYuMjgsMjQwLDEzOC40NCwyNDAsMTI4UzIzMi40OSwxMDkuNzMsMjI1Ljg2LDEwMi44MlptLTExLjU1LDM5LjI5Yy00Ljc5LDUtOS43NSwxMC4xNy0xMi4zOCwxNi41Mi0yLjUyLDYuMS0yLjYzLDEzLjA3LTIuNzMsMTkuODItLjEsNy0uMjEsMTQuMzMtMy4zMiwxNy40M3MtMTAuMzksMy4yMi0xNy40MywzLjMyYy02Ljc1LjEtMTMuNzIuMjEtMTkuODIsMi43My02LjM1LDIuNjMtMTEuNTIsNy41OS0xNi41MiwxMi4zOFMxMzIsMjI0LDEyOCwyMjRzLTkuMTUtNC45Mi0xNC4xMS05LjY5LTEwLjE3LTkuNzUtMTYuNTItMTIuMzhjLTYuMS0yLjUyLTEzLjA3LTIuNjMtMTkuODItMi43My03LS4xLTE0LjMzLS4yMS0xNy40My0zLjMycy0zLjIyLTEwLjM5LTMuMzItMTcuNDNjLS4xLTYuNzUtLjIxLTEzLjcyLTIuNzMtMTkuODItMi42My02LjM1LTcuNTktMTEuNTItMTIuMzgtMTYuNTJTMzIsMTMyLDMyLDEyOHM0LjkyLTkuMTUsOS42OS0xNC4xMSw5Ljc1LTEwLjE3LDEyLjM4LTE2LjUyYzIuNTItNi4xLDIuNjMtMTMuMDcsMi43My0xOS44Mi4xLTcsLjIxLTE0LjMzLDMuMzItMTcuNDNTNzAuNTEsNTYuOSw3Ny41NSw1Ni44YzYuNzUtLjEsMTMuNzItLjIxLDE5LjgyLTIuNzMsNi4zNS0yLjYzLDExLjUyLTcuNTksMTYuNTItMTIuMzhTMTI0LDMyLDEyOCwzMnM5LjE1LDQuOTIsMTQuMTEsOS42OSwxMC4xNyw5Ljc1LDE2LjUyLDEyLjM4YzYuMSwyLjUyLDEzLjA3LDIuNjMsMTkuODIsMi43Myw3LC4xLDE0LjMzLjIxLDE3LjQzLDMuMzJzMy4yMiwxMC4zOSwzLjMyLDE3LjQzYy4xLDYuNzUuMjEsMTMuNzIsMi43MywxOS44MiwyLjYzLDYuMzUsNy41OSwxMS41MiwxMi4zOCwxNi41MlMyMjQsMTI0LDIyNCwxMjgsMjE5LjA4LDEzNy4xNSwyMTQuMzEsMTQyLjExWk0xNzMuNjYsOTguMzRhOCw4LDAsMCwxLDAsMTEuMzJsLTU2LDU2YTgsOCwwLDAsMS0xMS4zMiwwbC0yNC0yNGE4LDgsMCwwLDEsMTEuMzItMTEuMzJMMTEyLDE0OC42OWw1MC4zNC01MC4zNUE4LDgsMCwwLDEsMTczLjY2LDk4LjM0WiIvPjwvc3ZnPg==)"></i><h3>Nothing here is 'coming soon'</h3></div><p>Sell what exists today</p></div></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Top row: the core offers.
+Bottom row: the add-ons that make it stick.
+Only sell what's built. Everything here is.</div>
+</section>
+
+<section class="slide dark" id="s-offer-agent" data-id="offer-agent" data-type="page" data-n="5">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Offer 1</div>
+    <h2 class="ttl">The phone and text agent.</h2>
+    <div class='fill'><div class='flow grow'><div class='card sm' data-b='1'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xNDQsMTA0VjY0YTgsOCwwLDAsMSwxNiwwVjg0LjY5bDM0LjM0LTM0LjM1YTgsOCwwLDAsMSwxMS4zMiwxMS4zMkwxNzEuMzIsOTZIMTkyYTgsOCwwLDAsMSwwLDE2SDE1MkE4LDgsMCwwLDEsMTQ0LDEwNFptNzkuODgsNzkuMDhBNTYuMjYsNTYuMjYsMCwwLDEsMTY4LDIzMkM4OC42LDIzMiwyNCwxNjcuNCwyNCw4OEE1Ni4yNCw1Ni4yNCwwLDAsMSw3Mi45MiwzMi4xM2ExNiwxNiwwLDAsMSwxNi42Miw5LjUxbDIxLjEyLDQ3LjE1LDAsLjEyQTE2LDE2LDAsMCwxLDEwOS4zOSwxMDRjLS4xOC4yNy0uMzcuNTItLjU3Ljc3TDg4LDEyOS40NWM3LjQ5LDE1LjIyLDIzLjQxLDMxLDM4LjgzLDM4LjUxbDI0LjM0LTIwLjcxYTguMTIsOC4xMiwwLDAsMSwuNzUtLjU2LDE2LDE2LDAsMCwxLDE1LjE3LTEuNGwuMTMuMDYsNDcuMTEsMjEuMTFBMTYsMTYsMCwwLDEsMjIzLjg4LDE4My4wOFptLTE1Ljg4LTJzLS4wNywwLS4xMSwwaDBsLTQ3LTIxLjA1LTI0LjM1LDIwLjcxYTYuODQsNi44NCwwLDAsMS0uNzQuNTYsMTYsMTYsMCwwLDEtMTUuNzUsMS4xNGMtMTguNzMtOS4wNS0zNy40LTI3LjU4LTQ2LjQ2LTQ2LjExYTE2LDE2LDAsMCwxLDEtMTUuNyw2LjEzLDYuMTMsMCwwLDEsLjU3LS43N0w5Niw5NS4xNWwtMjEtNDdhLjYxLjYxLDAsMCwxLDAtLjEyQTQwLjIsNDAuMiwwLDAsMCw0MCw4OCwxMjguMTQsMTI4LjE0LDAsMCwwLDE2OCwyMTYsNDAuMjEsNDAuMjEsMCwwLDAsMjA4LDE4MS4wN1oiLz48L3N2Zz4=)"></i></span><h3>A call or text comes in</h3><p>Day, night, weekend</p></div><span data-b='2'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><div class='card sm' data-b='2'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xNDQsMTY1LjY4YTY4LDY4LDAsMSwwLTcxLjksMGMtMjAuNjUsNi43Ni0zOS4yMywxOS4zOS01NC4xNywzNy4xN2E4LDgsMCwwLDAsMTIuMjUsMTAuM0M1MC4yNSwxODkuMTksNzcuOTEsMTc2LDEwOCwxNzZzNTcuNzUsMTMuMTksNzcuODgsMzcuMTVhOCw4LDAsMSwwLDEyLjI1LTEwLjNDMTgzLjE4LDE4NS4wNywxNjQuNiwxNzIuNDQsMTQ0LDE2NS42OFpNNTYsMTA4YTUyLDUyLDAsMSwxLDUyLDUyQTUyLjA2LDUyLjA2LDAsMCwxLDU2LDEwOFpNMjA3LjM2LDY1LjZhMTA4LjM2LDEwOC4zNiwwLDAsMSwwLDg0LjgsOCw4LDAsMCwxLTcuMzYsNC44Niw4LDgsMCwwLDEtNy4zNi0xMS4xNSw5Mi4yNiw5Mi4yNiwwLDAsMCwwLTcyLjIyLDgsOCwwLDAsMSwxNC43Mi02LjI5Wk0yNDgsMTA4YTEzOSwxMzksMCwwLDEtMTEuMjksNTUuMTUsOCw4LDAsMCwxLTE0LjctNi4zLDEyNC40MywxMjQuNDMsMCwwLDAsMC05Ny43LDgsOCwwLDEsMSwxNC43LTYuM0ExMzksMTM5LDAsMCwxLDI0OCwxMDhaIi8+PC9zdmc+)"></i></span><h3>The agent answers</h3><p>Qualifies, answers their questions</p></div><span data-b='3'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><div class='card sm hi' data-b='3'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMDgsMzJIMTg0VjI0YTgsOCwwLDAsMC0xNiwwdjhIODhWMjRhOCw4LDAsMCwwLTE2LDB2OEg0OEExNiwxNiwwLDAsMCwzMiw0OFYyMDhhMTYsMTYsMCwwLDAsMTYsMTZIMjA4YTE2LDE2LDAsMCwwLDE2LTE2VjQ4QTE2LDE2LDAsMCwwLDIwOCwzMlpNNzIsNDh2OGE4LDgsMCwwLDAsMTYsMFY0OGg4MHY4YTgsOCwwLDAsMCwxNiwwVjQ4aDI0VjgwSDQ4VjQ4Wk0yMDgsMjA4SDQ4Vjk2SDIwOFYyMDhabS0zOC4zNC04NS42NmE4LDgsMCwwLDEsMCwxMS4zMmwtNDgsNDhhOCw4LDAsMCwxLTExLjMyLDBsLTI0LTI0YTgsOCwwLDAsMSwxMS4zMi0xMS4zMkwxMTYsMTY0LjY5bDQyLjM0LTQyLjM1QTgsOCwwLDAsMSwxNjkuNjYsMTIyLjM0WiIvPjwvc3ZnPg==)"></i></span><h3>Books the job</h3><p>Into GoHighLevel, out of the box</p></div><span data-b='4'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><div class='card sm' data-b='4'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMTYsNDhINDBBMTYsMTYsMCwwLDAsMjQsNjRWMjI0YTE1Ljg1LDE1Ljg1LDAsMCwwLDkuMjQsMTQuNUExNi4xMywxNi4xMywwLDAsMCw0MCwyNDBhMTUuODksMTUuODksMCwwLDAsMTAuMjUtMy43OGwuMDktLjA3TDgzLDIwOEgyMTZhMTYsMTYsMCwwLDAsMTYtMTZWNjRBMTYsMTYsMCwwLDAsMjE2LDQ4Wk00MCwyMjRoMFpNMjE2LDE5Mkg4MGE4LDgsMCwwLDAtNS4yMywxLjk1TDQwLDIyNFY2NEgyMTZaTTg4LDExMmE4LDgsMCwwLDEsOC04aDY0YTgsOCwwLDAsMSwwLDE2SDk2QTgsOCwwLDAsMSw4OCwxMTJabTAsMzJhOCw4LDAsMCwxLDgtOGg2NGE4LDgsMCwxLDEsMCwxNkg5NkE4LDgsMCwwLDEsODgsMTQ0WiIvPjwvc3ZnPg==)"></i></span><h3>Confirms by text</h3><p>So the job actually shows up</p></div></div><div class='foot' data-b='5' style='margin-top:30px'>Not on GoHighLevel? Anything with an API can be connected.</div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Your easiest sell. Every business has a phone.
+The win is click 3: the job on their calendar.
+Other software: custom functions. Video 4 shows how.</div>
+</section>
+
+<section class="slide light" id="s-forever-follow-up" data-id="forever-follow-up" data-type="page" data-n="6">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Offer 2 &middot; GoHighLevel snapshot</div>
+    <h2 class="ttl">Forever follow-up.</h2>
+    <div class="sub">Every lead is chased until it books, or says stop.</div>
+    <div class='fill'><div style='display:grid;grid-template-columns:1fr 96px 1fr 96px 1fr 96px 1fr;grid-template-rows:auto 110px auto;row-gap:0;align-items:center'><div class='card sm' data-b='1' style='grid-column:1;grid-row:1'><h3>New lead</h3><p>Form, ad or chat</p></div><span data-b='1' style='grid-column:2;grid-row:1;justify-self:center'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><div class='card sm' data-b='1' style='grid-column:3;grid-row:1'><h3>Instant text, then a call</h3></div><span data-b='2' style='grid-column:4;grid-row:1;justify-self:center'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><div class='card sm' data-b='2' style='grid-column:5;grid-row:1'><h3>Booked?</h3><p>Yes: on to the calendar</p></div><span data-b='2' style='grid-column:6;grid-row:1;justify-self:center'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><div class='card sm hi' data-b='2' style='grid-column:7;grid-row:1'><h3>On the calendar</h3><p>Confirmation and reminders</p></div><div data-b='3' style='grid-column:5;grid-row:2;display:flex;align-items:center;justify-content:center;gap:14px'><svg class="arrd" viewBox="0 0 28 64" aria-hidden="true"><path d="M14 2V56M3 44l11 12 11-12"/></svg><span class='alab'>not yet</span></div><div class='card sm' data-b='3' style='grid-column:5;grid-row:3'><h3>Daily follow-up</h3><p>A call and a text each day</p></div><div data-b='3' style='grid-column:6;grid-row:3;display:flex;flex-direction:column;align-items:center;gap:6px'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg><span class='alab'>a week</span></div><div class='card sm' data-b='3' style='grid-column:7;grid-row:3'><h3>Weekly follow-up</h3><p>Until it books</p></div><div data-b='4' style='grid-column:7;grid-row:2;display:flex;align-items:center;justify-content:center;gap:14px'><span class='up' style='display:flex'><svg class="arrd" viewBox="0 0 28 64" aria-hidden="true"><path d="M14 2V56M3 44l11 12 11-12"/></svg></span><span class='alab'>books</span></div><div data-b='4' style='grid-column:4;grid-row:3;display:flex;flex-direction:column;align-items:center;gap:6px'><span class='flip' style='display:flex'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><span class='alab'>stop</span></div><div class='card sm' data-b='4' style='grid-column:3;grid-row:3;opacity:0.7'><h3>Stops</h3><p>When they say stop</p></div></div></div>
+  </div>
+  <div class="chrome source">Leadlock Forever Follow-Up snapshot v4 (2026-10-19): Start Demo, Call, Scheduled, Daily and Weekly Follow Up workflows.</div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Plug-and-play: import the snapshot into their GoHighLevel.
+Lead comes in: text right away, then the agent calls.
+Not booked: daily, then weekly. Voice and text.
+It only stops when they book or say stop.</div>
+</section>
+
+<section class="slide dark" id="s-two-more" data-id="two-more" data-type="page" data-n="7">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Offers 3 and 4</div>
+    <h2 class="ttl">Two more easy adds.</h2>
+    <div class='fill'><div class='grid c2' style='grid-auto-rows:1fr'><div class='card' data-b='1'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjQsMTI4YTk2LDk2LDAsMCwxLTk0LjcxLDk2SDEyOEE5NS4zOCw5NS4zOCwwLDAsMSw2Mi4xLDE5Ny44YTgsOCwwLDAsMSwxMS0xMS42M0E4MCw4MCwwLDEsMCw3MS40Myw3MS4zOWEzLjA3LDMuMDcsMCwwLDEtLjI2LjI1TDQ0LjU5LDk2SDcyYTgsOCwwLDAsMSwwLDE2SDI0YTgsOCwwLDAsMS04LThWNTZhOCw4LDAsMCwxLDE2LDBWODUuOEw2MC4yNSw2MEE5Niw5NiwwLDAsMSwyMjQsMTI4WiIvPjwvc3ZnPg==)"></i></span><div class='k' style='margin-top:26px'>Old leads</div><h3>Lead reactivation</h3><p>Call and text the leads already sitting in their CRM. They paid for those leads once.</p></div><div class='card hi' data-b='2'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMTUuNzksMTE4LjE3YTgsOCwwLDAsMC01LTUuNjZMMTUzLjE4LDkwLjlsMTQuNjYtNzMuMzNhOCw4LDAsMCwwLTEzLjY5LTdsLTExMiwxMjBhOCw4LDAsMCwwLDMsMTNsNTcuNjMsMjEuNjFMODguMTYsMjM4LjQzYTgsOCwwLDAsMCwxMy42OSw3bDExMi0xMjBBOCw4LDAsMCwwLDIxNS43OSwxMTguMTdaTTEwOS4zNywyMTRsMTAuNDctNTIuMzhhOCw4LDAsMCwwLTUtOS4wNkw2MiwxMzIuNzFsODQuNjItOTAuNjZMMTM2LjE2LDk0LjQzYTgsOCwwLDAsMCw1LDkuMDZsNTIuOCwxOS44WiIvPjwvc3ZnPg==)"></i></span><div class='k' style='margin-top:26px'>New leads</div><h3>Speed-to-lead calls</h3><p>A form comes in, a GoHighLevel workflow tells the agent to call them right away.</p></div></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Reactivation: money already sitting in their CRM.
+Speed to lead: first to call usually wins the job.
+Both are add-ons once the agent exists.</div>
+</section>
+
+<section class="slide light" id="s-demo-that-rings" data-id="demo-that-rings" data-type="page" data-n="8">
+  <div class="page" data-mbox="copy">
+    <div class="eb">How you sell it</div>
+    <h2 class="ttl">Sell with a demo that rings.</h2>
+    <div class='split' style='margin-top:40px;grid-template-columns:1fr 520px'><div><ul class='bul' data-b='2' style='margin-top:10px'><li><b>A couple of minutes</b> to build with the demo builder</li><li>Opens like an <b>incoming call</b> on their phone</li><li>Their business name, their questions</li><li>Also as SMS, web, Messenger and Instagram demos</li></ul><div class='foot' data-b='3' style='margin-top:30px'>Send the link. Let the agent do the pitch.</div></div><div style='display:flex;justify-content:center'><div class='phone pop' data-b='1'><span class='pl'>Incoming call</span><span class='pn'>Summit Plumbing</span><span class='ps'>AI agent demo</span><div class='pb'><div><i><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xNDYuMzQsOTguMzQsMTY0LjY5LDgwLDE0Ni4zNCw2MS42NmE4LDgsMCwwLDEsMTEuMzItMTEuMzJMMTc2LDY4LjY5bDE4LjM0LTE4LjM1YTgsOCwwLDAsMSwxMS4zMiwxMS4zMkwxODcuMzIsODBsMTguMzQsMTguMzRhOCw4LDAsMCwxLTExLjMyLDExLjMyTDE3Niw5MS4zMWwtMTguMzQsMTguMzVhOCw4LDAsMCwxLTExLjMyLTExLjMyWm03Ny41NCw4NC43NEE1Ni4yNiw1Ni4yNiwwLDAsMSwxNjgsMjMyQzg4LjYsMjMyLDI0LDE2Ny40LDI0LDg4QTU2LjI2LDU2LjI2LDAsMCwxLDcyLjkyLDMyLjEyYTE2LDE2LDAsMCwxLDE2LjYyLDkuNTJsMjEuMTIsNDcuMTUsMCwuMTJBMTYsMTYsMCwwLDEsMTA5LjM5LDEwNGMtLjE4LjI3LS4zNy41Mi0uNTcuNzdMODgsMTI5LjQ1YzcuNDksMTUuMjIsMjMuNDEsMzEsMzguODMsMzguNTFsMjQuMzQtMjAuNzFhOC4xMiw4LjEyLDAsMCwxLC43NS0uNTYsMTYsMTYsMCwwLDEsMTUuMTctMS40bC4xMy4wNiw0Ny4xMSwyMS4xMUExNiwxNiwwLDAsMSwyMjMuODgsMTgzLjA4Wm0tMTUuODgtMnMtLjA3LDAtLjExLDBoMGwtNDctMjEuMDUtMjQuMzUsMjAuNzFhOC40NCw4LjQ0LDAsMCwxLS43NC41NiwxNiwxNiwwLDAsMS0xNS43NSwxLjE0Yy0xOC43My05LjA1LTM3LjQtMjcuNTgtNDYuNDYtNDYuMTFhMTYsMTYsMCwwLDEsMS0xNS43LDYuMTMsNi4xMywwLDAsMSwuNTctLjc3TDk2LDk1LjE1bC0yMS00N2EuNjEuNjEsMCwwLDEsMC0uMTJBNDAuMiw0MC4yLDAsMCwwLDQwLDg4LDEyOC4xNCwxMjguMTQsMCwwLDAsMTY4LDIxNiw0MC4yMSw0MC4yMSwwLDAsMCwyMDgsMTgxLjA3WiIvPjwvc3ZnPg==)"></i></i>Decline</div><div class='acc'><i><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjIuMzcsMTU4LjQ2bC00Ny4xMS0yMS4xMS0uMTMtLjA2YTE2LDE2LDAsMCwwLTE1LjE3LDEuNCw4LjEyLDguMTIsMCwwLDAtLjc1LjU2TDEzNC44NywxNjBjLTE1LjQyLTcuNDktMzEuMzQtMjMuMjktMzguODMtMzguNTFsMjAuNzgtMjQuNzFjLjItLjI1LjM5LS41LjU3LS43N2ExNiwxNiwwLDAsMCwxLjMyLTE1LjA2bDAtLjEyTDk3LjU0LDMzLjY0YTE2LDE2LDAsMCwwLTE2LjYyLTkuNTJBNTYuMjYsNTYuMjYsMCwwLDAsMzIsODBjMCw3OS40LDY0LjYsMTQ0LDE0NCwxNDRhNTYuMjYsNTYuMjYsMCwwLDAsNTUuODgtNDguOTJBMTYsMTYsMCwwLDAsMjIyLjM3LDE1OC40NlpNMTc2LDIwOEExMjguMTQsMTI4LjE0LDAsMCwxLDQ4LDgwLDQwLjIsNDAuMiwwLDAsMSw4Mi44Nyw0MGEuNjEuNjEsMCwwLDAsMCwuMTJsMjEsNDdMODMuMiwxMTEuODZhNi4xMyw2LjEzLDAsMCwwLS41Ny43NywxNiwxNiwwLDAsMC0xLDE1LjdjOS4wNiwxOC41MywyNy43MywzNy4wNiw0Ni40Niw0Ni4xMWExNiwxNiwwLDAsMCwxNS43NS0xLjE0LDguNDQsOC40NCwwLDAsMCwuNzQtLjU2TDE2OC44OSwxNTJsNDcsMjEuMDVoMHMuMDgsMCwuMTEsMEE0MC4yMSw0MC4yMSwwLDAsMSwxNzYsMjA4WiIvPjwvc3ZnPg==)"></i></i>Accept</div></div></div></div></div>
+  </div>
+  <div class="chrome source">Leadlock demo builder: 9 channels; the phone channel shows an incoming-call screen. Summit Plumbing is a made-up example.</div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Owners believe what they hear, not what you say.
+Build a demo before the first call. Takes a couple of minutes.
+Send the link, let them pick up.</div>
+</section>
+
+<section class="slide dark" id="s-pricing-ladder" data-id="pricing-ladder" data-type="page" data-n="9">
+  <div class="page" data-mbox="copy">
+    <div class="eb">What to charge</div>
+    <h2 class="ttl">Raise your setup fee every client.</h2>
+    <div class='fill'><div class='ladder grow'><div data-b='1' style='height:34%'><div class='ll'>Client 1</div><div class='lv'>$500</div><div class='ls'>setup + monthly</div></div><div data-b='2' style='height:52%'><div class='ll'>Client 2</div><div class='lv'>$1,000</div><div class='ls'>setup + monthly</div></div><div data-b='3' style='height:72%'><div class='ll'>Client 3</div><div class='lv'>$1,500</div><div class='ls'>setup + monthly</div></div><div class='hi' data-b='4' style='height:92%'><div class='ll'>Client 4</div><div class='lv'>$2,000</div><div class='ls'>setup + monthly</div></div></div><div class='foot' data-b='5' style='margin-top:22px'>Setup prices to charge, plus a monthly fee. Not a promise of income: results depend on your work.</div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Client 1: cheap on purpose. You want the case study.
+Each client: raise the setup fee.
+Always setup plus monthly.
+These are prices to charge, not income promises.</div>
+</section>
+
+<section class="slide light" id="s-setup-plus-monthly" data-id="setup-plus-monthly" data-type="page" data-n="10">
+  <div class="page" data-mbox="copy">
+    <div class="eb">How to price</div>
+    <h2 class="ttl">Setup fee plus monthly.</h2>
+    <div class='fill'><div class='grid c2' style='grid-auto-rows:1fr'><div class='card' data-b='1'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjYuNzYsNjlhOCw4LDAsMCwwLTEyLjg0LTIuODhsLTQwLjMsMzcuMTktMTcuMjMtMy43LTMuNy0xNy4yMywzNy4xOS00MC4zQTgsOCwwLDAsMCwxODcsMjkuMjQsNzIsNzIsMCwwLDAsODgsOTYsNzIuMzQsNzIuMzQsMCwwLDAsOTQsMTI0Ljk0TDMzLjc5LDE3N2MtLjE1LjEyLS4yOS4yNi0uNDMuMzlhMzIsMzIsMCwwLDAsNDUuMjYsNDUuMjZjLjEzLS4xMy4yNy0uMjguMzktLjQyTDEzMS4wNiwxNjJBNzIsNzIsMCwwLDAsMjMyLDk2LDcxLjU2LDcxLjU2LDAsMCwwLDIyNi43Niw2OVpNMTYwLDE1MmE1Ni4xNCw1Ni4xNCwwLDAsMS0yNy4wNy03LDgsOCwwLDAsMC05LjkyLDEuNzdMNjcuMTEsMjExLjUxYTE2LDE2LDAsMCwxLTIyLjYyLTIyLjYyTDEwOS4xOCwxMzNhOCw4LDAsMCwwLDEuNzctOS45Myw1Niw1NiwwLDAsMSw1OC4zNi04Mi4zMWwtMzEuMiwzMy44MWE4LDgsMCwwLDAtMS45NCw3LjFMMTQxLjgzLDEwOGE4LDgsMCwwLDAsNi4xNCw2LjE0bDI2LjM1LDUuNjZhOCw4LDAsMCwwLDcuMS0xLjk0bDMzLjgxLTMxLjJBNTYuMDYsNTYuMDYsMCwwLDEsMTYwLDE1MloiLz48L3N2Zz4=)"></i></span><h3>Setup fee</h3><p>One time. You build it, connect it to their software, test it.</p></div><div class='card hi' data-b='2'><span class="icb"><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjQsNDhWOTZhOCw4LDAsMCwxLTgsOEgxNjhhOCw4LDAsMCwxLDAtMTZoMjguNjlMMTgyLjA2LDczLjM3YTc5LjU2LDc5LjU2LDAsMCwwLTU2LjEzLTIzLjQzaC0uNDVBNzkuNTIsNzkuNTIsMCwwLDAsNjkuNTksNzIuNzEsOCw4LDAsMCwxLDU4LjQxLDYxLjI3YTk2LDk2LDAsMCwxLDEzNSwuNzlMMjA4LDc2LjY5VjQ4YTgsOCwwLDAsMSwxNiwwWk0xODYuNDEsMTgzLjI5YTgwLDgwLDAsMCwxLTExMi40Ny0uNjZMNTkuMzEsMTY4SDg4YTgsOCwwLDAsMCwwLTE2SDQwYTgsOCwwLDAsMC04LDh2NDhhOCw4LDAsMCwwLDE2LDBWMTc5LjMxbDE0LjYzLDE0LjYzQTk1LjQzLDk1LjQzLDAsMCwwLDEzMCwyMjIuMDZoLjUzYTk1LjM2LDk1LjM2LDAsMCwwLDY3LjA3LTI3LjMzLDgsOCwwLDAsMC0xMS4xOC0xMS40NFoiLz48L3N2Zz4=)"></i></span><h3>Monthly</h3><p>Keeps it running, tuned and supported.</p></div></div><div class='card ink' data-b='3' style='margin-top:28px'><h3>Never charge per booked call.</h3><p>You don't control their show rate, their pricing or their closing.</p></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Setup pays for your time.
+Monthly pays for keeping it working.
+Per-booking deals tie your income to things you don't control.</div>
+</section>
+
+<section class="slide dark" id="s-value-equation" data-id="value-equation" data-type="page" data-n="11">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Make it a no-brainer</div>
+    <h2 class="ttl">Four questions. One offer.</h2>
+    <div class='fill'><div class='grid c4 grow' style='grid-auto-rows:1fr'><div class='card sm' data-b='1'><div class='k'>Dream outcome &uarr;</div><h3>What do they want most?</h3><p class='blue'>Every lead booked</p></div><div class='card sm' data-b='2'><div class='k'>Likelihood &uarr;</div><h3>Why will it work for them?</h3><p class='blue'>A live demo with their name on it</p></div><div class='card sm' data-b='3'><div class='k'>Time to result &darr;</div><h3>How fast do they see it?</h3><p class='blue'>Live this week</p></div><div class='card sm' data-b='4'><div class='k'>Effort for them &darr;</div><h3>How little do they do?</h3><p class='blue'>You set it all up</p></div></div><div class='foot' data-b='5' style='margin-top:26px'>Push the top two up. Push the bottom two down. That's the offer.</div></div>
+  </div>
+  <div class="chrome source">The value equation: Alex Hormozi, $100M Offers.</div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Hormozi's value equation, applied to a voice agent.
+One click per question. Answer each for YOUR niche.
+Write the answers in one sentence: that's your offer.</div>
+</section>
+
+<section class="slide light" id="s-prompt-pack" data-id="prompt-pack" data-type="page" data-n="12">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Free download &middot; in the Agent Kit</div>
+    <h2 class="ttl">The pick-your-offer prompt pack.</h2>
+    <div class='split' style='margin-top:44px;grid-template-columns:1fr 600px'><div class='term big' data-b='1'><div class='bar'><i></i><i></i><i></i><span>Claude</span></div><div class='tb'><span class='p'>&gt;</span> I sell AI voice agents to plumbers in Denver. Ask me the value-equation questions one at a time, then write my offer in one sentence.<br><br><span class='o'>Q1. What does a plumber in Denver want most from their phone?</span></div></div><div class='card hi' data-b='2' style='align-self:start'><span class='chip on'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMTYsNzJIMTgwLjkyYy4zOS0uMzMuNzktLjY1LDEuMTctMUEyOS41MywyOS41MywwLDAsMCwxOTIsNDkuNTcsMzIuNjIsMzIuNjIsMCwwLDAsMTU4LjQ0LDE2LDI5LjUzLDI5LjUzLDAsMCwwLDEzNywyNS45MWE1NC45NCw1NC45NCwwLDAsMC05LDE0LjQ4LDU0Ljk0LDU0Ljk0LDAsMCwwLTktMTQuNDhBMjkuNTMsMjkuNTMsMCwwLDAsOTcuNTYsMTYsMzIuNjIsMzIuNjIsMCwwLDAsNjQsNDkuNTcsMjkuNTMsMjkuNTMsMCwwLDAsNzMuOTEsNzFjLjM4LjMzLjc4LjY1LDEuMTcsMUg0MEExNiwxNiwwLDAsMCwyNCw4OHYzMmExNiwxNiwwLDAsMCwxNiwxNnY2NGExNiwxNiwwLDAsMCwxNiwxNkgyMDBhMTYsMTYsMCwwLDAsMTYtMTZWMTM2YTE2LDE2LDAsMCwwLDE2LTE2Vjg4QTE2LDE2LDAsMCwwLDIxNiw3MlpNMTQ5LDM2LjUxYTEzLjY5LDEzLjY5LDAsMCwxLDEwLTQuNWguNDlBMTYuNjIsMTYuNjIsMCwwLDEsMTc2LDQ5LjA4YTEzLjY5LDEzLjY5LDAsMCwxLTQuNSwxMGMtOS40OSw4LjQtMjUuMjQsMTEuMzYtMzUsMTIuNEMxMzcuNyw2MC44OSwxNDEsNDUuNSwxNDksMzYuNTFabS02NC4wOS4zNkExNi42MywxNi42MywwLDAsMSw5Ni41OSwzMmguNDlhMTMuNjksMTMuNjksMCwwLDEsMTAsNC41YzguMzksOS40OCwxMS4zNSwyNS4yLDEyLjM5LDM0LjkyLTkuNzItMS0yNS40NC00LTM0LjkyLTEyLjM5YTEzLjY5LDEzLjY5LDAsMCwxLTQuNS0xMEExNi42LDE2LjYsMCwwLDEsODQuODcsMzYuODdaTTQwLDg4aDgwdjMySDQwWm0xNiw0OGg2NHY2NEg1NlptMTQ0LDY0SDEzNlYxMzZoNjRabTE2LTgwSDEzNlY4OGg4MHYzMloiLz48L3N2Zz4=)"></i>Free</span><h3 style='margin-top:26px'>Prompt pack</h3><p>The questions, the prompts, and a one-sentence offer template.</p><div class='foot' style='margin-top:22px'>In the Leadlock Agent Kit: the pick-your-offer skill<br>leadlock.ai/agent-kit</div></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Paste it into Claude, answer honestly.
+One hour. Offer done.
+Free in the Agent Kit now: the pick-your-offer skill. Link below.</div>
+</section>
+
+<section class="slide dark" id="s-hundred-a-day" data-id="hundred-a-day" data-type="page" data-n="13">
+  <div class="page" data-mbox="copy">
+    <div class="eb">The one rule</div>
+    <h2 class="ttl"><span class='disp' style='font-size:300px;display:block'>100</span><span>people a day.</span></h2>
+    <div class='fill' style='justify-content:flex-end'><div class='sub' data-b='1' style='margin:0'>LinkedIn, calls, email, DMs. Every day. <span class='blue'>The building you can learn as you go.</span></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">This is the whole game.
+Hit 100 a day before you worry about building.
+Implementation isn't hard. Especially with Claude Code.</div>
+</section>
+
+<section class="slide light" id="s-next" data-id="next" data-type="page" data-n="14">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Up next</div>
+    <h2 class="ttl xl"><span>Now go get</span><span class='blue'>your first clients.</span></h2>
+    <div class='split' style='margin-top:40px'><div style='display:flex;flex-direction:column;justify-content:space-between'><div class='sub' style='margin-top:0'>Video 2c: the layup offer, and how to reach 100 people a day.</div><div class='chips' style='flex-direction:column;align-items:flex-start'><span class='chip'>2a &middot; Voice agents 101</span><span class='chip'>2b &middot; Pick your offer</span><span class='chip on'>2c &middot; Get your first clients</span></div></div><div class='card hi' style='align-self:start'><div class='k'>Before you watch it</div><ol class='agenda'><li>Write your offer in one sentence</li><li>Set your first setup price</li><li>Build one demo</li></ol></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Homework: one-sentence offer, a price, one demo.
+Do it before 2c.
+Then we go find buyers.</div>
+</section>
+
+<!-- SLIDES:END -->
+
+</div></div>
+
+<div id="notes"><div class="nh">Speaker notes · <span id="nn"></span></div><div id="nt"></div></div>
+<div id="count"></div>
+<button id="pp" type="button" title="Pause / play (P)">&#10073;&#10073;</button>
+<button id="snd" type="button">Tap for sound</button>
+<div id="pv"><div class="pv-h" id="pvh"></div><div class="pv-t" id="pvt">00:00</div><ul id="pvn"></ul><div class="pv-next" id="pvx"></div></div>
+<div id="pvkeys">Presenter view. Right / Space: next. Left: back. T: reset timer.<br>Keys here drive the deck window. Record the deck window, not this one.</div>
+
+<script>
+/* ---- Config ---------------------------------------------------------- */
+var DEMO_URL = 'https://app.leadlock.ai/d/sophia-from-leadlock-voiceaidemo-xqit66';
+var WARM_UP = 'prefetch';      // on the slide before a live call: 'prefetch' (preconnect + prefetch), 'premount' (load the iframe hidden), or 'off'
+var RECLAIM_FOCUS_MS = 700;    // after a click inside the live iframe, hand keyboard focus back to the deck after this delay (0 = never)
+/* ---------------------------------------------------------------------- */
+(function () {
+  var params = new URLSearchParams(location.search);
+  var demoOverride = params.get('demo');
+  if (demoOverride && (/^\//.test(demoOverride) || /^https:\/\//.test(demoOverride))) DEMO_URL = demoOverride;
+  function demoSrc() { return DEMO_URL + (DEMO_URL.indexOf('?') < 0 ? '?' : '&') + 'embed=true'; }
+
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var stage = document.getElementById('stage');
+  var deck = document.getElementById('deck');
+  var notes = document.getElementById('notes');
+  var snd = document.getElementById('snd');
+  var pp = document.getElementById('pp');
+  var i = 0;
+
+  /* ---- HTML click-builds: [data-b="N"] shows on the Nth Next press ---- */
+  var step = 0;
+  function stepsOf(el) {
+    if (el._steps == null) {
+      el._steps = 0;
+      Array.prototype.forEach.call(el.querySelectorAll('[data-b]'), function (b) { el._steps = Math.max(el._steps, parseInt(b.dataset.b, 10) || 0); });
+    }
+    return el._steps;
+  }
+  function setStep(k) {
+    var el = slides[i];
+    step = Math.max(0, Math.min(stepsOf(el), k));
+    Array.prototype.forEach.call(el.querySelectorAll('[data-b]'), function (b) { b.classList.toggle('on', (parseInt(b.dataset.b, 10) || 0) <= step); });
+    updateNotesHead(); post();
+  }
+  function buildNext() { if (step < stepsOf(slides[i])) { setStep(step + 1); return true; } return false; }
+  function buildBack() { if (step > 0) { setStep(step - 1); return true; } return false; }
+
+  /* ---- Presenter window (?presenter=1, S opens it): mirrors the deck over a BroadcastChannel ---- */
+  var PRESENTER = params.get('presenter') === '1';
+  var bc = ('BroadcastChannel' in window) ? new BroadcastChannel('lldeck:' + location.pathname) : null;
+  function post() { if (bc && !PRESENTER) bc.postMessage({ state: { i: i, step: step } }); }
+  if (PRESENTER) document.body.classList.add('pv');
+  var t0 = Date.now();
+  function presenterPanel() {
+    if (!PRESENTER) return;
+    var nEl = slides[i].querySelector('.notes');
+    var ul = document.getElementById('pvn'); ul.innerHTML = '';
+    (nEl ? nEl.textContent : '').split('\n').forEach(function (l) { if (l.trim()) { var li = document.createElement('li'); li.textContent = l.replace(/^[-*]\s*/, ''); ul.appendChild(li); } });
+    var steps = stepsOf(slides[i]);
+    document.getElementById('pvh').textContent = 'Slide ' + (i + 1) + ' of ' + slides.length + (steps ? ' · build ' + (step + 1) + ' of ' + (steps + 1) : '');
+    var nx = step < steps ? 'next click: build ' + (step + 2) + ' on this slide' : (slides[i + 1] ? 'next slide: ' : 'end of deck');
+    var nh = slides[i + 1] && step >= steps ? (slides[i + 1].querySelector('.ttl, h1, h2') || {}).textContent || '' : '';
+    document.getElementById('pvx').innerHTML = '';
+    var b = document.createElement('b'); b.textContent = nh;
+    document.getElementById('pvx').append(nx, b);
+  }
+  if (PRESENTER) setInterval(function () {
+    var s = Math.floor((Date.now() - t0) / 1000);
+    document.getElementById('pvt').textContent = ('0' + Math.floor(s / 60)).slice(-2) + ':' + ('0' + s % 60).slice(-2);
+  }, 500);
+
+  // play() returns a promise that rejects when a slide change pauses it first; that is expected, never an error.
+  function play(v, onBlocked) {
+    var p = v.play();
+    if (p && p.catch) p.catch(function (err) { if (onBlocked && err && err.name === 'NotAllowedError') onBlocked(); });
+  }
+  function curVid() { return slides[i].querySelector('video.sv'); }
+  function setPP() {
+    var v = curVid();
+    pp.classList.toggle('on', !!v);
+    var paused = !!(v && ((v._held && !v._cueHold) || (v._cueHold && v._loop && v.paused)));
+    pp.classList.toggle('paused', paused);
+    pp.innerHTML = paused ? '&#9654;' : '&#10073;&#10073;';
+  }
+  function togglePause() {
+    var v = curVid(); if (!v) return;
+    if (v._cueHold && v._loop) { if (v.paused) play(v); else { v._ours = true; v.pause(); } setPP(); return; }
+    if (v._held) { v._held = false; v._cueHold = false; play(v); }
+    else { v._held = true; v._ours = true; v.pause(); }
+    setPP();
+  }
+  pp.addEventListener('click', function (e) { e.stopPropagation(); togglePause(); });
+  snd.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var v = curVid(); if (!v) return;
+    v.muted = false; try { v.currentTime = 0; } catch (x) {} play(v); snd.classList.remove('on');
+  });
+  function fit() {
+    var s = PRESENTER ? stage.clientWidth / 1920 : Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    deck.style.transform = 'scale(' + s + ')';
+  }
+  function focusDeck() {
+    if (document.activeElement && document.activeElement !== document.body) { try { document.activeElement.blur(); } catch (e) {} }
+    stage.focus({ preventScroll: true });
+  }
+
+  /* ---- Click-builds: data-cues="t1,t2,..." -----------------------------
+     Entering the slide plays to t1 and holds. Each Next plays to the next cue
+     and holds; Next on the last cue plays out to the end (then loop or hold).
+     Next pressed mid-segment snaps to that segment's cue. Back steps back one build.
+     data-cue-loops="a1:b1,,a3:b3" (optional, one slot per cue): a hold with a loop keeps
+     playing a..b seamlessly instead of freezing, and the next build plays on from b. */
+  function cuesOf(v) {
+    if (!v || !v.dataset.cues) return null;
+    if (!v._cues) v._cues = v.dataset.cues.split(',').map(parseFloat).filter(function (t) { return !isNaN(t); });
+    return v._cues.length ? v._cues : null;
+  }
+  function loopOf(v, k) {
+    if (!v || !v.dataset.cueLoops) return null;
+    if (!v._loops) v._loops = v.dataset.cueLoops.split(',').map(function (x) {
+      var p = x ? x.split(':').map(parseFloat) : [];
+      return p.length === 2 && p[1] > p[0] ? p : null;
+    });
+    return v._loops[k] || null;
+  }
+  function holdAt(v, k) {
+    var c = cuesOf(v), lp = loopOf(v, k);
+    v._target = -1; v._at = k; v._cueHold = true; v._held = true; v._ours = true;
+    v._loop = lp;
+    try { v.currentTime = c[k]; } catch (e) {}
+    if (lp) { play(v); loopWatch(v, lp); } else v.pause();
+    setPP(); updateNotesHead();
+  }
+  // A living hold: wrap b -> a until the loop is released (next build, back, leaving the slide).
+  function loopWatch(v, lp) {
+    function tick() {
+      if (v._loop !== lp || !v.closest('.slide').classList.contains('active')) return;
+      if (v.currentTime >= lp[1] - 0.02 || v.currentTime < lp[0] - 0.25) { try { v.currentTime = lp[0]; } catch (e) {} }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  // Leaving a living hold: the next build starts where the loop ends.
+  function releaseLoop(v) {
+    var lp = v._loop; v._loop = null;
+    if (lp) { try { v.currentTime = lp[1]; } catch (e) {} }
+  }
+  function playTo(v, k) {
+    releaseLoop(v);
+    v._target = k; v._at = k - 1; v._held = false; v._cueHold = false;
+    play(v);
+    watchCue(v); setPP(); updateNotesHead();
+  }
+  function playOut(v) {
+    var c = cuesOf(v);
+    releaseLoop(v);
+    v._target = -1; v._at = c.length; v._held = false; v._cueHold = false;
+    play(v);
+    setPP(); updateNotesHead();
+  }
+  function watchCue(v) {
+    var c = cuesOf(v);
+    function tick() {
+      if (v._target < 0 || !v.closest('.slide').classList.contains('active')) return;
+      if (v.currentTime >= c[v._target] - 0.02 || v.ended) { holdAt(v, v._target); return; }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  // Returns true when the press was consumed by a build inside the slide.
+  function cueNext() {
+    var v = curVid(), c = cuesOf(v);
+    if (!c) return false;
+    if (v._target >= 0) { holdAt(v, v._target); return true; }
+    if (v._cueHold && v._at < c.length - 1) { playTo(v, v._at + 1); return true; }
+    if (v._cueHold && v._at === c.length - 1) { playOut(v); return true; }
+    return false;
+  }
+  function cueBack() {
+    var v = curVid(), c = cuesOf(v);
+    if (!c) return false;
+    var k = v._target >= 0 ? v._target - 1 : (v._cueHold ? v._at - 1 : c.length - 1);
+    if (k < 0) return false;
+    holdAt(v, k);
+    return true;
+  }
+  function buildLabel() {
+    var v = curVid(), c = cuesOf(v);
+    if (!c) { var n = stepsOf(slides[i]); return n ? ' · build ' + (step + 1) + ' of ' + (n + 1) : ''; }
+    var step = v._target >= 0 ? v._target + 1 : Math.min(v._at + 1, c.length + 1);
+    return ' · build ' + step + ' of ' + (c.length + 1);
+  }
+  function updateNotesHead() {
+    document.getElementById('nn').textContent = 'slide ' + (i + 1) + ' of ' + slides.length + buildLabel();
+    presenterPanel();
+  }
+
+  /* ---- Live call: mount on enter, unmount on leave ------------------- */
+  var warmed = {};
+  function warm(slide) {
+    if (WARM_UP === 'off' || warmed[slide.id]) return;
+    warmed[slide.id] = true;
+    var src = demoSrc();
+    if (WARM_UP === 'premount') { mountLive(slide, true); return; }
+    try {
+      var origin = new URL(src, location.href).origin;
+      if (origin !== location.origin) { var pc = document.createElement('link'); pc.rel = 'preconnect'; pc.href = origin; document.head.appendChild(pc); }
+    } catch (e) {}
+    var pf = document.createElement('link'); pf.rel = 'prefetch'; pf.href = src; pf.as = 'document'; document.head.appendChild(pf);
+  }
+  function mountLive(slide, hidden) {
+    var screen = slide.querySelector('.screen');
+    var f = screen.querySelector('iframe');
+    if (!f) {
+      f = document.createElement('iframe');
+      f.setAttribute('allow', 'microphone; autoplay');
+      f.setAttribute('title', 'Live Leadlock demo');
+      f.addEventListener('load', function () { if (f.getAttribute('src') !== 'about:blank') slide.classList.add('loaded'); });
+      f.src = demoSrc();
+      screen.appendChild(f);
+    }
+    f.style.visibility = hidden ? 'hidden' : 'visible';
+  }
+  function unmountLive(slide) {
+    var f = slide.querySelector('.screen iframe');
+    if (f) { try { f.src = 'about:blank'; } catch (e) {} f.remove(); }
+    slide.classList.remove('loaded');
+    var r = slide.querySelector('.live-rec');
+    if (r && !r.paused) r.pause();
+    slide.classList.remove('rec');
+    warmed[slide.id] = false;
+  }
+  function toggleRecording() {
+    var s = slides[i];
+    if (!s.classList.contains('live')) return;
+    var r = s.querySelector('.live-rec');
+    if (!r) return;
+    if (s.classList.contains('rec')) { s.classList.remove('rec'); r.pause(); mountLive(s, false); }
+    else {
+      var f = s.querySelector('.screen iframe'); if (f) { f.src = 'about:blank'; f.remove(); }
+      s.classList.add('rec'); r.currentTime = 0; r.muted = false;
+      play(r, function () { r.muted = true; play(r); });
+    }
+  }
+  // A click inside the cross-origin iframe takes keyboard focus with it. Hand it back so the clicker keeps working.
+  window.addEventListener('blur', function () {
+    if (!RECLAIM_FOCUS_MS) return;
+    setTimeout(function () {
+      var a = document.activeElement;
+      if (a && a.tagName === 'IFRAME') focusDeck();
+    }, RECLAIM_FOCUS_MS);
+  });
+
+  /* ---- Navigation ------------------------------------------------------ */
+  function show(n, opts) {
+    opts = opts || {};
+    var prev = i;
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function (el, k) { el.classList.toggle('active', k === i); });
+    var av = slides[i].querySelector('video.sv[data-audio]');
+    snd.classList.toggle('on', !!av && /iPhone|iPad|Android/.test(navigator.userAgent));
+    slides.forEach(function (el, k) {
+      if (el.classList.contains('live') && k !== i) unmountLive(el);
+      var v = el.querySelector('video.sv');
+      if (!v) return;
+      if (k === i || k === i + 1 || k === i + 2) {
+        if (v.preload !== 'auto') { v.preload = 'auto'; if (k !== i && v.networkState === 0) v.load(); }
+      }
+      v._held = false; v._cueHold = false; v._target = -1; v._loop = null;
+      if (k === i) {
+        var c = cuesOf(v);
+        v.muted = !v.dataset.audio;
+        if (c && opts.fromEnd) {
+          // Arriving backwards: show the finished build.
+          v._at = c.length;
+          try { v.currentTime = parseFloat(v.dataset.loop) || c[c.length - 1]; } catch (e) {}
+          play(v);
+        } else {
+          try { v.currentTime = 0; } catch (e) {}
+          if (c) { playTo(v, 0); }
+          else {
+            play(v, function () { v.muted = true; play(v); if (v.dataset.audio) snd.classList.add('on'); });
+          }
+        }
+      } else if (!v.paused) { v._ours = true; v.pause(); }
+    });
+    if (slides[i].classList.contains('live')) { mountLive(slides[i], false); }
+    if (slides[i + 1] && slides[i + 1].classList.contains('live')) warm(slides[i + 1]);
+    setPP();
+    var nEl = slides[i].querySelector('.notes');
+    var nt = document.getElementById('nt'); nt.innerHTML = '';
+    var ul = document.createElement('ul');
+    (nEl ? nEl.textContent : '').split('\n').forEach(function (l) { if (l.trim()) { var li = document.createElement('li'); li.textContent = l.replace(/^[-*]\s*/, ''); ul.appendChild(li); } });
+    nt.appendChild(ul);
+    setStep(opts.step != null ? opts.step : (opts.fromEnd ? stepsOf(slides[i]) : 0));
+    document.getElementById('count').textContent = (i + 1) + ' / ' + slides.length;
+    if (location.hash !== '#' + (i + 1)) history.replaceState(null, '', location.pathname + location.search + '#' + (i + 1));
+    if (prev !== i && document.activeElement && document.activeElement.tagName === 'IFRAME') focusDeck();
+  }
+  function next() {
+    if (PRESENTER && bc) { bc.postMessage({ cmd: 'next' }); return; }
+    if (!cueNext() && !buildNext()) show(i + 1);
+  }
+  function back() {
+    if (PRESENTER && bc) { bc.postMessage({ cmd: 'back' }); return; }
+    if (!cueBack() && !buildBack()) { if (i > 0) show(i - 1, { fromEnd: true }); }
+  }
+  if (bc) bc.onmessage = function (ev) {
+    var m = ev.data || {};
+    if (PRESENTER) { if (m.state) { if (m.state.i !== i) show(m.state.i, { step: m.state.step }); else setStep(m.state.step); } return; }
+    if (m.cmd === 'next') next();
+    else if (m.cmd === 'back') back();
+    else if (m.cmd === 'hello') post();
+  };
+
+  document.addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (k === 's' || k === 'S') { if (!PRESENTER) window.open(location.pathname + '?presenter=1' + location.hash, 'lldeck-presenter', 'width=1500,height=900'); return; }
+    if (PRESENTER && (k === 't' || k === 'T')) { t0 = Date.now(); return; }
+    if (k === 'ArrowRight' || k === ' ' || k === 'PageDown' || k === 'ArrowDown' || k === 'Enter') { e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'PageUp' || k === 'ArrowUp' || k === 'Backspace') { e.preventDefault(); back(); }
+    else if (k === 'Home') show(0);
+    else if (k === 'End') show(slides.length - 1);
+    else if (k === 'Escape') focusDeck();
+    else if (k === 'f' || k === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+      else document.exitFullscreen && document.exitFullscreen();
+    }
+    else if (k === 'p' || k === 'P' || k === 'k' || k === 'K') { e.preventDefault(); togglePause(); }
+    else if (k === 'n' || k === 'N') notes.classList.toggle('on');
+    else if (k === 'r' || k === 'R') toggleRecording();
+  });
+  document.addEventListener('click', function (e) {
+    if (notes.contains(e.target) || e.target.closest('.device, button')) return;
+    if (e.clientX < window.innerWidth / 3) back(); else next();
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.hot'), function (b) {
+    b.addEventListener('click', function (e) { e.stopPropagation(); if (b.classList.contains('hot-next')) next(); else back(); focusDeck(); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('video.sv'), function (v) {
+    v.addEventListener('ended', function () {
+      v.muted = true;
+      if (v._target >= 0) return;   // a cue at the very end: watchCue holds it
+      if (v.dataset.hold) return;
+      v.currentTime = parseFloat(v.dataset.loop) || 0; play(v);
+    });
+    v.addEventListener('pause', function () {
+      if (v.ended || v._ours || v._held || !v.closest('.slide').classList.contains('active')) { v._ours = false; return; }
+      v.muted = true; play(v); if (v.dataset.audio) snd.classList.add('on');
+    });
+  });
+  window.addEventListener('resize', fit);
+  window.addEventListener('hashchange', function () { var h = parseInt(location.hash.slice(1), 10); if (h && h - 1 !== i) show(h - 1); });
+  fit();
+  focusDeck();
+  // Read-only handle for tools/check.py.
+  window.__deck = {
+    count: function () { return slides.length; },
+    index: function () { return i; },
+    go: function (n) { show(n); },
+    next: next, back: back,
+    steps: function () { return stepsOf(slides[i]); },
+    step: function () { return step; },
+    setStep: setStep,
+    build: function () { var v = curVid(); return v ? { at: v._at, target: v._target, held: !!v._cueHold, loop: v._loop || null, paused: v.paused, t: v.currentTime } : null; }
+  };
+  var start = parseInt(location.hash.slice(1), 10);
+  show(start ? start - 1 : 0);
+  if (PRESENTER && bc) bc.postMessage({ cmd: 'hello' });
+})();
+</script>
+</body>
+</html>
