@@ -259,11 +259,11 @@ Grok Voice 3.0 always runs with reasoning on: the platform forces `xai_reasoning
 |---|---|---|---|---|
 | Grok | `voice` | (auto) | `rex`, `leo` | `ara` (default), `eve` |
 | OpenAI | `openai_voice` | (auto) | `ballad`, `ash`, `verse`, `echo` | `shimmer`, `coral`, `sage` |
-| GPT-Live | `openai_live_voice` | (auto) | 12 voices, not split by gender: `quartz`, `ripple`, `vesper` (default), `willow`, `stone`, `gleam`, `meridian`, `bossa`, `tempo`, `beacon`, `delta`, `cinder` | (same list) |
+| GPT-Live | `openai_live_voice` | (auto) | `ripple` (Australian), `vesper` (British, default), `stone` (Irish), `meridian` (North American), `cinder` (Southern U.S.), `beacon` (Filipino), `tempo` (Brazilian Portuguese) | `quartz` (Australian), `willow` (Irish), `gleam` (North American), `delta` (Southern U.S.), `bossa` (Brazilian Portuguese) |
 | Gemini 3.8 | `gemini_voice` | `gemini_language_code` | `Charon`, `Orus`, `Iapetus` | `Aoede`, `Kore`, `Leda` |
 | ElevenLabs | `elevenlabs_voice_id` | `elevenlabs_language` | voice UUID | voice UUID |
 
-Grok `voice` also accepts `sal` (neutral). OpenAI also has `alloy` (the API default). The OpenAI v2 models (`gpt-realtime-2`, `2.1`, `2.1-mini`) add `marin` and `cedar`; never put those on a `gpt-realtime-1.5` agent, it rejects them. Gemini has 30 prebuilt voices in total; the six above are the curated picks.
+Grok `voice` also accepts `sal` (neutral). OpenAI also has `alloy` (the API default). The OpenAI v2 models (`gpt-realtime-2`, `2.1`, `2.1-mini`) add `marin` and `cedar`; never put those on a `gpt-realtime-1.5` agent, it rejects them. Gemini has 30 prebuilt voices in total; the six above are the curated picks. Each GPT-Live voice carries its accent: pick the voice that matches the persona, since a prompt can only push an accent partway.
 
 ### Required companion settings
 

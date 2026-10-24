@@ -120,3 +120,19 @@ Evidence: prospect-demo's default tool set includes `collect_contact` (Rule 21 a
 **Why:** `tools_enabled` is a free-form string array, so the API accepts any name without validation and a phantom tool sits in the list doing nothing. A prompt that tells the model to "call collect_contact" primes it to invoke a no-op, which can stall or confuse the turn.
 
 **How to apply:** Drop `collect_contact` from prospect-demo's default `tools_enabled` and from its `## Tools` skeleton guidance. The demo tooling already ships without it. When adding any tool, confirm it against a known-real list before enabling, and never invent tool names.
+
+**How to apply:** Drop `collect_contact` from prospect-demo's default `tools_enabled` and from its `## Tools` skeleton guidance. Big Dawg's `bin/bd-make-demo` already ships without it. When adding any tool, confirm it against a known-real list before enabling, and never invent tool names.
+
+---
+
+### Letting the agent guess a last name
+
+Date: 2026-10-24
+Tags: tool:update_contact, tool:book_appointment, integration:gohighlevel, type:anti-pattern, surface:system-prompt
+Evidence: Summit Plumbing & Drain sub-account, agent Doug Jim Bob McGee (`17668860-...`). The GHL contact had first name "Dan" and no last name. The agent booked as "Daniel Durkee" (call `25a4f834-...`). On the next call it sent `update_contact` with `first_name: "Daniel"`, `last_name: "Durkee"`, plus empty strings for city, state, address and every other field (call `2a2a77bb-...`). Because `last_name` was empty, `update_contact` wrote "Durkee" onto the real contact.
+
+**Rule:** The prompt says "never invent a last name, email, or detail". When a last name is missing or uncertain, the agent asks for the spelling, says it back once, takes corrections, and only then saves it. `update_contact` gets only the field that changed.
+
+**Why:** `update_contact` fills empty fields without question, so an invented name goes straight into the CRM. A made-up name in a booking also comes back through caller context on later calls and gets reused.
+
+**How to apply:** Any agent with `update_contact` or `book_appointment`: add both lines to the prompt. After test calls, check the GHL contact for fields the caller never gave.

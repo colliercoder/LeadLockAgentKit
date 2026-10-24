@@ -12,6 +12,7 @@ Content lives in the category files, not here. To add a new entry, invoke `/add-
 
 ## Anti-patterns
 
+- 2026-10-24 - Letting the agent guess a last name (update_contact writes it into empty fields) - [anti-patterns.md](anti-patterns.md)
 - 2026-07-16 - `collect_contact` is not a functional tool; do not enable it or name it in a prompt - [anti-patterns.md](anti-patterns.md)
 - 2026-05-23 — Building a new agent without skimming `learnings/index.md` + `bugs.md` first — [anti-patterns.md](anti-patterns.md)
 - 2026-05-23 — `agent_mode` not inferred from intent; must set `outbound` explicitly at create — [anti-patterns.md](anti-patterns.md)
@@ -23,8 +24,17 @@ Content lives in the category files, not here. To add a new entry, invoke `/add-
 
 ## Best practices
 
+- 2026-10-24 - `update_contact` can't correct an email already on file; check updated/skipped - [best-practices.md](best-practices.md)
 - 2026-10-24 - Default `openai_vad_eagerness` is `medium` (platform default), not `low` - [best-practices.md](best-practices.md)
 - 2026-10-23 - Voice model lineup (Grok Voice 3.0, gpt-realtime-2.1 / 2.1-mini, GPT-Live, Gemini 3.8); supersedes older model names - [best-practices.md](best-practices.md)
+- 2026-10-24 - Tool set is fixed at call connect; prompt must describe every enabled tool - [best-practices.md](best-practices.md)
+- 2026-10-24 - Describe `reschedule_appointment` as a one-step move or the agent cancels + rebooks - [best-practices.md](best-practices.md)
+- 2026-10-24 - Contact intelligence: both flags + Caller Intelligence section, name on turn two - [best-practices.md](best-practices.md)
+- 2026-10-24 - GPT-Live voices carry built-in accents; pick the voice for the accent - [best-practices.md](best-practices.md)
+- 2026-10-24 - Phone demo caller name is `config.display_name`; keep it short - [best-practices.md](best-practices.md)
+- 2026-10-24 - Phone-channel demos run in-browser; no phone number needed on the agent - [best-practices.md](best-practices.md)
+- 2026-10-24 - GHL API from Python needs a browser User-Agent (Cloudflare 1010) - [best-practices.md](best-practices.md)
+- 2026-10-24 - Local-service prompts state business timezone, service area, only-claim-what-you-know - [best-practices.md](best-practices.md)
 - 2026-07-16 - `POST /demos/import-from-url` is slow (Jina + AI extraction); use a 120s timeout - [best-practices.md](best-practices.md)
 - 2026-05-31 — Dogfood a new lint/audit skill on the real repo; first-run false positives are the suppression-list spec — [best-practices.md](best-practices.md)
 - 2026-05-31 — Content rules (no "closer", no platform name) apply to prompt TEMPLATES, not just runtime output — [best-practices.md](best-practices.md)
@@ -44,6 +54,7 @@ Content lives in the category files, not here. To add a new entry, invoke `/add-
 
 ## Bugs
 
+- 2026-10-24 - `book_appointment` files the booking under whichever contact owns the email - [bugs.md](bugs.md)
 - 2026-07-16 - `POST /agents` ignores `max_call_duration_minutes`, forces plan default (30); PATCH works - [bugs.md](bugs.md)
 - 2026-05-19 - ~~FIXED on the platform (2026-10-23)~~: `POST /agents` silently ignored `openai_voice_model`; defaults to gpt-realtime-1.5. PATCH works - [bugs.md](bugs.md)
 - 2026-05-13 — `PATCH /demos/{id}/` (trailing slash) drops body via 307 redirect — [bugs.md#patch-demosid-trailing-slash-silently-drops-the-body-via-307-redirect](bugs.md#patch-demosid-trailing-slash-silently-drops-the-body-via-307-redirect)

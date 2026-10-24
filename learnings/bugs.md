@@ -47,3 +47,17 @@ Evidence: a demo agent (Brightline Electric demo, test tenant). `POST /agents` s
 **Why:** The create path applies a plan/tenant default of 30 minutes and drops the submitted value, with no error (the field is accepted). A demo agent then runs to a 30-minute cap when the operator asked for 10, visible only on a GET.
 
 **How to apply:** In any skill or script that creates an agent (build-agent, prospect-demo, and Big Dawg's `bin/bd-make-demo`), add a post-create PATCH that re-asserts `max_call_duration_minutes` whenever the created value differs from intended, then GET to confirm. Fold it into the same "re-PATCH after create" step already used for `openai_voice_model`. Track until POST honors the field.
+
+---
+
+### `book_appointment` attaches the booking to whichever GHL contact owns the email, even a different person
+
+Date: 2026-10-24
+Tags: tool:book_appointment, integration:gohighlevel, type:bug
+Evidence: Summit Plumbing & Drain sub-account, agent Doug Jim Bob McGee (`17668860-...`), call `2a2a77bb-...`. The caller (an existing contact matched by phone) booked with `dan+test@...`. A web-demo test contact ("Joshua Jenkins") created earlier the same session already had that email. The new appointment (`dV0r5...`) was filed under the Jenkins contact, not the caller. Deleting the Jenkins contact took that booking off the calendar too.
+
+**Rule:** Treat the email passed to `book_appointment` as the contact key. If another contact already has it, the booking lands on that contact, and the caller won't see it in caller context on the next call (so reschedule and cancel can't find it).
+
+**Why:** GoHighLevel resolves contacts by email when booking. Test runs that reuse one email across web demos and phone calls end up with bookings spread across ghost contacts.
+
+**How to apply:** In testing, use a fresh email per test contact and delete web-demo test contacts afterwards. When an agent "can't find" a booking the caller swears they made, check which contact the appointment's `contactId` points to.
