@@ -93,6 +93,19 @@ The older `LEADLOCK_TWILIO_SID` / `LEADLOCK_TWILIO_AUTH` names still work; the n
 
 Then say **"check my setup"** in Claude Code. `.env` is gitignored, so your keys never leave your machine.
 
+## Built-in safety hook
+
+The kit ships one Claude Code hook, `.claude/hooks/guard_secrets.py`, switched on in `.claude/settings.json`. It runs before every command and file edit Claude makes in this folder and stops three mistakes that are easy to make and hard to undo:
+
+| It blocks | Why |
+|---|---|
+| `git add .env` (or another credential file the kit gitignores) and `git add --force` | `.env` holds your keys and this repo may be public. `--force` skips `.gitignore`, the thing keeping it out. |
+| `git commit` when the staged changes contain a live key (`sk_live_...`, `pit-...`, Retell `key_...`) | Catches a key pasted into a script or note before it reaches git history. |
+| Printing your keys into the chat: `cat .env`, `grep ... .env`, opening `.env` with the Read tool, `echo $LEADLOCK_API_KEY` | Anything printed lands in the transcript, and on screen if you are recording. Skills read `.env` in Python and show masked values instead. |
+| A live key typed into a command, or written into any file other than `.env` | Keys belong in `.env` only; scripts read them from there. |
+
+When it blocks something, Claude sees the reason and takes the safe route on its own, so you normally won't notice it. It uses only Python's standard library, never touches the network, and lets the call through if anything about its own input looks wrong, so it can't lock you out. It reads command text, not a full shell parser, so a command that merely quotes text like `git add --force` inside a heredoc can be blocked too; rephrase and carry on. To turn it off, delete the `hooks` block from `.claude/settings.json`.
+
 ## Connect n8n (optional)
 
 n8n is the easiest backend for Leadlock **custom functions**: your agent calls an n8n webhook mid-call, n8n looks something up in any system with an API, and the agent reads back the answer. Say **"connect n8n"** and the `connect-n8n` skill walks you through n8n Cloud, turning on n8n's built-in MCP server, and connecting it so Claude can build workflows for you.
