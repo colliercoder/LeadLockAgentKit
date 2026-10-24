@@ -1,0 +1,7 @@
+customer_id,first_name,last_name,company,phone,email
+C-1001,Dale,Whitaker,Ridgeline Aggregates,+17755550101,dale.whitaker@example.com
+C-1002,Maria,Lopez,Desert Copper Contracting,+15205550144,maria.lopez@example.com
+C-1003,Travis,Hale,Powder River Earthworks,+13075550187,travis.hale@example.com
+C-1004,Kim,Nguyen,Sonoran Haul & Grade,+15205550162,kim.nguyen@example.com
+C-1005,Rob,Fischer,High Basin Drilling,+17755550133,rob.fischer@example.com
+C-1006,Ashley,Brooks,Twin Buttes Mining,+15205550171,ashley.brooks@example.com

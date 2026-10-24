@@ -1,6 +1,6 @@
 # Leadlock course materials
 
-Everything shown in the Leadlock course videos: the slide decks, the setup checklist and the n8n outbound-call workflow. Nothing here needs a server, an install or an API key to open.
+Everything shown in the Leadlock course videos: the slide decks, the setup checklist, the n8n outbound-call workflow and the support team from the advanced course. Nothing here needs a server, an install or an API key to open.
 
 ## The presentations
 
@@ -21,6 +21,7 @@ Each deck opens two ways:
 | 7 | Contact Intelligence: your agent knows who's calling | 16 | [PDF](presentations/7-contact-intelligence.pdf) | [index.html](presentations/7-contact-intelligence/index.html) |
 | 8 | Outbound triggers: make your agent call first | 12 | [PDF](presentations/8-outbound-triggers.pdf) | [index.html](presentations/8-outbound-triggers/index.html) |
 | 9 | Agentic setup: set up Claude Code to build your agents | 16 | [PDF](presentations/9-agentic-setup.pdf) | [index.html](presentations/9-agentic-setup/index.html) |
+| 10 | Advanced course kickoff: build an AI customer support team | 17 | [PDF](presentations/10-support-team.pdf) | [index.html](presentations/10-support-team/index.html) |
 
 GitHub shows the PDFs in the browser. For the interactive decks, clone or download the repo first, then double-click `index.html`.
 
@@ -66,3 +67,9 @@ No n8n needed. In a GoHighLevel workflow:
 3. Action: remove the tag `call-me-now`, so it can fire again.
 
 Add the tag to a test contact with your own number on it, and your phone rings in about 10 seconds. The Leadlock app in GoHighLevel also has a ready-made Outbound Call action that needs no key.
+
+## The support team (advanced course)
+
+[support-team/](support-team/README.md): the data, n8n workflow templates and source for Granite Peak Equipment Rental's three AI desks (Joanne on rentals, Jim Bob on maintenance, Miss Hattie Mae on billing) with bank-style caller verification.
+
+To build it in your own Leadlock account and n8n, open Claude Code in the kit folder and say **"install the support team"**. It checks your setup first (Leadlock key, GoHighLevel, n8n, an email credential in n8n, an A2P-registered number, `MY_PHONE_NUMBER`) and tells you what to fix, then builds, tests and reports. Following along one video at a time? Say "install the support team tables", then "install the Verify Caller step", "install Joanne", "install Jim Bob" and "install Miss Hattie Mae".

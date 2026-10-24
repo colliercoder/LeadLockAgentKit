@@ -23,6 +23,7 @@ A growing library of Claude Code skills for Leadlock agency owners. Run them wit
 | `pick-your-offer` | The **pick-your-offer prompt pack** from course video 2b. Coaches you from "what should I sell?" to a **one-sentence offer, a first setup price and a monthly price** in about an hour: tests your niche, builds the offer only from what Leadlock delivers today, runs the four value-equation questions one at a time, and sets a setup-plus-monthly price ladder. Writes the finished offer to `./output/` and ships copy-paste prompts for any Claude chat. No API key needed. |
 | `clarify-voice` | Talk to Claude Code by dictation? Paste the rambling voice-to-text and this turns it into a **short summary you confirm** before any work starts, fixing mangled names ("lead lock", "go high level") and catching mid-sentence changes of mind. Then it hands off to the matching skill. No API key needed. |
 | `connect-n8n` | Connect Claude Code to **n8n** through n8n's built-in MCP server, so Claude can build, edit and run n8n workflows in plain English. The fastest backend for Leadlock custom functions: webhook in, look anything up, short answer back to the agent. Covers n8n Cloud vs self-hosted, OAuth or token, and verifies the connection. |
+| `install-support-team` | Install the advanced course's **AI support team** for "Granite Peak Equipment Rental" in one go: n8n data tables from the kit's CSVs, four n8n workflows (bank-style caller verification, rentals, maintenance, billing) behind a shared secret, and three Leadlock agents (Joanne on rentals, Jim Bob on maintenance, Miss Hattie Mae on billing) with their custom functions, handoffs and Contact Intelligence. Checks your key, GoHighLevel, n8n, email credential, A2P number and phone first and says what to fix; verifies with real function tests and one real code to your email; installs one piece at a time for the videos; uninstalls cleanly. Needs `N8N_API_URL` + `N8N_API_KEY` in `.env`. |
 | `install-addon` | Install a **paid add-on** you dropped into `addons/` (today: the Leadlock GHL Connector, a GHL CLI with its Claude skill plus a Chrome extension). Installs it, links its skill, reuses your GHL keys, loads the extension. Add-on files stay gitignored. |
 
 **Setup helpers** (auto-fire when needed):
@@ -38,7 +39,7 @@ More skills land here over time. Drop a new folder under `.claude/skills/<name>/
 
 ## Course materials
 
-The slide decks (PDF and interactive), the setup checklist and the n8n outbound-call workflow from the Leadlock course videos live in [`course/`](course/README.md). Everything opens with a double-click: no server, no install.
+The slide decks (PDF and interactive), the setup checklist, the n8n outbound-call workflow and the support-team data and workflow templates from the Leadlock course videos live in [`course/`](course/README.md). To build the advanced course's support team in your own accounts, say **"install the support team"**. Everything opens with a double-click: no server, no install.
 
 ## Marketing showcase
 
@@ -176,6 +177,9 @@ check my setup                              → verifies your API key works
 
 "Connect n8n" / "Set up the n8n MCP"
     → connect-n8n
+
+"Install the support team" / "Install Joanne" / "Uninstall the support team"
+    → install-support-team  (needs N8N_API_URL + N8N_API_KEY in .env)
 
 "Install my add-on" / "I bought the Launch Bundle"
     → install-addon

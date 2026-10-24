@@ -1,0 +1,5 @@
+ticket_id,customer_id,unit_id,issue,status,tech_eta,created_at
+S-9001,C-1001,GP-102,Payload readout reading high on the dash,Tech assigned,2026-10-24 14:00,2026-10-23 16:10
+S-9002,C-1001,GP-202,Hydraulic leak at the boom cylinder,Parts ordered,2026-10-27 09:00,2026-10-22 08:45
+S-9003,C-1003,GP-302,Bucket teeth replacement,Scheduled,2026-10-25 08:00,2026-10-21 13:20
+S-9004,C-1005,GP-701,Compressor overheating on long holes,Tech on site,2026-10-24 11:30,2026-10-24 06:05

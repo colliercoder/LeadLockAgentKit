@@ -29,6 +29,7 @@ SECRET_PATTERNS = [
     (re.compile(r"pit-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"),
      "a GoHighLevel Private Integration Token (pit-...)"),
     (re.compile(r"\bkey_[A-Za-z0-9]{24,}"), "a Retell API key (key_...)"),
+    (re.compile(r"eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}"), "a JWT, such as an n8n API key (eyJ...)"),
 ]
 
 # Files that hold real credentials. All are gitignored; these guards stop them

@@ -108,6 +108,7 @@ except Exception as e:
     ✓ pick-your-offer  (no key needed)
     ✓ clarify-voice  (no key needed)
     ✓ connect-n8n  (no Leadlock key needed to connect)
+    <✓ or ✗> install-support-team  (requires N8N_API_URL + N8N_API_KEY in .env)
     <✓ or ✗> install-addon  (needs a paid add-on in ./addons/)
     ✓ kit-audit  (maintainer self-check — no key needed for the static half)
 

@@ -1,0 +1,8 @@
+rental_id,customer_id,unit_id,model,start_date,end_date,status,site,invoice_id,invoice_total,invoice_status,invoice_due
+R-5001,C-1001,GP-102,CAT 777G (100 ton),2026-10-14,2026-11-18,On rent,"Ridgeline pit, Elko NV",INV-7001,40800,Open,2026-11-14
+R-5002,C-1001,GP-202,CAT 374 (75 ton),2026-10-07,2026-11-07,On rent,"Ridgeline pit, Elko NV",INV-7002,27600,Paid,2026-11-07
+R-5003,C-1003,GP-302,CAT 980 XE,2026-10-02,2026-11-02,On rent,"Gillette, WY",INV-7003,20400,Overdue,2026-10-17
+R-5004,C-1004,GP-502,CAT 14M3,2026-10-12,2026-11-12,On rent,"Tucson, AZ",INV-7004,18000,Open,2026-11-12
+R-5005,C-1005,GP-701,CAT MD6250 rotary drill,2026-09-25,2026-11-25,On rent,"Carlin, NV",INV-7005,33600,Paid,2026-10-25
+R-5006,C-1001,GP-601,"CAT 777 water truck (20,000 gal)",2026-10-28,2026-11-28,Scheduled,"Ridgeline pit, Elko NV",INV-7006,5200,Open,2026-10-27
+R-5007,C-1006,GP-103,CAT 775G (70 ton),2026-11-03,2026-12-03,Scheduled,"Green Valley, AZ",INV-7007,0,Not billed,

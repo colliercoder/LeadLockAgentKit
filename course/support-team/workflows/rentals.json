@@ -1,0 +1,457 @@
+{
+ "name": "Rentals",
+ "nodes": [
+  {
+   "id": "0eb7aa54-55b8-5c73-a8c1-3f716decf602",
+   "name": "Webhook",
+   "type": "n8n-nodes-base.webhook",
+   "typeVersion": 2,
+   "position": [
+    0,
+    0
+   ],
+   "parameters": {
+    "httpMethod": "POST",
+    "path": "REPLACE_SLUG-rentals",
+    "authentication": "headerAuth",
+    "responseMode": "responseNode",
+    "options": {}
+   },
+   "credentials": {
+    "httpHeaderAuth": {
+     "id": "REPLACE_CRED_WEBHOOK",
+     "name": "Support team webhook key"
+    }
+   },
+   "webhookId": "REPLACE_WEBHOOK_ID"
+  },
+  {
+   "id": "b3c9ef1d-6bf9-5b28-8e52-2ee0cb7d6a98",
+   "name": "Unwrap",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    220,
+    0
+   ],
+   "parameters": {
+    "jsCode": "// Leadlock posts {function, arguments, call_context}. n8n expressions can't read a\n// field named \"arguments\", so this node pulls it out once and passes plain fields on.\n// Function names may carry an install prefix (gp_test_rental_status), so match the end.\nconst body = $input.first().json.body || {};\nconst args = body['arguments'] || {};\nconst ctx = body.call_context || {};\nconst TOPICS = {\n  send_verification_code: 'send_code', verify_code: 'check_code',\n  fleet_availability: 'availability', rental_quote: 'quote', rental_status: 'rental_status',\n  extend_rental: 'extend_rental', call_off_rent: 'call_off_rent',\n  troubleshoot_machine: 'troubleshoot', create_service_ticket: 'create_ticket',\n  service_ticket_status: 'ticket_status',\n  account_balance: 'balance', send_payment_link: 'send_payment_link',\n};\nconst fn = String(body.function || '');\nlet topic = String(args.topic || '');\nif (!topic) {\n  const name = Object.keys(TOPICS).sort((a, b) => b.length - a.length)\n    .find(k => fn === k || fn.endsWith('_' + k));\n  topic = name ? TOPICS[name] : '';\n}\nreturn [{ json: { topic, args, ctx, call_sid: String(ctx.call_sid || '') } }];\n"
+   }
+  },
+  {
+   "id": "2456ac25-2df6-511c-a982-a58e1aac495a",
+   "name": "Get Verification",
+   "type": "n8n-nodes-base.dataTable",
+   "typeVersion": 1,
+   "position": [
+    440,
+    0
+   ],
+   "parameters": {
+    "resource": "row",
+    "operation": "get",
+    "dataTableId": {
+     "__rl": true,
+     "mode": "id",
+     "value": "REPLACE_TABLE_Verifications"
+    },
+    "matchType": "allConditions",
+    "filters": {
+     "conditions": [
+      {
+       "keyName": "call_sid",
+       "condition": "eq",
+       "keyValue": "={{ $('Unwrap').first().json.call_sid || '__none__' }}"
+      }
+     ]
+    },
+    "returnAll": true
+   },
+   "alwaysOutputData": true,
+   "executeOnce": true
+  },
+  {
+   "id": "e2065d84-b611-5e85-adc9-96a92eafa0da",
+   "name": "Get Customers",
+   "type": "n8n-nodes-base.dataTable",
+   "typeVersion": 1,
+   "position": [
+    660,
+    0
+   ],
+   "parameters": {
+    "resource": "row",
+    "operation": "get",
+    "dataTableId": {
+     "__rl": true,
+     "mode": "id",
+     "value": "REPLACE_TABLE_Customers"
+    },
+    "returnAll": true
+   },
+   "alwaysOutputData": true,
+   "executeOnce": true
+  },
+  {
+   "id": "90bb96b4-4697-58b2-912d-4075207da789",
+   "name": "Get Fleet",
+   "type": "n8n-nodes-base.dataTable",
+   "typeVersion": 1,
+   "position": [
+    880,
+    0
+   ],
+   "parameters": {
+    "resource": "row",
+    "operation": "get",
+    "dataTableId": {
+     "__rl": true,
+     "mode": "id",
+     "value": "REPLACE_TABLE_Fleet"
+    },
+    "returnAll": true
+   },
+   "alwaysOutputData": true,
+   "executeOnce": true
+  },
+  {
+   "id": "f67c0ffc-2d0e-5a1c-8e91-1a25357e770e",
+   "name": "Get Rentals",
+   "type": "n8n-nodes-base.dataTable",
+   "typeVersion": 1,
+   "position": [
+    1100,
+    0
+   ],
+   "parameters": {
+    "resource": "row",
+    "operation": "get",
+    "dataTableId": {
+     "__rl": true,
+     "mode": "id",
+     "value": "REPLACE_TABLE_Rentals"
+    },
+    "returnAll": true
+   },
+   "alwaysOutputData": true,
+   "executeOnce": true
+  },
+  {
+   "id": "b06bc2b3-5159-5a89-b28a-e6dd5c2758f3",
+   "name": "Decide",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1320,
+    0
+   ],
+   "parameters": {
+    "jsCode": "// Shared by the Rentals, Maintenance and Billing workflows: who is verified on this call.\nconst inp = $('Unwrap').first().json;\nconst { topic, args, ctx, call_sid } = inp;\nconst now = Date.now();\nconst customers = $('Get Customers').all().map(i => i.json).filter(r => r.customer_id);\nconst ver = $('Get Verification').all().map(i => i.json).find(r => call_sid && r.call_sid === call_sid);\nconst verified = !!(ver && ver.verified && ver.expires_at && Date.parse(ver.expires_at) > now);\nconst me = verified ? customers.find(c => c.customer_id === ver.customer_id) || null : null;\nconst out = (response, extra = {}) => [{ json: { action: 'respond', response, write: null, ...extra } }];\nconst VERIFY_FIRST = { error: 'verify_first', say: 'Verify the caller with send_verification_code first.' };\nconst words = s => String(s || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\\s+/).filter(w => w.length > 1);\nconst money = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 0 });\n\n// Rentals desk. availability and quote are open to anyone; anything about a\n// customer's own rentals needs a verified caller on this call (gate.js above).\nconst fleet = $('Get Fleet').all().map(i => i.json).filter(r => r.unit_id);\nconst rentals = $('Get Rentals').all().map(i => i.json).filter(r => r.rental_id);\nconst today = new Date(now).toISOString().slice(0, 10);\n\nfunction matchUnits(q) {\n  const qw = words(q);\n  if (!qw.length) return fleet;\n  return fleet.filter(u => {\n    const hay = words(u.category + ' ' + u.model + ' ' + u.unit_id).join(' ');\n    return qw.some(w => hay.includes(w.replace(/s$/, '')));\n  });\n}\n\nfunction quote(u, days) {\n  const months = Math.floor(days / 28);\n  const rem = days - months * 28;\n  const weeks = Math.floor(rem / 7);\n  const d = rem - weeks * 7;\n  let total = months * u.monthly_rate + weeks * u.weekly_rate + Math.min(d * u.daily_rate, u.weekly_rate);\n  total = Math.min(total, (months + 1) * u.monthly_rate);\n  return total;\n}\n\nconst pub = u => ({ unit_id: u.unit_id, model: u.model, category: u.category, yard: u.yard, status: u.status,\n  available_from: u.available_from, daily_rate: u.daily_rate, weekly_rate: u.weekly_rate, monthly_rate: u.monthly_rate });\n\nif (topic === 'availability') {\n  const start = String(args.start_date || today);\n  const units = matchUnits(args.category || args.machine);\n  if (!units.length) return out({ available: [], categories: [...new Set(fleet.map(u => u.category))] });\n  const free = units.filter(u => u.available_from <= start);\n  const soon = units.filter(u => !free.includes(u)).map(u => ({ unit_id: u.unit_id, model: u.model, yard: u.yard, available_from: u.available_from }));\n  return out({ start_date: start, available: free.slice(0, 5).map(pub), not_free_until_later: soon.slice(0, 3) });\n}\n\nif (topic === 'quote') {\n  const days = Math.max(1, parseInt(args.days, 10) || 1);\n  const units = args.unit_id ? fleet.filter(u => u.unit_id.toLowerCase() === String(args.unit_id).toLowerCase())\n                             : matchUnits(args.category || args.machine);\n  if (!units.length) return out({ error: 'no_matching_machine', categories: [...new Set(fleet.map(u => u.category))] });\n  const seen = new Set();\n  const quotes = units.filter(u => !seen.has(u.model) && seen.add(u.model)).slice(0, 3).map(u => ({\n    model: u.model, days, total: quote(u, days), total_spoken: money(quote(u, days)),\n    daily_rate: u.daily_rate, weekly_rate: u.weekly_rate, monthly_rate: u.monthly_rate,\n  }));\n  return out({ quotes, note: 'Rental only. Delivery, pickup, fuel and tax are quoted by the yard.' });\n}\n\nif (!me) return out(VERIFY_FIRST);\nconst mine = rentals.filter(r => r.customer_id === me.customer_id);\nconst pubRental = r => ({ rental_id: r.rental_id, unit_id: r.unit_id, model: r.model, start_date: r.start_date,\n  end_date: r.end_date, status: r.status, site: r.site });\n\nif (topic === 'rental_status') {\n  return out({ first_name: me.first_name, company: me.company, rentals: mine.map(pubRental) });\n}\n\nfunction findMine() {\n  const id = String(args.rental_id || '').toUpperCase();\n  if (id) return mine.find(r => r.rental_id.toUpperCase() === id) || null;\n  const active = mine.filter(r => r.status !== 'Off-rent requested');\n  return active.length === 1 ? active[0] : null;\n}\n\nif (topic === 'extend_rental') {\n  const r = findMine();\n  if (!r) return out({ error: 'which_rental', rentals: mine.map(pubRental) });\n  const newEnd = String(args.new_end_date || '');\n  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(newEnd) || newEnd <= r.end_date)\n    return out({ error: 'new_end_date_must_be_after', current_end_date: r.end_date });\n  const clash = rentals.find(o => o.unit_id === r.unit_id && o.rental_id !== r.rental_id && o.start_date <= newEnd && o.start_date >= r.end_date);\n  if (clash) return out({ extended: false, reason: 'unit_booked_next', booked_from: clash.start_date });\n  return [{ json: { action: 'write', write: { ...r, end_date: newEnd },\n    response: { extended: true, rental_id: r.rental_id, model: r.model, old_end_date: r.end_date, new_end_date: newEnd } } }];\n}\n\nif (topic === 'call_off_rent') {\n  const r = findMine();\n  if (!r) return out({ error: 'which_rental', rentals: mine.map(pubRental) });\n  const pickup = /^\\d{4}-\\d{2}-\\d{2}$/.test(String(args.pickup_date || '')) ? String(args.pickup_date) : today;\n  return [{ json: { action: 'write', write: { ...r, status: 'Off-rent requested', end_date: pickup },\n    response: { called_off: true, rental_id: r.rental_id, model: r.model, pickup_date: pickup,\n      note: 'The yard confirms the pickup window.' } } }];\n}\n\nreturn out({ error: 'unknown_topic' });\n"
+   },
+   "executeOnce": true
+  },
+  {
+   "id": "e066931f-0006-5f1f-8877-2f59bea5c483",
+   "name": "Needs Save?",
+   "type": "n8n-nodes-base.switch",
+   "typeVersion": 3,
+   "position": [
+    1540,
+    0
+   ],
+   "parameters": {
+    "mode": "expression",
+    "numberOutputs": 2,
+    "output": "={{ $json.write ? 0 : 1 }}"
+   }
+  },
+  {
+   "id": "10dbc019-21e7-5bf8-8be2-22a69e8e1c63",
+   "name": "Save Rental",
+   "type": "n8n-nodes-base.dataTable",
+   "typeVersion": 1,
+   "position": [
+    1760,
+    -100
+   ],
+   "parameters": {
+    "resource": "row",
+    "operation": "upsert",
+    "dataTableId": {
+     "__rl": true,
+     "mode": "id",
+     "value": "REPLACE_TABLE_Rentals"
+    },
+    "matchType": "allConditions",
+    "filters": {
+     "conditions": [
+      {
+       "keyName": "rental_id",
+       "condition": "eq",
+       "keyValue": "={{ $json.write.rental_id }}"
+      }
+     ]
+    },
+    "columns": {
+     "mappingMode": "defineBelow",
+     "matchingColumns": [],
+     "value": {
+      "rental_id": "={{ $json.write.rental_id }}",
+      "customer_id": "={{ $json.write.customer_id }}",
+      "unit_id": "={{ $json.write.unit_id }}",
+      "model": "={{ $json.write.model }}",
+      "start_date": "={{ $json.write.start_date }}",
+      "end_date": "={{ $json.write.end_date }}",
+      "status": "={{ $json.write.status }}",
+      "site": "={{ $json.write.site }}",
+      "invoice_id": "={{ $json.write.invoice_id }}",
+      "invoice_total": "={{ $json.write.invoice_total }}",
+      "invoice_status": "={{ $json.write.invoice_status }}",
+      "invoice_due": "={{ $json.write.invoice_due }}"
+     },
+     "schema": [
+      {
+       "id": "rental_id",
+       "displayName": "rental_id",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "customer_id",
+       "displayName": "customer_id",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "unit_id",
+       "displayName": "unit_id",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "model",
+       "displayName": "model",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "start_date",
+       "displayName": "start_date",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "end_date",
+       "displayName": "end_date",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "status",
+       "displayName": "status",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "site",
+       "displayName": "site",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "invoice_id",
+       "displayName": "invoice_id",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "invoice_total",
+       "displayName": "invoice_total",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "number",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "invoice_status",
+       "displayName": "invoice_status",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "invoice_due",
+       "displayName": "invoice_due",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      }
+     ]
+    },
+    "options": {}
+   }
+  },
+  {
+   "id": "3b95eb62-de76-5ff7-9097-db4fa1336c6d",
+   "name": "Reply",
+   "type": "n8n-nodes-base.respondToWebhook",
+   "typeVersion": 1.1,
+   "position": [
+    1980,
+    0
+   ],
+   "parameters": {
+    "respondWith": "json",
+    "responseBody": "={{ JSON.stringify($('Decide').first().json.response) }}",
+    "options": {}
+   }
+  }
+ ],
+ "connections": {
+  "Webhook": {
+   "main": [
+    [
+     {
+      "node": "Unwrap",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Unwrap": {
+   "main": [
+    [
+     {
+      "node": "Get Verification",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Get Verification": {
+   "main": [
+    [
+     {
+      "node": "Get Customers",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Get Customers": {
+   "main": [
+    [
+     {
+      "node": "Get Fleet",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Get Fleet": {
+   "main": [
+    [
+     {
+      "node": "Get Rentals",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Get Rentals": {
+   "main": [
+    [
+     {
+      "node": "Decide",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Decide": {
+   "main": [
+    [
+     {
+      "node": "Needs Save?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Needs Save?": {
+   "main": [
+    [
+     {
+      "node": "Save Rental",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Reply",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Save Rental": {
+   "main": [
+    [
+     {
+      "node": "Reply",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1",
+  "saveDataSuccessExecution": "none",
+  "saveDataErrorExecution": "all",
+  "saveManualExecutions": true,
+  "saveExecutionProgress": false
+ }
+}

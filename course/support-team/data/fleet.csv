@@ -1,0 +1,21 @@
+unit_id,category,model,year,hours,status,yard,daily_rate,weekly_rate,monthly_rate,available_from
+GP-101,Haul truck,CAT 777G (100 ton),2021,8420,Available,"Elko, NV",3400,13600,40800,2026-10-24
+GP-102,Haul truck,CAT 777G (100 ton),2020,11210,On rent,"Elko, NV",3400,13600,40800,2026-11-18
+GP-103,Haul truck,CAT 775G (70 ton),2022,5130,Available,"Tucson, AZ",2900,11600,34800,2026-10-24
+GP-104,Articulated truck,CAT 745 (45 ton),2023,2210,Available,"Gillette, WY",1650,6600,19800,2026-10-24
+GP-105,Articulated truck,CAT 740 GC (40 ton),2021,6890,In service,"Gillette, WY",1500,6000,18000,2026-10-31
+GP-201,Excavator,CAT 390F (90 ton),2021,7340,Available,"Elko, NV",2700,10800,32400,2026-10-24
+GP-202,Excavator,CAT 374 (75 ton),2022,4410,On rent,"Tucson, AZ",2300,9200,27600,2026-11-07
+GP-203,Excavator,CAT 336 (36 ton),2023,1980,Available,"Tucson, AZ",1250,5000,15000,2026-10-24
+GP-301,Wheel loader,CAT 988K,2020,12650,Available,"Elko, NV",2400,9600,28800,2026-10-24
+GP-302,Wheel loader,CAT 980 XE,2022,3870,On rent,"Gillette, WY",1700,6800,20400,2026-11-02
+GP-401,Dozer,CAT D10T2,2019,15320,Available,"Elko, NV",3100,12400,37200,2026-10-24
+GP-402,Dozer,CAT D8T,2022,4760,Available,"Gillette, WY",1900,7600,22800,2026-10-24
+GP-403,Dozer,CAT D6 XE,2023,1640,In service,"Tucson, AZ",1300,5200,15600,2026-10-28
+GP-501,Motor grader,CAT 16M3,2021,6120,Available,"Elko, NV",1800,7200,21600,2026-10-24
+GP-502,Motor grader,CAT 14M3,2022,3990,On rent,"Tucson, AZ",1500,6000,18000,2026-11-12
+GP-601,Water truck,"CAT 777 water truck (20,000 gal)",2019,13880,Available,"Elko, NV",2600,10400,31200,2026-10-24
+GP-602,Water truck,"8,000 gal water truck",2022,4120,Available,"Gillette, WY",900,3600,10800,2026-10-24
+GP-701,Drill rig,CAT MD6250 rotary drill,2021,5540,On rent,"Elko, NV",2800,11200,33600,2026-11-25
+GP-801,Light tower,LED light tower,2024,960,Available,"Tucson, AZ",120,480,1440,2026-10-24
+GP-802,Generator,CAT XQ230 generator (230 kW),2022,3310,Available,"Gillette, WY",450,1800,5400,2026-10-24

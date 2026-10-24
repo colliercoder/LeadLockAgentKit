@@ -1,0 +1,376 @@
+{
+ "name": "Billing",
+ "nodes": [
+  {
+   "id": "20ed07a3-9039-599e-9e14-79c72a68cec9",
+   "name": "Webhook",
+   "type": "n8n-nodes-base.webhook",
+   "typeVersion": 2,
+   "position": [
+    0,
+    0
+   ],
+   "parameters": {
+    "httpMethod": "POST",
+    "path": "REPLACE_SLUG-billing",
+    "authentication": "headerAuth",
+    "responseMode": "responseNode",
+    "options": {}
+   },
+   "credentials": {
+    "httpHeaderAuth": {
+     "id": "REPLACE_CRED_WEBHOOK",
+     "name": "Support team webhook key"
+    }
+   },
+   "webhookId": "REPLACE_WEBHOOK_ID"
+  },
+  {
+   "id": "7d6582f6-c3d3-5c83-a0e9-9b566ed4682c",
+   "name": "Unwrap",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    220,
+    0
+   ],
+   "parameters": {
+    "jsCode": "// Leadlock posts {function, arguments, call_context}. n8n expressions can't read a\n// field named \"arguments\", so this node pulls it out once and passes plain fields on.\n// Function names may carry an install prefix (gp_test_rental_status), so match the end.\nconst body = $input.first().json.body || {};\nconst args = body['arguments'] || {};\nconst ctx = body.call_context || {};\nconst TOPICS = {\n  send_verification_code: 'send_code', verify_code: 'check_code',\n  fleet_availability: 'availability', rental_quote: 'quote', rental_status: 'rental_status',\n  extend_rental: 'extend_rental', call_off_rent: 'call_off_rent',\n  troubleshoot_machine: 'troubleshoot', create_service_ticket: 'create_ticket',\n  service_ticket_status: 'ticket_status',\n  account_balance: 'balance', send_payment_link: 'send_payment_link',\n};\nconst fn = String(body.function || '');\nlet topic = String(args.topic || '');\nif (!topic) {\n  const name = Object.keys(TOPICS).sort((a, b) => b.length - a.length)\n    .find(k => fn === k || fn.endsWith('_' + k));\n  topic = name ? TOPICS[name] : '';\n}\nreturn [{ json: { topic, args, ctx, call_sid: String(ctx.call_sid || '') } }];\n"
+   }
+  },
+  {
+   "id": "568b7938-7a20-58ce-9230-b6fe772239f4",
+   "name": "Get Verification",
+   "type": "n8n-nodes-base.dataTable",
+   "typeVersion": 1,
+   "position": [
+    440,
+    0
+   ],
+   "parameters": {
+    "resource": "row",
+    "operation": "get",
+    "dataTableId": {
+     "__rl": true,
+     "mode": "id",
+     "value": "REPLACE_TABLE_Verifications"
+    },
+    "matchType": "allConditions",
+    "filters": {
+     "conditions": [
+      {
+       "keyName": "call_sid",
+       "condition": "eq",
+       "keyValue": "={{ $('Unwrap').first().json.call_sid || '__none__' }}"
+      }
+     ]
+    },
+    "returnAll": true
+   },
+   "alwaysOutputData": true,
+   "executeOnce": true
+  },
+  {
+   "id": "14bf268d-ff9a-597c-bf44-90b17d125909",
+   "name": "Get Customers",
+   "type": "n8n-nodes-base.dataTable",
+   "typeVersion": 1,
+   "position": [
+    660,
+    0
+   ],
+   "parameters": {
+    "resource": "row",
+    "operation": "get",
+    "dataTableId": {
+     "__rl": true,
+     "mode": "id",
+     "value": "REPLACE_TABLE_Customers"
+    },
+    "returnAll": true
+   },
+   "alwaysOutputData": true,
+   "executeOnce": true
+  },
+  {
+   "id": "4b13bfed-1421-51ca-a4f3-2c450c1424ae",
+   "name": "Get Rentals",
+   "type": "n8n-nodes-base.dataTable",
+   "typeVersion": 1,
+   "position": [
+    880,
+    0
+   ],
+   "parameters": {
+    "resource": "row",
+    "operation": "get",
+    "dataTableId": {
+     "__rl": true,
+     "mode": "id",
+     "value": "REPLACE_TABLE_Rentals"
+    },
+    "returnAll": true
+   },
+   "alwaysOutputData": true,
+   "executeOnce": true
+  },
+  {
+   "id": "26a6f50e-6d6a-581b-a8ec-80b30faad007",
+   "name": "Decide",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1100,
+    0
+   ],
+   "parameters": {
+    "jsCode": "// Shared by the Rentals, Maintenance and Billing workflows: who is verified on this call.\nconst inp = $('Unwrap').first().json;\nconst { topic, args, ctx, call_sid } = inp;\nconst now = Date.now();\nconst customers = $('Get Customers').all().map(i => i.json).filter(r => r.customer_id);\nconst ver = $('Get Verification').all().map(i => i.json).find(r => call_sid && r.call_sid === call_sid);\nconst verified = !!(ver && ver.verified && ver.expires_at && Date.parse(ver.expires_at) > now);\nconst me = verified ? customers.find(c => c.customer_id === ver.customer_id) || null : null;\nconst out = (response, extra = {}) => [{ json: { action: 'respond', response, write: null, ...extra } }];\nconst VERIFY_FIRST = { error: 'verify_first', say: 'Verify the caller with send_verification_code first.' };\nconst words = s => String(s || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\\s+/).filter(w => w.length > 1);\nconst money = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 0 });\n\n// Billing desk. Everything here is account data, so every topic needs a verified\n// caller. The payment link goes ONLY to the email or phone on file, and no card\n// number is ever taken or stored.\nconst COMPANY = 'Granite Peak';\nconst PAY_LINK_BASE = 'https://example.com/pay/';\nconst EMAIL_ENABLED = true;\nconst SMS_ENABLED = false;\nconst rentals = $('Get Rentals').all().map(i => i.json).filter(r => r.rental_id);\nconst digits = s => String(s || '').replace(/\\D/g, '');\nconst maskEmail = e => { const [u, d] = String(e).split('@'); return u.charAt(0) + '***@' + d; };\nconst maskPhone = p => '***-***-' + digits(p).slice(-4);\n\nif (!me) return out(VERIFY_FIRST);\nconst invoices = rentals.filter(r => r.customer_id === me.customer_id && r.invoice_id).map(r => ({\n  invoice_id: r.invoice_id, rental_id: r.rental_id, model: r.model, total: Number(r.invoice_total || 0),\n  total_spoken: money(r.invoice_total), status: r.invoice_status, due: r.invoice_due,\n}));\nconst open = invoices.filter(i => i.status === 'Open' || i.status === 'Overdue');\nconst balance = open.reduce((s, i) => s + i.total, 0);\n\nif (topic === 'balance') {\n  return out({ first_name: me.first_name, company: me.company, balance_due: balance,\n    balance_spoken: money(balance), open_invoices: open, all_invoices: invoices });\n}\n\nif (topic === 'send_payment_link') {\n  if (!open.length) return out({ sent: false, reason: 'nothing_due' });\n  const id = String(args.invoice_id || '').toUpperCase();\n  const inv = id ? open.find(i => i.invoice_id === id) : null;\n  if (id && !inv) return out({ sent: false, reason: 'invoice_not_open', open_invoices: open });\n  const amount = inv ? inv.total : balance;\n  const ref = inv ? inv.invoice_id : 'balance-' + me.customer_id;\n  let channel = String(args.channel || '').toLowerCase() === 'email' ? 'email' : 'sms';\n  if (channel === 'sms' && !SMS_ENABLED) channel = 'email';\n  if (channel === 'email' && !EMAIL_ENABLED) channel = 'sms';\n  if (channel === 'sms' && !SMS_ENABLED) return out({ sent: false, reason: 'no_delivery_channel' });\n  const message = `${COMPANY}: ${inv ? 'invoice ' + inv.invoice_id : 'your balance'} for ${money(amount)}. Pay securely here: ${PAY_LINK_BASE}${ref}`;\n  return [{ json: { action: channel, message, subject: `${COMPANY} payment link`,\n    send_to: channel === 'sms' ? me.phone : me.email,\n    response: { sent: true, channel, to: channel === 'sms' ? maskPhone(me.phone) : maskEmail(me.email),\n      for: inv ? inv.invoice_id : 'full balance', amount, amount_spoken: money(amount) } } }];\n}\n\nreturn out({ error: 'unknown_topic' });\n"
+   },
+   "executeOnce": true
+  },
+  {
+   "id": "8e883dc6-20de-5bfe-829f-9c2846f4fa1a",
+   "name": "Reply",
+   "type": "n8n-nodes-base.respondToWebhook",
+   "typeVersion": 1.1,
+   "position": [
+    1760,
+    0
+   ],
+   "parameters": {
+    "respondWith": "json",
+    "responseBody": "={{ JSON.stringify($('Decide').first().json.response) }}",
+    "options": {}
+   }
+  },
+  {
+   "id": "b274bac7-7dff-5984-98ce-a42a3f4901e0",
+   "name": "Send Via",
+   "type": "n8n-nodes-base.switch",
+   "typeVersion": 3,
+   "position": [
+    1320,
+    -100
+   ],
+   "parameters": {
+    "mode": "expression",
+    "numberOutputs": 3,
+    "output": "={{ ({email:0, sms:1})[$('Decide').first().json.action] ?? 2 }}"
+   }
+  },
+  {
+   "id": "8ce7e4fd-3be8-5982-8a2c-d9b6b9474a42",
+   "name": "Email",
+   "type": "n8n-nodes-base.gmail",
+   "typeVersion": 2.1,
+   "position": [
+    1540,
+    -260
+   ],
+   "parameters": {
+    "sendTo": "={{ $('Decide').first().json.send_to }}",
+    "subject": "={{ $('Decide').first().json.subject }}",
+    "emailType": "text",
+    "message": "={{ $('Decide').first().json.message }}",
+    "options": {
+     "appendAttribution": false
+    }
+   },
+   "credentials": {
+    "gmailOAuth2": {
+     "id": "REPLACE_CRED_EMAIL",
+     "name": "Email"
+    }
+   },
+   "onError": "continueErrorOutput"
+  },
+  {
+   "id": "978a1aaf-09a8-5e24-8363-8ddc8f928220",
+   "name": "Text",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1540,
+    -60
+   ],
+   "parameters": {
+    "method": "POST",
+    "url": "REPLACE_LEADLOCK_API_URL/outbound/sms",
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpHeaderAuth",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({to_number: $('Decide').first().json.send_to, message: $('Decide').first().json.message, from_phone_number_id: 'REPLACE_SMS_FROM_ID'}) }}",
+    "options": {
+     "timeout": 4000
+    }
+   },
+   "credentials": {
+    "httpHeaderAuth": {
+     "id": "REPLACE_CRED_LEADLOCK",
+     "name": "Leadlock API key"
+    }
+   },
+   "onError": "continueRegularOutput"
+  },
+  {
+   "id": "db4255fb-a0a2-5d69-806f-5f8f93f0fb35",
+   "name": "Reply Text",
+   "type": "n8n-nodes-base.respondToWebhook",
+   "typeVersion": 1.1,
+   "position": [
+    1760,
+    -60
+   ],
+   "parameters": {
+    "respondWith": "json",
+    "responseBody": "={{ JSON.stringify($json.success === true ? $('Decide').first().json.response : {sent: false, error: 'send_failed'}) }}",
+    "options": {}
+   }
+  },
+  {
+   "id": "42af16a0-7db8-527c-addf-c9c6691c3faa",
+   "name": "Reply Send Failed",
+   "type": "n8n-nodes-base.respondToWebhook",
+   "typeVersion": 1.1,
+   "position": [
+    1760,
+    -360
+   ],
+   "parameters": {
+    "respondWith": "json",
+    "responseBody": "={{ JSON.stringify({sent: false, error: 'send_failed'}) }}",
+    "options": {}
+   }
+  }
+ ],
+ "connections": {
+  "Webhook": {
+   "main": [
+    [
+     {
+      "node": "Unwrap",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Unwrap": {
+   "main": [
+    [
+     {
+      "node": "Get Verification",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Get Verification": {
+   "main": [
+    [
+     {
+      "node": "Get Customers",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Get Customers": {
+   "main": [
+    [
+     {
+      "node": "Get Rentals",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Get Rentals": {
+   "main": [
+    [
+     {
+      "node": "Decide",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Decide": {
+   "main": [
+    [
+     {
+      "node": "Send Via",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Send Via": {
+   "main": [
+    [
+     {
+      "node": "Email",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Text",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Reply",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Email": {
+   "main": [
+    [
+     {
+      "node": "Reply",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Reply Send Failed",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Text": {
+   "main": [
+    [
+     {
+      "node": "Reply Text",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1",
+  "saveDataSuccessExecution": "none",
+  "saveDataErrorExecution": "all",
+  "saveManualExecutions": true,
+  "saveExecutionProgress": false
+ }
+}

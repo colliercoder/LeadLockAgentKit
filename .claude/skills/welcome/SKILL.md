@@ -88,6 +88,12 @@ You don't need to memorize commands — just describe what you want.
     "Connect n8n" / "Set up the n8n MCP"
     Lets Claude build n8n workflows, the backend for custom functions.
 
+  install-support-team   (needs n8n: N8N_API_URL + N8N_API_KEY in .env)
+    "Install the support team"
+    "Install the support team tables" / "Install Joanne"
+    Builds the course's Granite Peak support team: n8n tables and
+    workflows, three agents, caller verification, handoffs.
+
   install-addon   (paid add-ons in ./addons/)
     "Install my add-on" / "I bought the GHL Connector"
 
