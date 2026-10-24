@@ -218,7 +218,7 @@ Per-provider voice fields:
 Model field per provider (full list in CLAUDE.md, "Voice provider quick reference"): xAI `xai_voice_model` defaults to `grok-voice-3.0`, leave it. OpenAI `openai_voice_model` defaults to `gpt-realtime-1.5`; the premium v2 models are `gpt-realtime-2`, `gpt-realtime-2.1`, `gpt-realtime-2.1-mini`. GPT-Live and Gemini have no model field.
 
 Gemini also needs: `gemini_start_sensitivity: "low"`, `gemini_end_sensitivity: "high"`.
-OpenAI also needs: `openai_vad_type: "semantic_vad"`, `openai_vad_eagerness: "low"`, `openai_noise_reduction: "far_field"`.
+OpenAI also needs: `openai_vad_type: "semantic_vad"`, `openai_vad_eagerness: "medium"`, `openai_noise_reduction: "far_field"`.
 
 ### Step 5 - Create agents
 

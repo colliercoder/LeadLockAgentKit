@@ -255,7 +255,7 @@ Grok `voice` also accepts `sal` (neutral). OpenAI also has `alloy` (the API defa
 ### Required companion settings
 
 Gemini additionally needs: `gemini_start_sensitivity: "low"`, `gemini_end_sensitivity: "high"`. `gemini_thinking_level`, `gemini_proactive_audio` and `gemini_affective_dialog` are still accepted by the API but ignored (3.8 does not support them), so skills should not set them.
-OpenAI additionally needs: `openai_vad_type: "semantic_vad"`, `openai_vad_eagerness: "low"`, `openai_noise_reduction: "far_field"`.
+OpenAI additionally needs: `openai_vad_type: "semantic_vad"`, `openai_vad_eagerness: "medium"`, `openai_noise_reduction: "far_field"`.
 
 The `retell-to-leadlock` skill defaults to the OpenAI v2 block (`gpt-realtime-2` + `marin`/`cedar` + `openai_reasoning_effort: "low"`).
 

@@ -217,7 +217,7 @@ agent_body = {
 Provider-specific extras (apply for the chosen provider only):
 
 - **Gemini**: also set `gemini_start_sensitivity="low"`, `gemini_end_sensitivity="high"`.
-- **OpenAI**: also set `openai_vad_type="semantic_vad"`, `openai_vad_eagerness="low"`, `openai_noise_reduction="far_field"`.
+- **OpenAI**: also set `openai_vad_type="semantic_vad"`, `openai_vad_eagerness="medium"`, `openai_noise_reduction="far_field"`.
 - **OpenAI v2 (only if the user asks for it)**: `openai_voice_model` one of `gpt-realtime-2`, `gpt-realtime-2.1`, `gpt-realtime-2.1-mini`, plus `openai_reasoning_effort="low"`. These bill at the premium rate and add the `marin` / `cedar` voices. Otherwise leave the default `gpt-realtime-1.5`.
 - **xAI**: just `voice_provider="xai"` + `voice="<rex|leo|ara|eve>"`. The model defaults to `grok-voice-3.0`; don't send `xai_voice_model` or `xai_reasoning_effort`.
 - **GPT-Live**: `voice_provider="openai_live"` + `openai_live_voice` (default `vesper`). No model field.

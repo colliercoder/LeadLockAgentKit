@@ -335,3 +335,17 @@ Evidence: the platform's agent schema enums and the dashboard voice picker at th
 
 **How to apply:** Leave `xai_voice_model` and `xai_reasoning_effort` unset on new Grok agents. Grok 3.0 takes the short-brief prompt shape (`prospect-demo/templates/voice-prompt.md`), same as think-fast did. When an older learning names a model, read it through this entry.
 
+---
+
+### Default `openai_vad_eagerness` is `medium`, not `low`
+
+Date: 2026-10-24
+Tags: skill:build-agent, skill:prospect-demo, skill:retell-to-leadlock, type:pattern, provider:openai, surface:vad
+Evidence: the platform's own `AgentCreate.openai_vad_eagerness` field (see `LEADLOCKDOCS.json`) defaults to `medium`, with the platform comment: "Default medium (~4s max wait) - low waited up to ~8s and felt sluggish."
+
+**Rule:** New OpenAI agents use `openai_vad_eagerness: "medium"`. That is now the kit default in CLAUDE.md, build-agent, prospect-demo and retell-to-leadlock, matching the platform default.
+
+**Why:** The kit used to set `low`. On live calls `low` waited up to about 8 seconds before the agent replied, which callers hear as lag. We default to settings proven on live calls.
+
+**How to apply:** Send `medium` unless a use case calls for something else. The two entries above still hold as overrides: `high` for outbound 1:1 calls, `auto` for inbound conversational demos. Where those entries say `low` was "the kit's default", that was true when written and is now superseded by this entry.
+
