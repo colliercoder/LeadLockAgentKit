@@ -25,8 +25,8 @@ Confirm `./.env` has `LEADLOCK_API_KEY` and `LEADLOCK_API_URL`.
 1. **Never use the word "closer"** anywhere in the generated prompt or copy. Use "team member" / "specialist" / "funding specialist".
 2. **Strip personally identifying details** from the transcript before reusing. Names, phone numbers, full addresses, specific dollar amounts the human quoted. Generalize them in the prompt.
 3. **Don't mirror tactics the human shouldn't have done.** If the recording shows the salesperson dodging questions, using deceptive framing, or making unauthorized claims, do NOT bake those patterns in. Flag them to the user and ask before proceeding.
-4. **Preserve hard rules.** The generated prompt MUST have: one-question-at-a-time, end-call discipline, speak-numbers-as-words, AI-disclosure handler. Even if the human did 5-question stacks, the agent doesn't.
-5. **House-style structure exactly.** Same skeleton as `prospect-demo`. No "CRITICAL RULES" header at the top. Guardrails section at the bottom only.
+4. **Preserve hard rules.** The generated prompt always includes one-question-at-a-time, end-call discipline, speak-numbers-as-words, AI-disclosure handler. Even if the human did 5-question stacks, the agent doesn't.
+5. **House-style structure exactly.** Same skeleton as `prospect-demo` (`prospect-demo/templates/gpt-prompt-skeleton.md`). No "CRITICAL RULES" header at the top. Guardrails section at the bottom only.
 6. **Target 5K-9K chars.** Trim aggressive humor or context-specific banter that doesn't generalize.
 7. **Never name the platform** in the generated prompt. Use "our system."
 8. **Branch discipline: stay on main.** No `git checkout -b`.
@@ -116,7 +116,7 @@ Length target 5K-9K chars. If under 4K, you didn't extract enough — re-read th
 
 ### Step 6 — Set the greeting
 
-The agent's `greeting` field must EXACTLY match Call Flow Step 1. Single open-ended question. No contractions in the greeting (some voice models read them oddly).
+The agent's `greeting` field must match Call Flow Step 1 word for word. Single open-ended question. No contractions in the greeting (some voice models read them oddly).
 
 If the human's transcript greeting was a compound question, simplify it. Example:
 - Human said: "Hey, thanks for calling. Are you reaching out about the rate? What's the best way to get started?"
