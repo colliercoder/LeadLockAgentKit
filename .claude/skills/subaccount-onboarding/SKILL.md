@@ -120,7 +120,7 @@ You can repeat this for multiple template agents.
 
 ### Step 6 — Send the invite (with confirmation)
 
-ALWAYS ask before this step. Once fired, the email goes out.
+Ask before this step every time: once fired, the email goes out and can't be recalled.
 
 ```
 POST /agency/sub-accounts/<sub_account_id>/invite
@@ -173,7 +173,7 @@ After the skill completes, tell the user:
 2. **Their first task: connect their GHL or calendar** (if not pre-assigned) and set up their first agent.
 3. **Recommended next**: schedule a 15-minute orientation call with the client to walk them through the platform.
 4. **If they need help building their first agent**, the `prospect-demo` skill can spin one up from their site URL.
-5. **For branding**: their portal already inherits your agency's white-label. If they want their OWN logo for their team's view, they can change it from their UI.
+5. **For branding**: their portal already inherits your agency's white-label. If they want their own logo for their team's view, they can change it from their UI.
 
 ## Gotchas
 
