@@ -220,8 +220,20 @@ If your skill needs an agency-tier API key (anything under `/agency/*`), say so 
 - `LEADLOCKDOCS.json` — canonical API reference (275+ endpoints + full component schemas). Parse with `json.load`.
 - `.claude/skills/prospect-demo/SKILL.md` — the canonical skill example. Mirror its structure when writing new skills.
 - `.claude/skills/prospect-demo/showcase.html` — branded slide deck explaining what `prospect-demo` does. Use as a reference if you build similar marketing artifacts for other skills.
+- `reference/agent-functions.md` - every built-in agent function (update_contact, tags, notes, booking, transfers, SMS...), its arguments and how to enable it.
 - `learnings/skill-authoring.md` - how to word SKILL.md files for current Claude models, with Anthropic sources. Read it before writing or rewording a skill.
 - `learnings/` — the kit's persistent memory across sessions. Read `learnings/index.md` before starting non-trivial work. Append to it via `/add-to-learnings`.
+
+---
+
+## Built-in agent functions
+
+Agents already have 21 built-in functions. Switch them on with the agent's `tools_enabled` list; never rebuild one as a custom function. Full arguments, the agent fields that feed them, and what each needs: `reference/agent-functions.md`.
+
+- Call control: `end_call`, `schedule_callback`, `transfer_call`, `transfer_to_agent`, `trigger_outbound_call`
+- Calendar: `check_availability`, `book_appointment`, `reschedule_appointment`, `get_appointments`, `cancel_appointment`
+- Contact and CRM (needs a connected CRM, GoHighLevel today): `update_contact` (name, email, phone, company, address, timezone), `update_custom_fields`, `add_tag`, `remove_tag`, `add_note`, `trigger_workflow`, `create_opportunity`, `update_opportunity_stage`
+- Messaging and knowledge: `send_sms`, `schedule_text_back`, `search_knowledge_base`
 
 ---
 
@@ -268,4 +280,4 @@ The API returns default values on every non-matching voice column (e.g. `gemini_
 
 Maintain a one-line note here when CLAUDE.md changes substantially. Don't pad with version history — just the most recent meaningful update.
 
-2026-10-23 - Voice reference rebuilt from the platform code (Grok Voice 3.0, GPT-Live, gpt-realtime-2.1 / 2.1-mini, Gemini 3.8). `LEADLOCKDOCS.json` regenerated from the live spec. `.env.example` gained `MY_PHONE_NUMBER` and `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN`. Added the `clarify-voice` skill.
+2026-10-23 - Voice reference rebuilt from the platform code (Grok Voice 3.0, GPT-Live, gpt-realtime-2.1 / 2.1-mini, Gemini 3.8). `LEADLOCKDOCS.json` regenerated from the live spec. `.env.example` gained `MY_PHONE_NUMBER` and `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN`. Added the `clarify-voice` skill. 2026-10-24: added the built-in agent functions section and `reference/agent-functions.md`.

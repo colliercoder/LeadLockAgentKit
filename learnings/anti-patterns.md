@@ -119,4 +119,4 @@ Evidence: prospect-demo's default tool set includes `collect_contact` (Rule 21 a
 
 **Why:** `tools_enabled` is a free-form string array, so the API accepts any name without validation and a phantom tool sits in the list doing nothing. A prompt that tells the model to "call collect_contact" primes it to invoke a no-op, which can stall or confuse the turn.
 
-**How to apply:** Drop `collect_contact` from prospect-demo's default `tools_enabled` and from its `## Tools` skeleton guidance. Big Dawg's `bin/bd-make-demo` already ships without it. When adding any tool, confirm it against a known-real list before enabling, and never invent tool names.
+**How to apply:** Drop `collect_contact` from prospect-demo's default `tools_enabled` and from its `## Tools` skeleton guidance. The demo tooling already ships without it. When adding any tool, confirm it against a known-real list before enabling, and never invent tool names.

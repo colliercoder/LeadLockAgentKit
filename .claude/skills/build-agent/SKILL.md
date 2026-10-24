@@ -33,12 +33,13 @@ Then probe `GET /tenants/me`. Capture `tenant_type` (sub_account vs agency) and 
 4. **Smart-default heavy.** Ask the ~10 essential questions. Pick sane defaults for the other 60+ fields on `AgentCreate`. Only show advanced options if the user says "show advanced" or "I want to tune VAD/temperature/timeouts/AMD".
 5. **House-style prompt template, exactly.** Mirror the section order from `prospect-demo` (`## Role`, `## Personality`, `## Context`, `## Call Flow`, `## Tools`, `## Handling Common Situations`, `## Closing Line`, `## Guardrails`). See `## Prompt skeleton` at the bottom.
 6. **Greeting must exactly match the agent's first spoken line in Call Flow.** Single open-ended question, no compound questions. The `greeting` and `greeting_outbound` fields are stored separately — fill the right one based on `agent_mode`.
-7. **Calendar config: discover, don't guess.** Run the GHL discovery flow (Step 3). If no integrations exist, build with `collect_contact` only and tell the user the agent has no booking capability.
+7. **Calendar config: discover, don't guess.** Run the GHL discovery flow (Step 3). If no integrations exist, build without the calendar functions (keep `end_call`, `schedule_callback`, and `update_contact` + `add_note` when a CRM is connected) and tell the user the agent has no booking capability.
 8. **Tools default depends on mode.**
-   - Inbound qualifier: `["end_call", "book_appointment", "check_availability", "collect_contact"]` (drop `book_appointment`/`check_availability` if no calendar).
-   - Outbound caller: `["end_call", "book_appointment", "check_availability", "collect_contact"]` plus consider `transfer_call` if user supplied transfer targets.
+   - Inbound qualifier: `["end_call", "book_appointment", "check_availability", "update_contact", "add_note"]` (drop `book_appointment`/`check_availability` if no calendar).
+   - Outbound caller: `["end_call", "book_appointment", "check_availability", "update_contact", "add_note"]` plus consider `transfer_call` if user supplied transfer targets.
    - Receptionist (both): same as inbound + `transfer_call` if transfer targets provided.
    - Add `search_knowledge_base` only when a KB is being attached.
+   - `update_contact` and `add_note` need a connected CRM (GoHighLevel); drop them otherwise. The full list of 21 built-in functions is in `reference/agent-functions.md`.
 9. **Timezone matches the BUSINESS, not the operator.** Ask the user for the business's primary timezone if it isn't obvious from the business name/context. Defaults to `America/New_York` only when the user explicitly says east coast.
 10. **Phone assignment is optional and confirmed separately.** Don't auto-assign. List existing phones, let the user pick one or skip. If they pick one that already has an agent, warn loudly and require re-confirmation (the previous agent will lose the number).
 11. **Voice-capable check before assigning.** Phones with provider `gohighlevel` only support SMS, not voice. Filter those out of the voice-assignment prompt or flag them clearly.
@@ -349,7 +350,8 @@ You are <AGENT_NAME>, the AI <inbound receptionist | outbound caller | call hand
 ## Tools
 - **<primary_tool>**: When to use. Required inputs.
 - **check_availability**: Before booking when no time was given.
-- **collect_contact**: Caller won't book but wants a callback.
+- **update_contact**: As soon as the caller gives their name, email or phone. Save it before booking.
+- **schedule_callback**: Caller won't book now but wants a call back later.
 - **search_knowledge_base**: For specific questions this prompt doesn't directly answer (only if KB attached).
 - **end_call**: After mutual goodbyes. Invoke it; don't just announce it.
 
@@ -384,7 +386,7 @@ End with a warm one-liner like: "<CLOSING_TEMPLATE>". Then invoke `end_call`.
 - **PATCHing `agent_id: null` on a phone may 422.** If the user wants to unassign, try the dedicated assign endpoint with `sub_account_id: null` instead, or just leave the assignment in place if benign.
 - **Calendar timezone in GHL is separate from `agent.timezone`.** The agent reasons about times in `agent.timezone`. The calendar still books in its own configured timezone. If they don't match, callers see "your 1:30 wasn't my 1:30" confusion. Tell the user to verify both.
 - **Sub-account keys can't purchase phones.** They can only assign existing ones. Don't suggest buying when `tenant_type == "sub_account"`.
-- **`tools_enabled` referencing tools that don't exist on the agent results in silent ignore at runtime.** Stick to known tool names: `end_call`, `book_appointment`, `check_availability`, `collect_contact`, `transfer_call`, `search_knowledge_base`, `send_sms`, `add_tag`, `remove_tag`, `trigger_workflow`.
+- **`tools_enabled` referencing tools that don't exist on the agent results in silent ignore at runtime.** Use only the 21 built-in names in `reference/agent-functions.md` (for example `end_call`, `check_availability`, `book_appointment`, `update_contact`, `add_note`, `add_tag`, `transfer_call`, `send_sms`, `search_knowledge_base`). `collect_contact` is not a real function.
 - **Greeting drift.** If the `greeting` field doesn't match Call Flow step 1 verbatim, the model improvises and appends extra questions. Always sync the two.
 - **Don't paste the API key into the printed report.** Mask: `sk_live...XXXX`.
 - **`./output/` is gitignored.** Drop the prompt draft there, not in `.claude/skills/`.

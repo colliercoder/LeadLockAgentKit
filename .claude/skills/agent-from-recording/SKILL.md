@@ -141,7 +141,7 @@ POST /agents
   "enable_recording_disclosure": false,
   "recording_enabled": false,
   "max_call_duration_minutes": 10,
-  "tools_enabled": ["end_call", "book_appointment", "check_availability", "collect_contact"],
+  "tools_enabled": ["end_call", "book_appointment", "check_availability", "update_contact", "add_note"],
   "calendar_provider": "<from step 4>",
   "calendar_id": "<from step 4>",
   "calendar_integration_id": "<from step 4>",

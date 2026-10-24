@@ -173,7 +173,7 @@ PATCH /agents/<agent_id>
 {
   "enable_collections_search": true,
   "knowledge_base_ids": ["<kb_id>"],
-  "tools_enabled": ["end_call", "book_appointment", "check_availability", "collect_contact", "search_knowledge_base"]
+  "tools_enabled": ["end_call", "book_appointment", "check_availability", "update_contact", "search_knowledge_base"]
 }
 ```
 
