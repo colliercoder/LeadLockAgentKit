@@ -14,7 +14,7 @@ When the user is new, lost, or asks "what can this do", surface the kit's full s
 - "List the skills" / "What's available?"
 - "/help" / "/welcome"
 - "How do I use this?"
-- ANY first-turn prompt in this kit that doesn't clearly map to a specific skill
+- Any first-turn prompt in this kit that doesn't clearly map to a specific skill
 
 ## What to show the user
 
