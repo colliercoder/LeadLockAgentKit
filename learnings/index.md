@@ -24,6 +24,8 @@ Content lives in the category files, not here. To add a new entry, invoke `/add-
 
 ## Best practices
 
+- 2026-10-24 - n8n public API recipes: data tables, row delete path, credentials, publish + webhook probe - [best-practices.md](best-practices.md)
+- 2026-10-24 - Leadlock function names are unique per library; test endpoint shape and `test-call-sid` - [best-practices.md](best-practices.md)
 - 2026-10-24 - `update_contact` can't correct an email already on file; check updated/skipped - [best-practices.md](best-practices.md)
 - 2026-10-24 - Default `openai_vad_eagerness` is `medium` (platform default), not `low` - [best-practices.md](best-practices.md)
 - 2026-10-23 - Voice model lineup (Grok Voice 3.0, gpt-realtime-2.1 / 2.1-mini, GPT-Live, Gemini 3.8); supersedes older model names - [best-practices.md](best-practices.md)

@@ -6,6 +6,40 @@ Each entry includes: date, tags, evidence link, rule, why, how to apply.
 
 ---
 
+### n8n public API: what works for tables, rows, credentials and workflows
+
+Date: 2026-10-24
+Tags: skill:install-support-team, integration:n8n, type:recipe
+Evidence: install-support-team built and removed the Granite Peak support team through `/api/v1` on a self-hosted n8n, from a fresh clone.
+
+**Rule:**
+- Data tables: `POST /data-tables {name, columns:[{name,type}]}`; rows `POST /data-tables/{id}/rows {data:[...]}`; update `PATCH /data-tables/{id}/rows/update {filter, data}`; upsert `POST .../rows/upsert`; delete rows `DELETE .../rows/delete?filter=<json>` (plain `DELETE .../rows` is 405); drop `DELETE /data-tables/{id}`. Filters look like `{"type":"and","filters":[{"columnName":"k","condition":"eq","value":"a"}]}`.
+- Credentials: `GET /credentials` lists names and types (find a `gmailOAuth2` or `smtp` one), `POST /credentials`, `PATCH /credentials/{id} {data}`, `DELETE`. OAuth credentials (Gmail) can't be created over the API; the user adds them in n8n and you reference the id.
+- Workflows: `POST /workflows {name,nodes,connections,settings}`, `PUT` to update (deactivate first), `POST /workflows/{id}/activate`. After activating, probe the production webhook: no header must give 403, the header 200.
+
+**Why:** the n8n MCP can build workflows but not tables or credentials, so an installer needs the public API anyway.
+
+**How to apply:** ask for `N8N_API_URL` + `N8N_API_KEY` in `.env`; treat the MCP as a nice-to-have for editing afterwards.
+
+---
+
+### Leadlock custom functions: unique names, and the test endpoint's real shape
+
+Date: 2026-10-24
+Tags: surface:custom-functions, skill:install-support-team, type:recipe
+Evidence: Summit Plumbing & Drain sandbox; `POST /functions` returned 422 "A function named 'send_verification_code' already exists in your library".
+
+**Rule:**
+- Function names are unique per account library. Namespace test installs (`gp_test_rental_status`) and identify your own functions by their webhook URL, never by name alone.
+- `POST /functions/{id}/test {arguments}` returns `{success, status_code, response_time_ms, response_body, error}`, always with call_sid `test-call-sid` and no caller phone. Clear any state you keyed on that call_sid afterwards.
+- `GET /agents/{id}/functions` returns `{"attached": [{function_id, is_enabled, function}]}`; attaching an already-attached function is a 422.
+
+**Why:** a same-named function from another build would be silently taken over, and a leftover `test-call-sid` row makes the next test start verified.
+
+**How to apply:** see `.claude/skills/install-support-team/install.py` (`build_functions`, `test_fn`, `attach_functions`).
+
+---
+
 ### A skill isn't shipped until it's in README + welcome + setup-check + .env.example
 
 Date: 2026-05-31
