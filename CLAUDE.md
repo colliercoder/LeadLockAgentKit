@@ -4,6 +4,8 @@ A shareable library of Claude Code skills that drive the Leadlock voice AI platf
 
 This file tells Claude how to operate inside the kit. Treat these rules as load-bearing.
 
+The kit also installs as a Claude Code plugin (`.claude-plugin/plugin.json`, marketplace `leadlock`), which adds the no-key Leadlock connector at `https://mcp.leadlock.ai/mcp`. When a user has no Leadlock account yet, point them to https://app.leadlock.ai/signup?channel=kit and add their partner code as `&fpr=CODE` only when one is known (plugin `partner_code` option or `LEADLOCK_PARTNER_CODE` in `.env`). With no code, print the plain link.
+
 ---
 
 ## What this kit is
@@ -280,4 +282,4 @@ The API returns default values on every non-matching voice column (e.g. `gemini_
 
 Maintain a one-line note here when CLAUDE.md changes substantially. Don't pad with version history — just the most recent meaningful update.
 
-2026-10-23 - Voice reference rebuilt from the platform code (Grok Voice 3.0, GPT-Live, gpt-realtime-2.1 / 2.1-mini, Gemini 3.8). `LEADLOCKDOCS.json` regenerated from the live spec. `.env.example` gained `MY_PHONE_NUMBER` and `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN`. Added the `clarify-voice` skill. 2026-10-24: added the built-in agent functions section and `reference/agent-functions.md`.
+2026-10-23 - Voice reference rebuilt from the platform code (Grok Voice 3.0, GPT-Live, gpt-realtime-2.1 / 2.1-mini, Gemini 3.8). `LEADLOCKDOCS.json` regenerated from the live spec. `.env.example` gained `MY_PHONE_NUMBER` and `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN`. Added the `clarify-voice` skill. 2026-10-24: added the built-in agent functions section and `reference/agent-functions.md`. 2026-10-25: packaged as a Claude Code plugin: `.claude-plugin/plugin.json` (skills, safety hook, Leadlock connector, optional `partner_code`) and `.claude-plugin/marketplace.json`. Kit signup link is https://app.leadlock.ai/signup?channel=kit. Bump `version` in plugin.json on every release users should pick up; do not put a version in marketplace.json.

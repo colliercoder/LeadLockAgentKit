@@ -1,0 +1,43 @@
+{
+  "name": "leadlock-agent-kit",
+  "version": "1.0.0",
+  "description": "Claude Code skills for building, testing and running Leadlock speech-to-speech voice agents, plus the Leadlock connector.",
+  "author": {
+    "name": "Leadlock",
+    "url": "https://leadlock.ai"
+  },
+  "homepage": "https://leadlock.ai",
+  "repository": "https://github.com/colliercoder/LeadLockAgentKit",
+  "privacyPolicyUrl": "https://www.leadlock.ai/privacy/",
+  "keywords": ["leadlock", "voice-agents", "voice-ai", "speech-to-speech"],
+  "skills": "./.claude/skills/",
+  "userConfig": {
+    "partner_code": {
+      "type": "string",
+      "title": "Partner code",
+      "description": "Optional. Your Leadlock partner code (1 to 64 letters, digits, hyphens or underscores); it is added to the signup links the kit prints.",
+      "default": "",
+      "sensitive": false
+    }
+  },
+  "mcpServers": {
+    "leadlock": {
+      "type": "http",
+      "url": "https://mcp.leadlock.ai/mcp"
+    }
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Read|Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/guard_secrets.py\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}
