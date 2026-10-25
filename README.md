@@ -84,6 +84,8 @@ Or in one step from inside Claude Code: `/plugin install leadlock-agent-kit --ma
 
 The plugin brings every skill in the kit, the safety hook, and the **Leadlock connector** (`https://mcp.leadlock.ai/mcp`). The connector is the no-key path: the first time Claude Code uses it, it asks you to sign in to Leadlock in your browser, and no API key is needed.
 
+A plugin installs for your user by default, so the safety hook then guards `.env` files in every project you open with Claude Code, not just this one. Add `--scope project` to the install command to keep it to one project.
+
 Skills that run the kit's own scripts read `.env` and files from the kit folder, so the clone install below stays the full-featured path for those. If a partner gave you a code, see [Partners](#partners).
 
 ## Install by cloning the repo
@@ -117,7 +119,7 @@ Then say **"check my setup"** in Claude Code. `.env` is gitignored, so your keys
 
 ## Built-in safety hook
 
-The kit ships one Claude Code hook, `.claude/hooks/guard_secrets.py`, switched on in `.claude/settings.json`. It runs before every command and file edit Claude makes in this folder and stops three mistakes that are easy to make and hard to undo:
+The kit ships one Claude Code hook, `.claude/hooks/guard_secrets.py`, switched on in `.claude/settings.json`. It runs before every command and file edit Claude makes in this folder (in every project, when installed as a user-scope plugin) and stops three mistakes that are easy to make and hard to undo:
 
 | It blocks | Why |
 |---|---|
@@ -241,7 +243,7 @@ Then write the skill body the way you'd brief a colleague. Claude reads it on in
 
 - **`401 Unauthorized`** — Your `LEADLOCK_API_KEY` is wrong or expired. Regenerate it in the dashboard.
 - **`Connection refused`** — Check `LEADLOCK_API_URL` matches the host in `.env.example`.
-- **Skill doesn't trigger** — Make sure you ran `claude` from inside the kit directory so `.claude/skills/` is in scope.
+- **Skill doesn't trigger**: Make sure you ran `claude` from inside the kit directory so `.claude/skills/` is in scope. With the plugin installed, run `claude plugin list` and check that `leadlock-agent-kit` is enabled.
 
 ## Partners
 
