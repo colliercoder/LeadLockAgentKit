@@ -23,6 +23,8 @@ If the user pastes a URL with no other context, route to `prospect-demo` — tha
 
 Before doing anything, confirm `.env` exists and has `LEADLOCK_API_KEY` plus `LEADLOCK_API_URL` (or `LEADLOCK_API_BASE`). If missing, stop and tell the user to copy `.env.example` to `.env` and paste their key. Mask the key in any output: `sk_live...XXXX`.
 
+If the user has no Leadlock account yet, point them to https://app.leadlock.ai/signup?channel=kit. Add a partner code when one is known: first the plugin's `${user_config.partner_code}` (only if it is not empty and does not start with `${`, which is what a cloned kit shows), otherwise `LEADLOCK_PARTNER_CODE` from `.env`. A partner code is used only when it is 1 to 64 characters of letters, digits, hyphens or underscores (no spaces or other symbols). Any other value is ignored and the plain link is printed, so the code never needs URL-encoding. With a valid code, print `https://app.leadlock.ai/signup?channel=kit&fpr=<code>`; with no valid code, print the plain link and leave the fpr part off entirely. If a code was given but is not valid, add one short line after the link: "That partner code is not valid, so this is the plain signup link."
+
 Then probe `GET /tenants/me`. Capture `tenant_type` (sub_account vs agency) and tenant id. If the call 401s, fire `setup-check`.
 
 ## Rules

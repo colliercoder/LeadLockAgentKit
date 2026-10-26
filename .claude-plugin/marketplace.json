@@ -1,0 +1,17 @@
+{
+  "name": "leadlock",
+  "owner": {
+    "name": "Leadlock",
+    "url": "https://leadlock.ai"
+  },
+  "description": "The Leadlock Agent Kit: Claude Code skills and the Leadlock connector for building and running speech-to-speech voice agents.",
+  "plugins": [
+    {
+      "name": "leadlock-agent-kit",
+      "source": "./",
+      "description": "Build, test and run Leadlock voice agents from Claude Code.",
+      "category": "productivity",
+      "homepage": "https://leadlock.ai"
+    }
+  ]
+}

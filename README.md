@@ -34,6 +34,7 @@ A growing library of Claude Code skills for Leadlock agency owners. Run them wit
 | `setup-check` | Verifies `.env`, tests your API key, identifies your tenant tier, reports which skills are available. Auto-fires when another skill hits a 401/403. |
 | `add-to-learnings` | Captures bugs, platform gaps, and working recipes from a session into `learnings/` so the kit gets smarter over time. Run it at the end of a non-trivial session. |
 | `kit-audit` | Maintainer self-check. Points the kit at itself: every skill structurally sound, every endpoint real (vs `LEADLOCKDOCS.json`), every skill registered, no hard-rule violations or leaked secrets, learnings healthy. Static lint + read-only live probes, auto-fixes safe drift, writes a scored health report to `./output/`. Run it now and then. |
+| `kit-rules` | Loads the kit's rules (`CLAUDE.md`) when the kit is installed as a Claude Code plugin, since a plugin does not load that file on its own. Fires before any Leadlock task. |
 
 More skills land here over time. Drop a new folder under `.claude/skills/<name>/SKILL.md` and Claude Code picks it up.
 
@@ -66,8 +67,28 @@ You need three things on your computer:
    On Windows PowerShell: `irm https://claude.ai/install.ps1 | iex`. Then run `claude` once and log in through the browser. Full guide: https://code.claude.com/docs/en/setup
 2. **Git**, to download the kit. Macs prompt you to install it the first time you run `git`. Windows: https://git-scm.com/downloads/win
 3. **Orca** (optional, recommended): a free desktop app for running several Claude Code sessions side by side, each on its own copy of the repo. Download: https://www.onorca.dev/download (Mac: `brew install --cask stablyai/orca/orca`)
+4. **A Leadlock account.** No account yet? Sign up at https://app.leadlock.ai/signup?channel=kit
 
-## Install
+Pick one way to install: as a Claude Code plugin, or by cloning the repo. Do not do both, or every skill loads twice.
+
+## Install as a Claude Code plugin
+
+Two commands in a terminal:
+
+```bash
+claude plugin marketplace add colliercoder/LeadLockAgentKit
+claude plugin install leadlock-agent-kit@leadlock
+```
+
+Or in one step from inside Claude Code: `/plugin install leadlock-agent-kit --marketplace colliercoder/LeadLockAgentKit`
+
+The plugin brings every skill in the kit, the safety hook, and the **Leadlock connector** (`https://mcp.leadlock.ai/mcp`). The connector is the no-key path: the first time Claude Code uses it, it asks you to sign in to Leadlock in your browser, and no API key is needed.
+
+A plugin installs for your user by default, so the safety hook then guards `.env` files in every project you open with Claude Code, not just this one. Add `--scope project` to the install command to keep it to one project.
+
+Skills that run the kit's own scripts read `.env` and files from the kit folder, so the clone install below stays the full-featured path for those. If a partner gave you a code, see [Partners](#partners).
+
+## Install by cloning the repo
 
 ```bash
 git clone https://github.com/colliercoder/LeadLockAgentKit.git ~/Projects/LeadLockAgentKit
@@ -94,9 +115,11 @@ The older `LEADLOCK_TWILIO_SID` / `LEADLOCK_TWILIO_AUTH` names still work; the n
 
 Then say **"check my setup"** in Claude Code. `.env` is gitignored, so your keys never leave your machine.
 
+`LEADLOCK_API_KEY` is the scripted path: every skill that calls the Leadlock API uses it. To also use the no-key Leadlock connector from a clone, run `claude mcp add --transport http leadlock https://mcp.leadlock.ai/mcp` and sign in when Claude Code asks.
+
 ## Built-in safety hook
 
-The kit ships one Claude Code hook, `.claude/hooks/guard_secrets.py`, switched on in `.claude/settings.json`. It runs before every command and file edit Claude makes in this folder and stops three mistakes that are easy to make and hard to undo:
+The kit ships one Claude Code hook, `.claude/hooks/guard_secrets.py`, switched on in `.claude/settings.json`. It runs before every command and file edit Claude makes in this folder (in every project, when installed as a user-scope plugin) and stops three mistakes that are easy to make and hard to undo:
 
 | It blocks | Why |
 |---|---|
@@ -197,6 +220,8 @@ Claude picks up the matching skill, reads your `.env`, hits the Leadlock API, an
 
 ## Get a key
 
+No Leadlock account yet? Sign up at https://app.leadlock.ai/signup?channel=kit first.
+
 API keys live inside a sub-account. If your dashboard has none yet, click **Create Sub-Account** first. Then pick the sub-account from the switcher at the top and go to **Settings > API Keys > Manage API Keys > Create API Key**. Copy the key right away: it is only shown once.
 
 Each key works only inside the sub-account it was made in. `subaccount-onboarding` needs an agency-level key, which the dashboard does not issue yet.
@@ -218,7 +243,23 @@ Then write the skill body the way you'd brief a colleague. Claude reads it on in
 
 - **`401 Unauthorized`** — Your `LEADLOCK_API_KEY` is wrong or expired. Regenerate it in the dashboard.
 - **`Connection refused`** — Check `LEADLOCK_API_URL` matches the host in `.env.example`.
-- **Skill doesn't trigger** — Make sure you ran `claude` from inside the kit directory so `.claude/skills/` is in scope.
+- **Skill doesn't trigger**: Make sure you ran `claude` from inside the kit directory so `.claude/skills/` is in scope. With the plugin installed, run `claude plugin list` and check that `leadlock-agent-kit` is enabled.
+
+## Partners
+
+Sharing the kit with your audience? Give them your partner code in two places, so their signup is credited to you:
+
+1. **The signup link.** Add your code to the kit signup link: `https://app.leadlock.ai/signup?channel=kit&fpr=YOURCODE`
+2. **The plugin install.** Hand out this install line instead of the plain one:
+
+   ```bash
+   claude plugin marketplace add colliercoder/LeadLockAgentKit
+   claude plugin install leadlock-agent-kit@leadlock --config partner_code=YOURCODE
+   ```
+
+   The kit then adds your code to every signup link it prints. People who clone the repo instead can put `LEADLOCK_PARTNER_CODE=YOURCODE` in their `.env` for the same result.
+
+Replace `YOURCODE` with your own partner code. Codes are 1 to 64 letters, digits, hyphens or underscores; anything else is ignored and the plain link is printed. When there is no code, the kit prints the plain signup link.
 
 ## License
 

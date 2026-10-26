@@ -16,6 +16,16 @@ Verify the kit is ready to use. Diagnoses the most common failure: missing or in
 
 ## Execution
 
+### The signup link
+
+Some messages below tell a user with no Leadlock account where to sign up. The plain link is https://app.leadlock.ai/signup?channel=kit. Add a partner code when one is known, in this order:
+
+1. The plugin's partner code: `${user_config.partner_code}`. Use it only if it is not empty and does not start with `${` (in a cloned kit it shows as the raw placeholder, which means there is no code).
+2. Otherwise `LEADLOCK_PARTNER_CODE` from `.env` (parsed in Step 2), if it is set. Read only that one value.
+3. Otherwise no code.
+
+A partner code is used only when it is 1 to 64 characters of letters, digits, hyphens or underscores (no spaces or other symbols). Any other value is ignored and the plain link is printed, so the code never needs URL-encoding. With a valid code, print `https://app.leadlock.ai/signup?channel=kit&fpr=<code>`. With no valid code, print the plain link and leave the fpr part off entirely. If a code was given but is not valid, add one short line after the link: "That partner code is not valid, so this is the plain signup link." Wherever a message below shows the signup link, print the one built here.
+
 ### Step 1 — Find `.env`
 
 Check that `./.env` exists in the kit root. If not:
@@ -28,6 +38,7 @@ Check that `./.env` exists in the kit root. If not:
     # then open .env and paste your key
 
   Get a key: https://app.leadlock.ai/dashboard/settings/api-keys
+  No Leadlock account yet? Sign up: https://app.leadlock.ai/signup?channel=kit
 ```
 
 Stop here.
@@ -54,6 +65,7 @@ Verify both keys exist:
 - `RETELL_API_KEY` — optional; only the `retell-to-leadlock` skill needs it (the source platform, read-only). Ignore it if you're not porting from Retell.
 - `MY_PHONE_NUMBER`: optional, recommended. The user's own cell in `+1` format; test-call steps default to it.
 - `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN`: optional. Fall back to the older `LEADLOCK_TWILIO_SID` / `LEADLOCK_TWILIO_AUTH` names when the new ones are empty.
+- `LEADLOCK_PARTNER_CODE`: optional. A partner code for the signup link (see "The signup link" above). Never required.
 
 If `LEADLOCK_API_KEY` is missing or still contains the placeholder `sk_live_paste_your_key_here`, stop with:
 
@@ -62,6 +74,7 @@ If `LEADLOCK_API_KEY` is missing or still contains the placeholder `sk_live_past
 
   Fix: open .env and replace the placeholder with your real Leadlock API key.
   Get a key: https://app.leadlock.ai/dashboard/settings/api-keys
+  No Leadlock account yet? Sign up: https://app.leadlock.ai/signup?channel=kit
 ```
 
 ### Step 3 — Probe the API
@@ -126,6 +139,7 @@ Mask the API key: show the first 6 chars + last 4 chars only.
 
   Fix: log in at https://app.leadlock.ai/dashboard/settings/api-keys,
   rotate the key, paste the new one into .env, and run /setup-check again.
+  No Leadlock account yet? Sign up: https://app.leadlock.ai/signup?channel=kit
 ```
 
 **HTTP 403 Forbidden** — auth worked but the endpoint is gated:
