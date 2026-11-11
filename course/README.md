@@ -21,7 +21,15 @@ Each deck opens two ways:
 | 7 | Contact Intelligence: your agent knows who's calling | 16 | [PDF](presentations/7-contact-intelligence.pdf) | [index.html](presentations/7-contact-intelligence/index.html) |
 | 8 | Outbound triggers: make your agent call first | 12 | [PDF](presentations/8-outbound-triggers.pdf) | [index.html](presentations/8-outbound-triggers/index.html) |
 | 9 | Agentic setup: set up Claude Code to build your agents | 16 | [PDF](presentations/9-agentic-setup.pdf) | [index.html](presentations/9-agentic-setup/index.html) |
-| 10 | Advanced course kickoff: build an AI customer support team | 17 | [PDF](presentations/10-support-team.pdf) | [index.html](presentations/10-support-team/index.html) |
+| 10 | Advanced course kickoff: build an AI customer support team | 19 | [PDF](presentations/10-support-team.pdf) | [index.html](presentations/10-support-team/index.html) |
+| 11 | Support team 1: the data and the team plan | 15 | [PDF](presentations/11-st-data-team.pdf) | [index.html](presentations/11-st-data-team/index.html) |
+| 12 | Support team 2: verify the caller | 14 | [PDF](presentations/12-st-verify.pdf) | [index.html](presentations/12-st-verify/index.html) |
+| 13 | Support team 3: Joanne's rentals desk | 14 | [PDF](presentations/13-st-rentals.pdf) | [index.html](presentations/13-st-rentals/index.html) |
+| 14 | Support team 4: Jim Bob's repairs desk | 14 | [PDF](presentations/14-st-troubleshooting.pdf) | [index.html](presentations/14-st-troubleshooting/index.html) |
+| 15 | Support team 5: Miss Hattie Mae's billing desk | 15 | [PDF](presentations/15-st-billing.pdf) | [index.html](presentations/15-st-billing/index.html) |
+| 16 | Support team 6: handoffs | 14 | [PDF](presentations/16-st-handoffs.pdf) | [index.html](presentations/16-st-handoffs/index.html) |
+| 17 | Support team 7: outbound | 15 | [PDF](presentations/17-st-outbound.pdf) | [index.html](presentations/17-st-outbound/index.html) |
+| 18 | Support team 8: measure and improve | 15 | [PDF](presentations/18-st-measure.pdf) | [index.html](presentations/18-st-measure/index.html) |
 
 GitHub shows the PDFs in the browser. For the interactive decks, clone or download the repo first, then double-click `index.html`.
 

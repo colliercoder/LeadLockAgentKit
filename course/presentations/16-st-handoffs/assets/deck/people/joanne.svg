@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><title>Joanne, maintenance desk</title>
+<defs><clipPath id="c"><circle cx="100" cy="100" r="100"/></clipPath></defs>
+<g clip-path="url(#c)">
+<rect width="200" height="200" fill="#E9EEF1"/>
+<g fill="#9A4A2E"><circle cx="100" cy="84" r="52"/><circle cx="52" cy="98" r="17"/><circle cx="148" cy="98" r="17"/><circle cx="54" cy="124" r="16"/><circle cx="146" cy="124" r="16"/><circle cx="58" cy="148" r="14"/><circle cx="142" cy="148" r="14"/><circle cx="58" cy="68" r="17"/><circle cx="142" cy="68" r="17"/><circle cx="80" cy="42" r="19"/><circle cx="120" cy="42" r="19"/><circle cx="100" cy="36" r="19"/></g>
+<path d="M18 200 C 24 152 60 140 100 140 C 140 140 176 152 182 200 Z" fill="#4A7A96"/>
+<path d="M100 146 L100 200" stroke="#3A6680" stroke-width="3"/>
+<path d="M84 140 L100 160 L116 140 Z" fill="#3A6680"/>
+<rect x="116" y="164" width="48" height="18" rx="4" fill="#FFFFFF"/>
+<text x="140" y="177" font-family="Geist, Arial, sans-serif" font-size="10" font-weight="700" fill="#3A6680" text-anchor="middle">JOANNE</text>
+<rect x="87" y="118" width="26" height="26" fill="#E4B28F"/>
+<ellipse cx="100" cy="96" rx="36" ry="42" fill="#EDC3A0"/>
+<g fill="#AE5836"><circle cx="74" cy="60" r="15"/><circle cx="98" cy="53" r="16"/><circle cx="122" cy="59" r="14"/></g>
+<circle cx="65" cy="112" r="4" fill="#6298B6"/><circle cx="135" cy="112" r="4" fill="#6298B6"/>
+<path d="M80 84 Q 88 79 95 83" stroke="#7A3B24" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+<path d="M105 82 Q 112 77 120 82" stroke="#7A3B24" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+<path d="M81 95 Q 88 99 95 95" stroke="#1F1F1F" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+<circle cx="112" cy="94" r="4.2" fill="#1F1F1F"/>
+<circle cx="80" cy="109" r="7" fill="#E59A86" opacity="0.55"/><circle cx="120" cy="109" r="7" fill="#E59A86" opacity="0.55"/>
+<ellipse cx="100" cy="104" rx="4" ry="5" fill="#DDA985"/>
+<path d="M87 116 Q 102 128 115 114" stroke="#8E3B33" stroke-width="4" fill="none" stroke-linecap="round"/>
+</g></svg>

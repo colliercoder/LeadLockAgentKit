@@ -23,6 +23,10 @@ One per video. Double-click to open in your browser. Tick each step as you go (y
 | 7 | [Outbound](videos/07-outbound/checklist.html) | Off-rent reminders, delivery confirmations, service follow-ups |
 | 8 | [Measure and improve](videos/08-measure/checklist.html) | A call log in n8n, then audit, tune and add to learnings |
 
+## The presentations
+
+The slides for every video are in [course/presentations](../README.md#the-presentations): open a deck's `index.html` in your browser (press S for the presenter window), or read the PDF. Video 1 of this course is deck 11, video 8 is deck 18; the kickoff is deck 10.
+
 ## Install it
 
 In Claude Code, from the kit folder, say **"install the support team"**. The `install-support-team` skill checks your setup, asks a few questions, builds everything in your Leadlock account and your n8n, and tests it. One piece at a time works too: "install the support team tables", "install the Verify Caller step", "install Joanne", "install Jim Bob", "install Miss Hattie Mae". "Uninstall the support team" removes it all.
