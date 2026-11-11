@@ -326,6 +326,24 @@
   .slide.active .page > :nth-child(3) { animation-delay: 0.16s; }
   .slide.active .page > :nth-child(n+4) { animation-delay: 0.24s; }
   @keyframes rise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+  /* Money count-up: <span class="cu" style="--k:15" data-tail=",000">$15,000</span> rolls $0 to $15,000 when its slide
+     (or its click-build) shows. The real text stays in the DOM; with motion off it is all that shows. */
+  @property --k { syntax: '<integer>'; initial-value: 0; inherits: true; }
+  .cu { position: relative; display: inline-block; font-variant-numeric: tabular-nums; }
+  .cu::before { content: '$' counter(k) attr(data-tail); counter-reset: k var(--k); position: absolute; left: 0; top: 0; opacity: 0; white-space: nowrap; -webkit-text-fill-color: currentcolor; }
+  .slide.active .cu:not([data-b] .cu), .slide.active [data-b].on .cu { animation: cuHide 1.5s steps(1, end) 0.25s both; }
+  .slide.active .cu:not([data-b] .cu)::before, .slide.active [data-b].on .cu::before { animation: cuNum 1.5s cubic-bezier(0.15, 0.75, 0.25, 1) 0.25s both, cuShow 1.5s steps(1, end) 0.25s both; }
+  @keyframes cuHide { from { -webkit-text-fill-color: transparent; } }
+  @keyframes cuShow { from { opacity: 1; } }
+  @keyframes cuNum { from { --k: 0; } }
+  /* Kinetic type: .kin slams in (blur + scale) when its click-build shows, or with the slide when not in a build */
+  .kin { display: inline-block; }
+  .slide.active .kin:not([data-b] .kin), .slide.active [data-b].on .kin { animation: kin 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s both; }
+  @keyframes kin { from { opacity: 0; transform: scale(1.25); filter: blur(10px); } }
+  .mega { display: block; font-size: 300px; line-height: 0.86; letter-spacing: -0.06em; font-weight: 700; margin-bottom: 18px; }
+  .big-line { font-size: 84px; font-weight: 700; letter-spacing: -0.04em; line-height: 1.05; }
+  .money { font-size: 104px; font-weight: 700; letter-spacing: -0.05em; line-height: 1; }
+  .pp { border-radius: 50%; display: block; flex: none; }
   html.nomotion *, html.nomotion *::before, html.nomotion *::after { animation: none !important; transition: none !important; }
 
   /* Presenter window (?presenter=1, opened with S): never on the recorded screen */
@@ -425,33 +443,62 @@
 <section class="slide dark" id="s-title" data-id="title" data-type="page" data-n="1">
   <div class="page" data-mbox="copy">
     <div class="eb">The advanced course</div>
-    <h2 class="ttl xl"><span>One agent.</span><span class='blue'>A support team.</span></h2>
-    <div class='split' style='margin-top:40px'><div class='sub' style='margin-top:0'>AI agents that verify callers like a bank, know their account, and hand off without making anyone repeat themselves.</div><div class='card'><div class='k'>In this video</div><ol class='agenda tight'><li>The business and the team</li><li>Why caller ID isn't enough</li><li>How it fits together</li><li>Verify the caller</li><li>What callers will hear</li><li>The course map</li></ol></div></div>
+    <h2 class="ttl xl"><span class='mega blue'><span class='cu' style='--k:15' data-tail=',000'>$15,000</span></span><span>AI support team.</span></h2>
+    <div class='sub' data-b='1' style='margin-top:30px'>For a heavy equipment rental company.</div><div class='row' data-b='2' style='gap:22px;margin-top:56px;align-items:center'><img class='pp' src='assets/deck/people/joanne.svg' alt='' style='width:120px;height:120px'><img class='pp' src='assets/deck/people/jim-bob.svg' alt='' style='width:120px;height:120px'><img class='pp' src='assets/deck/people/hattie-mae.svg' alt='' style='width:120px;height:120px'><span class='kin' style='font-size:56px;font-weight:650;letter-spacing:-0.02em;margin-left:26px'>Built by <span class='blue'>asking Claude.</span></span></div>
   </div>
   <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
-  <div class="notes">Kickoff for the advanced course.
-Today: what we build, how it works, what it looks like.
-Then the videos build it, one piece at a time.</div>
+  <div class="notes">This is a $15,000 build: a full AI customer support team.
+For a heavy equipment rental company. Haul trucks, excavators, dozers, rented to mines.
+Three AI agents and a person. And you build every piece of it by asking Claude.
+Stay to the end of this course and you'll have one running in your own account.</div>
 </section>
 
-<section class="slide light" id="s-granite-peak" data-id="granite-peak" data-type="page" data-n="2">
+<section class="slide light" id="s-stakes" data-id="stakes" data-type="page" data-n="2">
   <div class="page" data-mbox="copy">
-    <div class="eb">The business &middot; fictional</div>
-    <h2 class="ttl">Granite Peak Equipment Rental.</h2>
-    <div class='split' style='margin-top:40px;grid-template-columns:1fr 640px;gap:48px'><div style='display:flex;flex-direction:column;gap:22px'><div class='grid c3' data-b='1' style='gap:22px'><div class='card sm'><div class='k'>Yard</div><h3>Elko, NV</h3><p class='num'>8 units</p></div><div class='card sm'><div class='k'>Yard</div><h3>Tucson, AZ</h3><p class='num'>6 units</p></div><div class='card sm'><div class='k'>Yard</div><h3>Gillette, WY</h3><p class='num'>6 units</p></div></div><div data-b='2'><div class='label' style='margin-bottom:14px'>Rented to mines and contractors</div><div class='chips'><span class='chip'>CAT haul trucks</span><span class='chip'>Excavators</span><span class='chip'>Wheel loaders</span><span class='chip'>Dozers</span><span class='chip'>Motor graders</span><span class='chip'>Water trucks</span><span class='chip'>Drill rigs</span></div></div></div><div class='card hi' data-b='3' style='align-self:start'><div class='k'>On the phones</div><div class='row' style='gap:14px;margin-top:18px'><img src='assets/deck/people/joanne.svg' alt='' style='width:96px;height:96px;border-radius:50%'><img src='assets/deck/people/jim-bob.svg' alt='' style='width:96px;height:96px;border-radius:50%'><img src='assets/deck/people/hattie-mae.svg' alt='' style='width:96px;height:96px;border-radius:50%'></div><p style='margin-top:20px'>Joanne, Jim Bob and Miss Hattie Mae. You met Jim Bob last video. Now he fixes things.</p></div></div>
+    <div class="eb">What's on the line</div>
+    <h2 class="ttl">Every call is money.</h2>
+    <div class='grid c3' style='margin-top:64px;gap:26px'><div class='card hi' data-b='1' style='padding:52px 36px'><div class='row' style='gap:18px'><span class='icb'><i class='ic' style='--i:url(assets/deck/icons/truck.svg)'></i></span><div class='k' style='margin:0'>Rentals desk</div></div><div class='num blue money' style='margin-top:56px'><span class='cu' style='--k:40' data-tail=',800'>$40,800</span></div><p style='font-size:38px;margin-top:22px'>A month. One haul truck.</p></div><div class='card' data-b='2' style='padding:52px 36px'><div class='row' style='gap:18px'><span class='icb'><i class='ic' style='--i:url(assets/icons/wrench.svg)'></i></span><div class='k' style='margin:0'>Repairs desk</div></div><div class='num blue money' style='margin-top:56px'><span class='cu' style='--k:3' data-tail=',400'>$3,400</span></div><p style='font-size:38px;margin-top:22px'>A day it's back running.</p></div><div class='card' data-b='3' style='padding:52px 36px'><div class='row' style='gap:18px'><span class='icb'><i class='ic' style='--i:url(assets/deck/icons/receipt.svg)'></i></span><div class='k' style='margin:0'>Billing desk</div></div><div class='num blue money' style='margin-top:56px'><span class='cu' style='--k:46' data-tail=',000'>$46,000</span></div><p style='font-size:38px;margin-top:22px'>Open invoices, collected.</p></div></div>
   </div>
-  <div class="chrome source">Fictional company. Fleet from the course data: 20 units across 3 yards, 13 available today.</div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Here's why a rental company pays for this. Every call is money.
+Rentals: one CAT 777G haul truck rents for $40,800 a month. That's one phone call.
+Repairs: the same truck earns $3,400 a day. Every day it's back running faster is money back.
+Billing: our test customer has two open invoices, $46,000. A payment link by text collects it.
+Sources: Granite Peak Fleet table (777G: $3,400 daily, $40,800 monthly). Rentals table: INV-7001 $40,800 + INV-7006 $5,200 open. Fictional company, course data.</div>
+</section>
+
+<section class="slide dark" id="s-dream" data-id="dream" data-type="page" data-n="3">
+  <div class="page" data-mbox="copy">
+    <div class="eb">What your client gets</div>
+    <h2 class="ttl">A team that answers every call.</h2>
+    <div class='grid c3' style='margin-top:56px;gap:26px'><div class='card hi' data-b='1' style='display:flex;flex-direction:column;align-items:center;text-align:center;padding:40px 30px'><img class='pp' src='assets/deck/people/joanne.svg' alt='' style='width:190px;height:190px'><h3 style='margin-top:26px'>Joanne</h3><p class='blue' style='font-size:32px;font-weight:650;margin-top:8px'>Rentals</p></div><div class='card' data-b='1' style='display:flex;flex-direction:column;align-items:center;text-align:center;padding:40px 30px'><img class='pp' src='assets/deck/people/jim-bob.svg' alt='' style='width:190px;height:190px'><h3 style='margin-top:26px'>Jim Bob</h3><p class='blue' style='font-size:32px;font-weight:650;margin-top:8px'>Repairs</p></div><div class='card' data-b='1' style='display:flex;flex-direction:column;align-items:center;text-align:center;padding:40px 30px'><img class='pp' src='assets/deck/people/hattie-mae.svg' alt='' style='width:190px;height:190px'><h3 style='margin-top:26px'>Miss Hattie Mae</h3><p class='blue' style='font-size:32px;font-weight:650;margin-top:8px'>Billing</p></div></div><div data-b='2' style='margin-top:64px'><span class='kin big-line'>A <span class='blue'>$15K build.</span> Done by asking Claude.</span></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Here's what your client gets: a support team that picks up every call.
+Joanne on rentals. Jim Bob on repairs. Miss Hattie Mae on billing. And a real person when it matters.
+They verify callers like a bank, they know the account, and nobody repeats themselves on a handoff.
+That's a $15,000 build. And you do it by asking Claude, one video at a time.</div>
+</section>
+
+<section class="slide light" id="s-granite-peak" data-id="granite-peak" data-type="page" data-n="4">
+  <div class="page" data-mbox="copy">
+    <div class="eb">The client &middot; fictional</div>
+    <h2 class="ttl">Granite Peak Equipment Rental.</h2>
+    <div class='grid c3' data-b='1' style='margin-top:48px;gap:24px'><div class='card'><div class='k'>Yard</div><h3>Elko, NV</h3><p class='num'>8 machines</p></div><div class='card'><div class='k'>Yard</div><h3>Tucson, AZ</h3><p class='num'>6 machines</p></div><div class='card'><div class='k'>Yard</div><h3>Gillette, WY</h3><p class='num'>6 machines</p></div></div><div data-b='2' style='margin-top:40px'><div class='chips'><span class='chip'>CAT haul trucks</span><span class='chip'>Excavators</span><span class='chip'>Wheel loaders</span><span class='chip'>Dozers</span><span class='chip'>Motor graders</span><span class='chip'>Water trucks</span><span class='chip'>Drill rigs</span></div></div><div data-b='3' style='margin-top:56px'><span class='kin big-line' style='font-size:64px'>Rented to mines. <span class='blue'>Up to $40,800 a month.</span></span></div>
+  </div>
   <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
   <div class="notes">Granite Peak: heavy equipment for mines and contractors. Made up, but the data is real enough to test with.
 Three yards, twenty machines, from 100 ton haul trucks to light towers.
-On the phones: a crew, not one agent. Jim Bob from last video is one of them.</div>
+On the phones: a crew, not one agent. Jim Bob from last video is one of them.
+Top of the fleet: the CAT 777G haul truck, $40,800 a month (Fleet table).
+Source: Fictional company. Fleet from the course data: 20 units across 3 yards, 13 available today.</div>
 </section>
 
-<section class="slide dark" id="s-why-team" data-id="why-team" data-type="page" data-n="3">
+<section class="slide dark" id="s-why-team" data-id="why-team" data-type="page" data-n="5">
   <div class="page" data-mbox="copy">
     <div class="eb">Why a team</div>
-    <h2 class="ttl">One big agent breaks. A team doesn't.</h2>
-    <div class='vs' style='margin-top:44px'><div class='hd'>One big agent</div><div class='hd a'>A team of focused agents</div><div class='r' data-b='1'><div>One prompt doing every job</div><div>One job per agent, a short prompt</div></div><div class='r' data-b='2'><div>Every tool on, all the time</div><div>Only the tools that desk needs</div></div><div class='r' data-b='3'><div>One change breaks three things</div><div>Test and fix one desk at a time</div></div><div class='r' data-b='4'><div>Knows what it was told on this call</div><div>One source of truth every desk reads</div></div></div>
+    <h2 class="ttl">A team beats one big agent.</h2>
+    <div class='vs' style='margin-top:44px'><div class='hd'>One big agent</div><div class='hd a'>A focused team</div><div class='r' data-b='1'><div>One giant prompt</div><div>One job each</div></div><div class='r' data-b='2'><div>Every tool, always on</div><div>Only its own tools</div></div><div class='r' data-b='3'><div>One change breaks three</div><div>Fix one desk at a time</div></div><div class='r' data-b='4'><div>Knows only this call</div><div>One shared source of truth</div></div></div>
   </div>
   <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
   <div class="notes">The first instinct: one agent that does everything. It gets long, slow and confused.
@@ -459,195 +506,205 @@ A team: each agent does one job well, with only its own tools.
 And they all read the same data, so nobody has to be told twice.</div>
 </section>
 
-<section class="slide light" id="s-caller-id" data-id="caller-id" data-type="page" data-n="4">
+<section class="slide light" id="s-caller-id" data-id="caller-id" data-type="page" data-n="6">
   <div class="page" data-mbox="copy">
-    <div class="eb">The catch</div>
-    <h2 class="ttl">Caller ID isn't identity.</h2>
-    <div class='split' style='margin-top:40px;grid-template-columns:1fr 700px;gap:48px'><div style='display:flex;flex-direction:column;gap:18px'><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yNDAsMjA4SDIyNFY5NmExNiwxNiwwLDAsMC0xNi0xNkgxNDRWMzJhMTYsMTYsMCwwLDAtMjQuODgtMTMuMzJMMzkuMTIsNzJBMTYsMTYsMCwwLDAsMzIsODUuMzRWMjA4SDE2YTgsOCwwLDAsMCwwLDE2SDI0MGE4LDgsMCwwLDAsMC0xNlpNMjA4LDk2VjIwOEgxNDRWOTZaTTQ4LDg1LjM0LDEyOCwzMlYyMDhINDhaTTExMiwxMTJ2MTZhOCw4LDAsMCwxLTE2LDBWMTEyYTgsOCwwLDEsMSwxNiwwWm0tMzIsMHYxNmE4LDgsMCwwLDEtMTYsMFYxMTJhOCw4LDAsMSwxLDE2LDBabTAsNTZ2MTZhOCw4LDAsMCwxLTE2LDBWMTY4YTgsOCwwLDAsMSwxNiwwWm0zMiwwdjE2YTgsOCwwLDAsMS0xNiwwVjE2OGE4LDgsMCwwLDEsMTYsMFoiLz48L3N2Zz4=)"></i><h3>Businesses share lines</h3></div><p>The office number, the foreman's cell</p></div><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjQsNDhWOTZhOCw4LDAsMCwxLTgsOEgxNjhhOCw4LDAsMCwxLDAtMTZoMjguNjlMMTgyLjA2LDczLjM3YTc5LjU2LDc5LjU2LDAsMCwwLTU2LjEzLTIzLjQzaC0uNDVBNzkuNTIsNzkuNTIsMCwwLDAsNjkuNTksNzIuNzEsOCw4LDAsMCwxLDU4LjQxLDYxLjI3YTk2LDk2LDAsMCwxLDEzNSwuNzlMMjA4LDc2LjY5VjQ4YTgsOCwwLDAsMSwxNiwwWk0xODYuNDEsMTgzLjI5YTgwLDgwLDAsMCwxLTExMi40Ny0uNjZMNTkuMzEsMTY4SDg4YTgsOCwwLDAsMCwwLTE2SDQwYTgsOCwwLDAsMC04LDh2NDhhOCw4LDAsMCwwLDE2LDBWMTc5LjMxbDE0LjYzLDE0LjYzQTk1LjQzLDk1LjQzLDAsMCwwLDEzMCwyMjIuMDZoLjUzYTk1LjM2LDk1LjM2LDAsMCwwLDY3LjA3LTI3LjMzLDgsOCwwLDAsMC0xMS4xOC0xMS40NFoiLz48L3N2Zz4=)"></i><h3>Carriers recycle numbers</h3></div><p>Last year's customer, this year's stranger</p></div><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yNDQuOCwxNTAuNGE4LDgsMCwwLDEtMTEuMi0xLjZBNTEuNiw1MS42LDAsMCwwLDE5MiwxMjhhOCw4LDAsMCwxLTcuMzctNC44OSw4LDgsMCwwLDEsMC02LjIyQTgsOCwwLDAsMSwxOTIsMTEyYTI0LDI0LDAsMSwwLTIzLjI0LTMwLDgsOCwwLDEsMS0xNS41LTRBNDAsNDAsMCwxLDEsMjE5LDExNy41MWE2Ny45NCw2Ny45NCwwLDAsMSwyNy40MywyMS42OEE4LDgsMCwwLDEsMjQ0LjgsMTUwLjRaTTE5MC45MiwyMTJhOCw4LDAsMSwxLTEzLjg0LDgsNTcsNTcsMCwwLDAtOTguMTYsMCw4LDgsMCwxLDEtMTMuODQtOCw3Mi4wNiw3Mi4wNiwwLDAsMSwzMy43NC0yOS45Miw0OCw0OCwwLDEsMSw1OC4zNiwwQTcyLjA2LDcyLjA2LDAsMCwxLDE5MC45MiwyMTJaTTEyOCwxNzZhMzIsMzIsMCwxLDAtMzItMzJBMzIsMzIsMCwwLDAsMTI4LDE3NlpNNzIsMTIwYTgsOCwwLDAsMC04LThBMjQsMjQsMCwxLDEsODcuMjQsODJhOCw4LDAsMSwwLDE1LjUtNEE0MCw0MCwwLDEsMCwzNywxMTcuNTEsNjcuOTQsNjcuOTQsMCwwLDAsOS42LDEzOS4xOWE4LDgsMCwxLDAsMTIuOCw5LjYxQTUxLjYsNTEuNiwwLDAsMSw2NCwxMjgsOCw4LDAsMCwwLDcyLDEyMFoiLz48L3N2Zz4=)"></i><h3>People call for someone else</h3></div><p>The new hire asking about the account</p></div></div><div style='display:flex;flex-direction:column;gap:22px'><div class='card ink' data-b='2'><div class='k'>Leadlock's own code</div><p style='font-size:40px;line-height:1.25;color:#EDEDED;margin-top:18px'>"A phone match is not proof of identity."</p></div><div class='card hi' data-b='3'><h3>So we verify like a bank.</h3><p>A one-time code, sent only to what's on file.</p></div></div></div>
+    <div class="eb">The trust layer</div>
+    <h2 class="ttl">Verify like a bank.</h2>
+    <div class='split' style='margin-top:40px;grid-template-columns:1fr 700px;gap:48px'><div style='display:flex;flex-direction:column;gap:18px'><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class="ic" style="--i:url(assets/icons/buildings.svg)"></i><h3>Shared office lines</h3></div></div><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class="ic" style="--i:url(assets/icons/arrows-clockwise.svg)"></i><h3>Recycled numbers</h3></div></div><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class="ic" style="--i:url(assets/icons/users-three.svg)"></i><h3>Calling for someone else</h3></div></div></div><div style='display:flex;flex-direction:column;gap:22px'><div class='card ink' data-b='2'><div class='k'>Leadlock's own code</div><p style='font-size:40px;line-height:1.25;color:#EDEDED;margin-top:18px'>"A phone match is not proof of identity."</p></div><div class='card hi' data-b='3'><h3>A one-time code.</h3><p>Only to what's on file.</p></div></div></div>
   </div>
-  <div class="chrome source">Leadlock update_contact: a phone match is not proof of identity; households and businesses share lines, carriers recycle numbers, people call on someone else's behalf.</div>
   <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
   <div class="notes">Contact Intelligence matches the caller by phone. Great for a greeting.
 Not good enough for a balance or a rental. Leadlock's own code says so.
-So before anything private: a code to what's on file, like your bank does.</div>
+So before anything private: a code to what's on file, like your bank does.
+Caller ID fails three ways: businesses share lines (the office number, the foreman's cell), carriers recycle numbers, and people call for someone else.
+Source: backend voice/tool_ghl.py (update_contact): a phone match is not proof of identity; households and businesses share lines, carriers recycle numbers, people call on someone else's behalf.</div>
 </section>
 
-<section class="slide dark" id="s-the-team" data-id="the-team" data-type="page" data-n="5">
+<section class="slide dark" id="s-the-team" data-id="the-team" data-type="page" data-n="7">
   <div class="page" data-mbox="copy">
     <div class="eb">The team</div>
     <h2 class="ttl">Three desks and a person.</h2>
-    <div class='grid c4 grow' style='margin-top:40px;gap:22px;grid-auto-rows:1fr'><div class='card sm hi' data-b='1' style='display:flex;flex-direction:column'><div class='row' style='gap:18px'><img src='assets/deck/people/joanne.svg' alt='' style='width:92px;height:92px;border-radius:50%;flex:none;display:block'><div><div class='k' style='margin:0'>Desk 01</div><h3 style='margin-top:4px'>Rentals</h3></div></div><p class='blue' style='margin-top:18px;font-size:29px;font-weight:650'>Joanne</p><p style='margin-top:6px;font-size:26px;line-height:1.3'>Charming, a little flirty, all business.</p><ul class='bul' style='margin-top:12px'><li style='font-size:27px;padding:5px 0 5px 30px'>Availability, quotes</li><li style='font-size:27px;padding:5px 0 5px 30px'>Rental status</li><li style='font-size:27px;padding:5px 0 5px 30px'>Extensions, off-rent</li></ul></div><div class='card sm' data-b='2' style='display:flex;flex-direction:column'><div class='row' style='gap:18px'><img src='assets/deck/people/jim-bob.svg' alt='' style='width:92px;height:92px;border-radius:50%;flex:none;display:block'><div><div class='k' style='margin:0'>Desk 02</div><h3 style='margin-top:4px'>Troubleshooting</h3></div></div><p class='blue' style='margin-top:18px;font-size:29px;font-weight:650'>Doug Jim Bob McGee</p><p style='margin-top:6px;font-size:26px;line-height:1.3'>Retired coal miner. Has run and fixed every machine in the fleet.</p><ul class='bul' style='margin-top:12px'><li style='font-size:27px;padding:5px 0 5px 30px'>Walks you through it</li><li style='font-size:27px;padding:5px 0 5px 30px'>Safety first, every time</li><li style='font-size:27px;padding:5px 0 5px 30px'>Service ticket, tech ETA</li></ul></div><div class='card sm' data-b='3' style='display:flex;flex-direction:column'><div class='row' style='gap:18px'><img src='assets/deck/people/hattie-mae.svg' alt='' style='width:92px;height:92px;border-radius:50%;flex:none;display:block'><div><div class='k' style='margin:0'>Desk 03</div><h3 style='margin-top:4px'>Billing</h3></div></div><p class='blue' style='margin-top:18px;font-size:29px;font-weight:650'>Miss Hattie Mae</p><p style='margin-top:6px;font-size:26px;line-height:1.3'>Calls everybody baby. Paying feels like a hug.</p><ul class='bul' style='margin-top:12px'><li style='font-size:27px;padding:5px 0 5px 30px'>Balance, invoices</li><li style='font-size:27px;padding:5px 0 5px 30px'>Payment link by text</li><li style='font-size:27px;padding:5px 0 5px 30px'>No card numbers by phone</li></ul></div><div class='card sm' data-b='4' style='display:flex;flex-direction:column'><div class='row' style='gap:18px'><span style='width:92px;height:92px;border-radius:50%;border:2px dashed #5B5B63;display:inline-flex;align-items:center;justify-content:center;flex:none'><i class='ic' style='--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMDEuODksNTQuNjZBMTAzLjQzLDEwMy40MywwLDAsMCwxMjguNzksMjRIMTI4QTEwNCwxMDQsMCwwLDAsMjQsMTI4djU2YTI0LDI0LDAsMCwwLDI0LDI0SDY0YTI0LDI0LDAsMCwwLDI0LTI0VjE0NGEyNCwyNCwwLDAsMC0yNC0yNEg0MC4zNkE4OC4xMiw4OC4xMiwwLDAsMSwxOTAuNTQsNjUuOTMsODcuMzksODcuMzksMCwwLDEsMjE1LjY1LDEyMEgxOTJhMjQsMjQsMCwwLDAtMjQsMjR2NDBhMjQsMjQsMCwwLDAsMjQsMjRoMjRhMjQsMjQsMCwwLDEtMjQsMjRIMTM2YTgsOCwwLDAsMCwwLDE2aDU2YTQwLDQwLDAsMCwwLDQwLTQwVjEyOEExMDMuNDEsMTAzLjQxLDAsMCwwLDIwMS44OSw1NC42NlpNNjQsMTM2YTgsOCwwLDAsMSw4LDh2NDBhOCw4LDAsMCwxLTgsOEg0OGE4LDgsMCwwLDEtOC04VjEzNlptMTI4LDU2YTgsOCwwLDAsMS04LThWMTQ0YTgsOCwwLDAsMSw4LThoMjR2NTZaIi8+PC9zdmc+);width:44px;height:44px'></i></span><div><div class='k' style='margin:0'>Escalation</div><h3 style='margin-top:4px'>A person</h3></div></div><p class='blue' style='margin-top:18px;font-size:29px;font-weight:650'>On call</p><p style='margin-top:6px;font-size:26px;line-height:1.3'>For what an agent shouldn't handle.</p><ul class='bul' style='margin-top:12px'><li style='font-size:27px;padding:5px 0 5px 30px'>Safety issues</li><li style='font-size:27px;padding:5px 0 5px 30px'>Disputes</li><li style='font-size:27px;padding:5px 0 5px 30px'>Anything stuck</li></ul></div></div>
+    <div class='grid c4' style='margin-top:48px;gap:22px'><div class='card sm hi' data-b='1'><div class='row' style='gap:18px'><img class='pp' src='assets/deck/people/joanne.svg' alt='' style='width:92px;height:92px'><div><div class='k' style='margin:0'>Desk 01</div><h3 style='margin-top:4px'>Rentals</h3></div></div><p class='blue' style='margin-top:18px;font-size:30px;font-weight:650'>Joanne</p><p style='margin-top:6px'>Quotes, status, extensions</p></div><div class='card sm' data-b='2'><div class='row' style='gap:18px'><img class='pp' src='assets/deck/people/jim-bob.svg' alt='' style='width:92px;height:92px'><div><div class='k' style='margin:0'>Desk 02</div><h3 style='margin-top:4px'>Repairs</h3></div></div><p class='blue' style='margin-top:18px;font-size:30px;font-weight:650'>Jim Bob</p><p style='margin-top:6px'>Safe fixes, tech tickets</p></div><div class='card sm' data-b='3'><div class='row' style='gap:18px'><img class='pp' src='assets/deck/people/hattie-mae.svg' alt='' style='width:92px;height:92px'><div><div class='k' style='margin:0'>Desk 03</div><h3 style='margin-top:4px'>Billing</h3></div></div><p class='blue' style='margin-top:18px;font-size:30px;font-weight:650'>Miss Hattie Mae</p><p style='margin-top:6px'>Balance and a pay link</p></div><div class='card sm' data-b='4'><div class='row' style='gap:18px'><span style='width:92px;height:92px;border-radius:50%;border:2px dashed #5B5B63;display:inline-flex;align-items:center;justify-content:center;flex:none'><i class='ic' style='--i:url(assets/deck/icons/headset.svg);width:44px;height:44px'></i></span><div><div class='k' style='margin:0'>Escalation</div><h3 style='margin-top:4px'>A person</h3></div></div><p class='blue' style='margin-top:18px;font-size:30px;font-weight:650'>On call</p><p style='margin-top:6px'>Safety, disputes, anything stuck</p></div></div>
   </div>
-  <div class="chrome source">Every desk is southern and country, like Jim Bob. Illustrations drawn for this deck.</div>
   <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
   <div class="notes">Joanne runs rentals. Charming, a little flirty, keeps it professional. She picks up first.
 Jim Bob moved to the shop. He's run every machine in the fleet and knows how to fix them all.
 Miss Hattie Mae runs billing. Sweet as can be, calls everybody baby, and makes paying a bill feel like a hug.
-And a real person for safety, disputes, and anything stuck.</div>
+And a real person for safety, disputes, and anything stuck.
+Joanne: charming, a little flirty, all business. Jim Bob (Doug Jim Bob McGee): retired coal miner, has run and fixed every machine. Miss Hattie Mae: calls everybody baby. All three southern and country.
+Source: Every desk is southern and country, like Jim Bob. Illustrations drawn for this deck.</div>
 </section>
 
-<section class="slide light" id="s-the-data" data-id="the-data" data-type="page" data-n="6">
+<section class="slide light" id="s-the-data" data-id="the-data" data-type="page" data-n="8">
   <div class="page" data-mbox="copy">
     <div class="eb">The data &middot; n8n data tables</div>
     <h2 class="ttl">One source of truth.</h2>
-    <div class='fill'><div class='grid c3 grow' style='grid-auto-rows:1fr;gap:20px'><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class='ic' style='--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik04My4xOSwxNzQuNGE4LDgsMCwwLDAsMTEuMjEtMS42LDUyLDUyLDAsMCwxLDgzLjIsMCw4LDgsMCwxLDAsMTIuOC05LjZBNjcuODgsNjcuODgsMCwwLDAsMTYzLDE0MS41MWE0MCw0MCwwLDEsMC01My45NCwwQTY3Ljg4LDY3Ljg4LDAsMCwwLDgxLjYsMTYzLjIsOCw4LDAsMCwwLDgzLjE5LDE3NC40Wk0xMTIsMTEyYTI0LDI0LDAsMSwxLDI0LDI0QTI0LDI0LDAsMCwxLDExMiwxMTJabTk2LTg4SDY0QTE2LDE2LDAsMCwwLDQ4LDQwVjY0SDMyYTgsOCwwLDAsMCwwLDE2SDQ4djQwSDMyYTgsOCwwLDAsMCwwLDE2SDQ4djQwSDMyYTgsOCwwLDAsMCwwLDE2SDQ4djI0YTE2LDE2LDAsMCwwLDE2LDE2SDIwOGExNiwxNiwwLDAsMCwxNi0xNlY0MEExNiwxNiwwLDAsMCwyMDgsMjRabTAsMTkySDY0VjQwSDIwOFoiLz48L3N2Zz4=)'></i><h3>Customers</h3></div><p>Who's on file: name, company, email, phone</p></div><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class='ic' style='--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yNTUuNDIsMTE3bC0xNC0zNUExNS45MywxNS45MywwLDAsMCwyMjYuNTgsNzJIMTkyVjY0YTgsOCwwLDAsMC04LThIMzJBMTYsMTYsMCwwLDAsMTYsNzJWMTg0YTE2LDE2LDAsMCwwLDE2LDE2SDQ5YTMyLDMyLDAsMCwwLDYyLDBoNTBhMzIsMzIsMCwwLDAsNjIsMGgxN2ExNiwxNiwwLDAsMCwxNi0xNlYxMjBBNy45NCw3Ljk0LDAsMCwwLDI1NS40MiwxMTdaTTE5Miw4OGgzNC41OGw5LjYsMjRIMTkyWk0zMiw3MkgxNzZ2NjRIMzJaTTgwLDIwOGExNiwxNiwwLDEsMSwxNi0xNkExNiwxNiwwLDAsMSw4MCwyMDhabTgxLTI0SDExMWEzMiwzMiwwLDAsMC02MiwwSDMyVjE1MkgxNzZ2MTIuMzFBMzIuMTEsMzIuMTEsMCwwLDAsMTYxLDE4NFptMzEsMjRhMTYsMTYsMCwxLDEsMTYtMTZBMTYsMTYsMCwwLDEsMTkyLDIwOFptNDgtMjRIMjIzYTMyLjA2LDMyLjA2LDAsMCwwLTMxLTI0VjEyOGg0OFoiLz48L3N2Zz4=)'></i><h3>Fleet</h3></div><p>20 units: model, yard, rates, when it's free</p></div><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class='ic' style='--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMDgsMzJIMTg0VjI0YTgsOCwwLDAsMC0xNiwwdjhIODhWMjRhOCw4LDAsMCwwLTE2LDB2OEg0OEExNiwxNiwwLDAsMCwzMiw0OFYyMDhhMTYsMTYsMCwwLDAsMTYsMTZIMjA4YTE2LDE2LDAsMCwwLDE2LTE2VjQ4QTE2LDE2LDAsMCwwLDIwOCwzMlpNNzIsNDh2OGE4LDgsMCwwLDAsMTYsMFY0OGg4MHY4YTgsOCwwLDAsMCwxNiwwVjQ4aDI0VjgwSDQ4VjQ4Wk0yMDgsMjA4SDQ4Vjk2SDIwOFYyMDhabS0zOC4zNC04NS42NmE4LDgsMCwwLDEsMCwxMS4zMmwtNDgsNDhhOCw4LDAsMCwxLTExLjMyLDBsLTI0LTI0YTgsOCwwLDAsMSwxMS4zMi0xMS4zMkwxMTYsMTY0LjY5bDQyLjM0LTQyLjM1QTgsOCwwLDAsMSwxNjkuNjYsMTIyLjM0WiIvPjwvc3ZnPg==)'></i><h3>Rentals</h3></div><p>Who has what, dates, delivery</p></div><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class='ic' style='--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjYuNzYsNjlhOCw4LDAsMCwwLTEyLjg0LTIuODhsLTQwLjMsMzcuMTktMTcuMjMtMy43LTMuNy0xNy4yMywzNy4xOS00MC4zQTgsOCwwLDAsMCwxODcsMjkuMjQsNzIsNzIsMCwwLDAsODgsOTYsNzIuMzQsNzIuMzQsMCwwLDAsOTQsMTI0Ljk0TDMzLjc5LDE3N2MtLjE1LjEyLS4yOS4yNi0uNDMuMzlhMzIsMzIsMCwwLDAsNDUuMjYsNDUuMjZjLjEzLS4xMy4yNy0uMjguMzktLjQyTDEzMS4wNiwxNjJBNzIsNzIsMCwwLDAsMjMyLDk2LDcxLjU2LDcxLjU2LDAsMCwwLDIyNi43Niw2OVpNMTYwLDE1MmE1Ni4xNCw1Ni4xNCwwLDAsMS0yNy4wNy03LDgsOCwwLDAsMC05LjkyLDEuNzdMNjcuMTEsMjExLjUxYTE2LDE2LDAsMCwxLTIyLjYyLTIyLjYyTDEwOS4xOCwxMzNhOCw4LDAsMCwwLDEuNzctOS45Myw1Niw1NiwwLDAsMSw1OC4zNi04Mi4zMWwtMzEuMiwzMy44MWE4LDgsMCwwLDAtMS45NCw3LjFMMTQxLjgzLDEwOGE4LDgsMCwwLDAsNi4xNCw2LjE0bDI2LjM1LDUuNjZhOCw4LDAsMCwwLDcuMS0xLjk0bDMzLjgxLTMxLjJBNTYuMDYsNTYuMDYsMCwwLDEsMTYwLDE1MloiLz48L3N2Zz4=)'></i><h3>Service</h3></div><p>Tickets, the issue, the tech's ETA</p></div><div class='card sm' data-b='2'><div class='row' style='gap:16px'><i class='ic' style='--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjQsMTI4YTgsOCwwLDAsMS04LDhIMTI4YTgsOCwwLDAsMSwwLTE2aDg4QTgsOCwwLDAsMSwyMjQsMTI4Wk0xMjgsNzJoODhhOCw4LDAsMCwwLDAtMTZIMTI4YTgsOCwwLDAsMCwwLDE2Wm04OCwxMTJIMTI4YTgsOCwwLDAsMCwwLDE2aDg4YTgsOCwwLDAsMCwwLTE2Wk04Mi4zNCw0Mi4zNCw1Niw2OC42OSw0NS42Niw1OC4zNEE4LDgsMCwwLDAsMzQuMzQsNjkuNjZsMTYsMTZhOCw4LDAsMCwwLDExLjMyLDBsMzItMzJBOCw4LDAsMCwwLDgyLjM0LDQyLjM0Wm0wLDY0TDU2LDEzMi42OSw0NS42NiwxMjIuMzRhOCw4LDAsMCwwLTExLjMyLDExLjMybDE2LDE2YTgsOCwwLDAsMCwxMS4zMiwwbDMyLTMyYTgsOCwwLDAsMC0xMS4zMi0xMS4zMlptMCw2NEw1NiwxOTYuNjksNDUuNjYsMTg2LjM0YTgsOCwwLDAsMC0xMS4zMiwxMS4zMmwxNiwxNmE4LDgsMCwwLDAsMTEuMzIsMGwzMi0zMmE4LDgsMCwwLDAtMTEuMzItMTEuMzJaIi8+PC9zdmc+)'></i><h3>Troubleshooting guide</h3></div><p>Machine, symptom, likely cause, what to check, when to call a tech</p></div><div class='card sm hi' data-b='3'><div class='row' style='gap:16px'><i class='ic' style='--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMDgsNDBINDhBMTYsMTYsMCwwLDAsMzIsNTZ2NTZjMCw1Mi43MiwyNS41Miw4NC42Nyw0Ni45MywxMDIuMTksMjMuMDYsMTguODYsNDYsMjUuMjYsNDcsMjUuNTNhOCw4LDAsMCwwLDQuMiwwYzEtLjI3LDIzLjkxLTYuNjcsNDctMjUuNTNDMTk4LjQ4LDE5Ni42NywyMjQsMTY0LjcyLDIyNCwxMTJWNTZBMTYsMTYsMCwwLDAsMjA4LDQwWm0wLDcyYzAsMzcuMDctMTMuNjYsNjcuMTYtNDAuNiw4OS40MkExMjkuMywxMjkuMywwLDAsMSwxMjgsMjIzLjYyYTEyOC4yNSwxMjguMjUsMCwwLDEtMzguOTItMjEuODFDNjEuODIsMTc5LjUxLDQ4LDE0OS4zLDQ4LDExMmwwLTU2LDE2MCwwWk04Mi4zNCwxNDEuNjZhOCw4LDAsMCwxLDExLjMyLTExLjMyTDExMiwxNDguNjlsNTAuMzQtNTAuMzVhOCw4LDAsMCwxLDExLjMyLDExLjMybC01Niw1NmE4LDgsMCwwLDEtMTEuMzIsMFoiLz48L3N2Zz4=)'></i><h3>Verifications</h3></div><p>One row per call: a hashed code, tries left</p></div></div><div class='sub' data-b='4' style='margin-top:26px'>Every desk reads the same data, <span class='blue'>through n8n.</span></div></div>
+    <div class='grid c3' style='margin-top:40px;gap:24px'><div class='card sm' data-b='1'><div class='row' style='gap:16px'><span class='icb'><i class='ic' style='--i:url(assets/icons/address-book.svg)'></i></span><h3>Customers</h3></div><p>Who is on file</p></div><div class='card sm' data-b='1'><div class='row' style='gap:16px'><span class='icb'><i class='ic' style='--i:url(assets/deck/icons/truck.svg)'></i></span><h3>Fleet</h3></div><p>20 machines, 3 yards</p></div><div class='card sm' data-b='1'><div class='row' style='gap:16px'><span class='icb'><i class='ic' style='--i:url(assets/icons/calendar-check.svg)'></i></span><h3>Rentals</h3></div><p>Who has what</p></div><div class='card sm' data-b='1'><div class='row' style='gap:16px'><span class='icb'><i class='ic' style='--i:url(assets/icons/wrench.svg)'></i></span><h3>Service</h3></div><p>Tickets and tech ETAs</p></div><div class='card sm' data-b='2'><div class='row' style='gap:16px'><span class='icb'><i class='ic' style='--i:url(assets/icons/list-checks.svg)'></i></span><h3>Troubleshooting guide</h3></div><p>Symptom to fix</p></div><div class='card sm hi' data-b='3'><div class='row' style='gap:16px'><span class='icb'><i class='ic' style='--i:url(assets/icons/shield-check.svg)'></i></span><h3>Verifications</h3></div><p>One hashed code per call</p></div></div><div data-b='4' style='margin-top:40px'><span class='kin big-line' style='font-size:56px'>Every desk reads it <span class='blue'>through n8n.</span></span></div>
   </div>
-  <div class="chrome source">Course data: 20 units, 7 rentals, 4 tickets. Verifications holds hashes only.</div>
   <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
   <div class="notes">Four tables the business already has: customers, fleet, rentals, service.
 A troubleshooting guide for Jim Bob: machine, symptom, likely cause, what to check, when to call a tech.
 And verifications. That's where the security lives.
-No agent keeps its own copy. They all ask n8n.</div>
+No agent keeps its own copy. They all ask n8n.
+Source: Course data: 20 units, 7 rentals, 4 tickets. Verifications holds hashes only.</div>
 </section>
 
-<section class="slide dark" id="s-architecture" data-id="architecture" data-type="video" data-n="7">
-  <video class="sv" src="media/architecture.mp4?v=1792823852" poster="media/architecture-poster.png?v=1792823852" data-loop="7.0" data-cues="2.6,4.0,5.4" muted playsinline preload="none"></video>
+<section class="slide dark" id="s-architecture" data-id="architecture" data-type="video" data-n="9">
+  <video class="sv" src="media/architecture.mp4?v=1792827522" poster="media/architecture-poster.png?v=1792827522" data-loop="7.0" data-cues="2.6,4.0,5.4" muted playsinline preload="none"></video>
   <div class="pad" data-mbox="copy">
     <div class="eyebrow">How it fits together</div>
     <h2>The agent asks. n8n answers.</h2>
     <div class="tiles n4"><div>Caller</div><div>Joanne, Leadlock agent</div><div>Custom function</div><div>n8n + the data</div></div>
     <div class="lede">Caller, Joanne (a Leadlock agent), a custom function, n8n, the data, and the answer back into the call. Handoffs carry the full history; the post-call webhook sends the result out.</div>
   </div>
-  <div class="chrome source">Custom functions POST to your webhook with call_context (call_sid on every call; contact details when Contact Intelligence is on).</div>
   <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
   <div class="notes">Caller rings Joanne. She's a Leadlock agent.
 When she needs data, she calls a custom function. That's a webhook into n8n, and n8n reads the data.
 The answer comes back into the call.
-Handoffs to Jim Bob, Miss Hattie Mae or a person carry the history. After the call, the post-call webhook sends the result out.</div>
+Handoffs to Jim Bob, Miss Hattie Mae or a person carry the history. After the call, the post-call webhook sends the result out.
+Source: Custom functions POST to your webhook with call_context (call_sid on every call; contact details when Contact Intelligence is on). backend voice/tools.py.</div>
 </section>
 
-<section class="slide dark" id="s-verify" data-id="verify" data-type="video" data-n="8">
-  <video class="sv" src="media/verify.mp4?v=1792823853" poster="media/verify-poster.png?v=1792823853" data-loop="7.2" data-cues="2.6,4.0,5.4" muted playsinline preload="none"></video>
+<section class="slide dark" id="s-verify" data-id="verify" data-type="video" data-n="10">
+  <video class="sv" src="media/verify.mp4?v=1792827522" poster="media/verify-poster.png?v=1792827522" data-loop="7.2" data-cues="2.6,4.0,5.4" muted playsinline preload="none"></video>
   <div class="pad" data-mbox="copy">
     <div class="eyebrow">Verify the caller like a bank</div>
     <h2>A code to what's on file.</h2>
     <div class="tiles n4"><div>send_verification_code</div><div>Email on file</div><div>Caller reads it aloud</div><div>verify_code: verified</div></div>
     <div class="lede">"I've got d***@leadlock.ai on file. I just sent you a 6-digit code." n8n makes the code, stores only its hash, sends it only to what's on file. The caller reads it aloud; n8n says verified or not.</div>
   </div>
-  <div class="chrome source">Granite Peak proof, 2026-10-24: the reply carries a mask, never the code; sha256 of code + call, 10-minute expiry, 3 tries per call.</div>
   <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
   <div class="notes">Caller wants their account. Joanne says: first, let me make sure it's you.
 n8n makes a 6-digit code, keeps only a scrambled version of it, and emails it to the address on file.
 Joanne never sees the code. She only hears back where it went.
-Caller reads it aloud, n8n checks it. Verified.</div>
+Caller reads it aloud, n8n checks it. Verified.
+Source: Granite Peak proof, 2026-10-24: the reply carries a mask, never the code; sha256 of code + call, 10-minute expiry, 3 tries per call.</div>
 </section>
 
-<section class="slide light" id="s-verify-rules" data-id="verify-rules" data-type="page" data-n="9">
+<section class="slide light" id="s-verify-rules" data-id="verify-rules" data-type="page" data-n="11">
   <div class="page" data-mbox="copy">
     <div class="eb">The rules &middot; in n8n, not the prompt</div>
     <h2 class="ttl">Nothing to talk your way around.</h2>
-    <div class='fill'><div class='grid c3 grow' style='grid-auto-rows:1fr;gap:24px'><div class='card sm hi' data-b='1'><div class='k'>Destination</div><h3>Only what's on file</h3><p>Nothing the caller says is ever where the code goes</p></div><div class='card sm' data-b='1'><div class='k'>The agent</div><h3>Never sees the code</h3><p>n8n replies with a mask: d***@leadlock.ai</p></div><div class='card sm' data-b='1'><div class='k'>Storage</div><h3>Only a hash</h3><p>Scrambled with the call, gone in 10 minutes</p></div><div class='card sm' data-b='2'><div class='k'>Guessing</div><h3>3 tries per call</h3><p>A resend doesn't reset them. Then the call locks.</p></div><div class='card sm' data-b='2'><div class='k'>Scope</div><h3>This call only</h3><p>Verified for 60 minutes, on this call</p></div><div class='card sm' data-b='2'><div class='k'>Logs</div><h3>No copies</h3><p>n8n doesn't save these runs</p></div></div><div class='foot' data-b='3' style='margin-top:22px'>Why read it aloud: a text back goes to the text assistant, not the live call.</div></div>
+    <div class='grid c3' style='margin-top:48px;gap:24px'><div class='card  hi' data-b='1'><h3>Only what's on file</h3></div><div class='card ' data-b='1'><h3>Agent never sees the code</h3></div><div class='card ' data-b='1'><h3>Only a hash, 10 minutes</h3></div><div class='card ' data-b='2'><h3>3 tries per call</h3></div><div class='card ' data-b='2'><h3>This call only</h3></div><div class='card ' data-b='2'><h3>No logged copies</h3></div></div>
   </div>
-  <div class="chrome source">Granite Peak proof, 2026-10-24: execution saving off for the verify workflow; resend keeps the attempt count; locked calls refuse new codes and checks.</div>
   <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
   <div class="notes">Every rule lives in n8n. The prompt can't change any of them.
 Three tries, and asking for a new code doesn't buy more.
-Why not text it back? Inbound texts go to the text assistant, not the live call. So the caller reads it out.</div>
+Why not text it back? Inbound texts go to the text assistant, not the live call. So the caller reads it out.
+Detail: nothing the caller says is ever where the code goes; n8n replies with a mask (d***@leadlock.ai); the hash is scrambled with the call; a resend doesn't reset tries; verified for 60 minutes on this call; n8n doesn't save these runs.
+Why read it aloud: a text back goes to the text assistant, not the live call.
+Source: Granite Peak proof, 2026-10-24: execution saving off for the verify workflow; resend keeps the attempt count; locked calls refuse new codes and checks.</div>
 </section>
 
-<section class="slide light" id="s-gate" data-id="gate" data-type="video" data-n="10">
-  <video class="sv" src="media/gate.mp4?v=1792823852" poster="media/gate-poster.png?v=1792823852" data-loop="7.2" data-cues="2.6,4.0,5.4" muted playsinline preload="none"></video>
+<section class="slide light" id="s-gate" data-id="gate" data-type="video" data-n="12">
+  <video class="sv" src="media/gate.mp4?v=1792827522" poster="media/gate-poster.png?v=1792827522" data-loop="7.2" data-cues="2.6,4.0,5.4" muted playsinline preload="none"></video>
   <div class="pad" data-mbox="copy">
     <div class="eyebrow">The gate</div>
     <h2>No verify, no account.</h2>
-    <div class="tiles n4"><div>rental_status</div><div>Is this call verified?</div><div>Before: verify_first</div><div>After: two rentals</div></div>
+    <div class="tiles n4"><div>rental_status</div><div>Is this call verified?</div><div>Before: verify_first</div><div>After: three rentals</div></div>
     <div class="lede">Every account lookup checks in n8n that this call is verified. Before: verify_first. After: the rentals. The AI can't be talked past it, because the AI doesn't decide.</div>
   </div>
-  <div class="chrome source">Granite Peak proof, 2026-10-24: rental_status returns verify_first until verify_code succeeds for that call_sid.</div>
   <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
   <div class="notes">Caller pushes: just read me my rentals.
 Joanne asks n8n. n8n checks: is this exact call verified? No. verify_first.
 After the code: same question, and now the rentals come back.
-The AI can't be talked past it, because the AI doesn't decide.</div>
+The AI can't be talked past it, because the AI doesn't decide.
+Source: Granite Peak proof, 2026-10-24: rental_status returns verify_first until verify_code succeeds for that call_sid.</div>
 </section>
 
-<section class="slide dark" id="s-proof" data-id="proof" data-type="page" data-n="11">
+<section class="slide dark" id="s-proof" data-id="proof" data-type="page" data-n="13">
   <div class="page" data-mbox="copy">
     <div class="eb">It's real &middot; tested 2026-10-24</div>
     <h2 class="ttl">We tried to break it.</h2>
-    <div class='split' style='margin-top:34px;grid-template-columns:1fr 600px;gap:44px'><table class='tbl' data-b='1' style='align-self:start'><thead><tr><th>We tried</th><th>n8n said</th></tr></thead><tbody><tr><td style='padding:18px 24px;font-size:30px'>A wrong code</td><td style='padding:18px 24px;font-size:26px;font-family:var(--mono)'>attempts_left: 2</td></tr><tr><td style='padding:18px 24px;font-size:30px'>Rentals before verifying</td><td style='padding:18px 24px;font-size:26px;font-family:var(--mono)'>verify_first</td></tr><tr><td style='padding:18px 24px;font-size:30px'>The right code</td><td style='padding:18px 24px;font-size:26px;font-family:var(--mono)' class='blue'>verified: true</td></tr><tr><td style='padding:18px 24px;font-size:30px'>Rentals after</td><td style='padding:18px 24px;font-size:26px;font-family:var(--mono)'>his two rentals</td></tr><tr><td style='padding:18px 24px;font-size:30px'>3 wrong codes</td><td style='padding:18px 24px;font-size:26px;font-family:var(--mono)'>locked: true</td></tr></tbody></table><div style='display:flex;flex-direction:column;gap:22px'><div class='card sm' data-b='2' style='background:#FFFFFF;border-color:#DCDCD6;color:#0F0F0F'><div class='row' style='gap:14px'><i class='ic' style='--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjQsNDhIMzJhOCw4LDAsMCwwLTgsOFYxOTJhMTYsMTYsMCwwLDAsMTYsMTZIMjE2YTE2LDE2LDAsMCwwLDE2LTE2VjU2QTgsOCwwLDAsMCwyMjQsNDhaTTIwMy40Myw2NCwxMjgsMTMzLjE1LDUyLjU3LDY0Wk0yMTYsMTkySDQwVjc0LjE5bDgyLjU5LDc1LjcxYTgsOCwwLDAsMCwxMC44MiwwTDIxNiw3NC4xOVYxOTJaIi8+PC9zdmc+);background-color:#4A7A96;width:40px;height:40px'></i><div class='k' style='margin:0;color:#5B5B63'>Inbox &middot; d***@leadlock.ai</div></div><p style='color:#0F0F0F;font-size:30px;margin-top:18px'>Your Granite Peak verification code is <span style='filter:blur(9px);font-family:var(--mono)'>481 907</span>. It expires in 10 minutes.</p></div><div class='card hi' data-b='3'><div class='k'>Round trip through Leadlock</div><div style='font-size:76px;font-weight:700;letter-spacing:-0.04em;line-height:1.05;margin-top:10px' class='num blue'>240 to 840 ms</div><p class='num'>The limit is 5,000 ms</p></div></div></div>
+    <div class='split' style='margin-top:34px;grid-template-columns:1fr 600px;gap:44px'><table class='tbl' data-b='1' style='align-self:start'><thead><tr><th>We tried</th><th>n8n said</th></tr></thead><tbody><tr><td style='padding:18px 24px;font-size:30px'>A wrong code</td><td style='padding:18px 24px;font-size:26px;font-family:var(--mono)'>attempts_left: 2</td></tr><tr><td style='padding:18px 24px;font-size:30px'>Rentals before verifying</td><td style='padding:18px 24px;font-size:26px;font-family:var(--mono)'>verify_first</td></tr><tr><td style='padding:18px 24px;font-size:30px'>The right code</td><td style='padding:18px 24px;font-size:26px;font-family:var(--mono)' class='blue'>verified: true</td></tr><tr><td style='padding:18px 24px;font-size:30px'>Rentals after</td><td style='padding:18px 24px;font-size:26px;font-family:var(--mono)'>his two rentals</td></tr><tr><td style='padding:18px 24px;font-size:30px'>3 wrong codes</td><td style='padding:18px 24px;font-size:26px;font-family:var(--mono)'>locked: true</td></tr></tbody></table><div style='display:flex;flex-direction:column;gap:22px'><div class='card sm' data-b='2' style='background:#FFFFFF;border-color:#DCDCD6;color:#0F0F0F'><div class='row' style='gap:14px'><i class='ic' style='--i:url(assets/icons/envelope-simple.svg);background-color:#4A7A96;width:40px;height:40px'></i><div class='k' style='margin:0;color:#5B5B63'>Inbox &middot; d***@leadlock.ai</div></div><p style='color:#0F0F0F;font-size:34px;margin-top:18px'>Your code: <span style='filter:blur(9px);font-family:var(--mono)'>481 907</span></p></div><div class='card hi' data-b='3'><div class='k'>Round trip</div><div style='font-size:60px;font-weight:700;letter-spacing:-0.04em;line-height:1.05;margin-top:10px' class='num blue'>Under 1 second</div><p class='num'>240 to 840 ms</p></div></div></div>
   </div>
-  <div class="chrome source">Granite Peak proof, 2026-10-24: direct webhook calls plus Leadlock's function test (send 840 ms, wrong code 242 ms, right code 255 ms). Code digits blurred.</div>
   <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
   <div class="notes">This isn't a mockup. I ran every one of these.
 The email really arrived. Digits blurred here.
-And it's fast: under a second, well inside the 5 second limit.</div>
+And it's fast: under a second, well inside the 5 second limit.
+The limit for a function reply is 5,000 ms.
+Source: Granite Peak proof, 2026-10-24: direct webhook calls plus Leadlock's function test (send 840 ms, wrong code 242 ms, right code 255 ms). Code digits blurred.
+The email reads: your Granite Peak verification code is ..., it expires in 10 minutes.</div>
 </section>
 
-<section class="slide light" id="s-hear-rentals" data-id="hear-rentals" data-type="page" data-n="12">
+<section class="slide light" id="s-hear-rentals" data-id="hear-rentals" data-type="page" data-n="14">
   <div class="page" data-mbox="copy">
     <div class="eb">What callers will hear &middot; 1</div>
     <h2 class="ttl">A returning customer.</h2>
-    <div class='fill'><div class='chat' style='gap:16px'><div class='msg in' data-b='1'><span class='who'>Caller</span>It's Dan at Ridgeline. When's that water truck showing up?</div><div class='msg out' data-b='2'><span class='who'>Joanne</span>Let me make sure it's you first, sugar. I just sent a code to d***@leadlock.ai.</div><div class='msg in' data-b='3'><span class='who'>Caller</span>Got it. It's <span style='filter:blur(8px)'>481 907</span>.</div><div class='tool' data-b='3'>verify_code &middot; rental_status</div><div class='msg out' data-b='4'><span class='who'>Joanne</span>You're all set, Dan. The 20,000 gallon water truck goes out to the Ridgeline pit on October 28.</div></div></div>
+    <div class='fill'><div class='chat' style='gap:16px'><div class='msg in' data-b='1'><span class='who'>Caller</span>When's my water truck showing up?</div><div class='msg out' data-b='2'><span class='who'>Joanne</span>Quick code first, sugar. Check d***@leadlock.ai.</div><div class='msg in' data-b='3'><span class='who'>Caller</span>Got it. It's <span style='filter:blur(8px)'>481 907</span>.</div><div class='tool' data-b='3'>verify_code &middot; rental_status</div><div class='msg out' data-b='4'><span class='who'>Joanne</span>You're set, Dan. Your water truck lands October 28.</div></div></div>
   </div>
-  <div class="chrome source">Made-up call. The rental is from the course data (scheduled, starts 2026-10-28).</div>
   <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
   <div class="notes">Caller asks about a rental. Joanne doesn't guess, she verifies.
 Code, read aloud, checked in n8n.
-Then the real answer, from the Rentals table.</div>
+Then the real answer, from the Rentals table.
+Source: Made-up call. The rental is from the course data (scheduled, starts 2026-10-28).</div>
 </section>
 
-<section class="slide dark" id="s-hear-desks" data-id="hear-desks" data-type="page" data-n="13">
+<section class="slide dark" id="s-hear-desks" data-id="hear-desks" data-type="page" data-n="15">
   <div class="page" data-mbox="copy">
     <div class="eb">What callers will hear &middot; 2</div>
-    <h2 class="ttl">A breakdown. A bill.</h2>
-    <div class='grid c2' style='margin-top:40px;gap:44px;align-items:start'><div class='chat' data-b='1' style='gap:14px'><div class='label'>Breakdown &rsaquo; troubleshooting</div><div class='msg in' style='font-size:28px'><span class='who'>Caller</span>It's making a grinding sound when I swing.</div><div class='msg out' style='font-size:28px'><span class='who'>Joanne</span>That's one for Jim Bob, sugar. Handing you over.</div><div class='tool' style='font-size:22px'>transfer_to_agent</div><div class='msg out' style='font-size:28px'><span class='who'>Jim Bob</span>That grindin' on the swing? Nine times outta ten it's the swing bearing wantin' grease. Park it, bucket down, lock it out first.</div></div><div class='chat' data-b='2' style='gap:14px'><div class='label'>Billing question &rsaquo; billing</div><div class='msg in' style='font-size:28px'><span class='who'>Caller</span>Can I just read you my card number?</div><div class='msg out' style='font-size:28px'><span class='who'>Miss Hattie Mae</span>Not over the phone, baby. I'm texting you the link right now.</div><div class='tool' style='font-size:22px'>send_sms</div><div class='msg in' style='font-size:28px'><span class='who'>Caller</span>Got it. That was easy.</div></div></div>
+    <h2 class="ttl">A breakdown. A bill. Both handled.</h2>
+    <div class='grid c2' style='margin-top:40px;gap:44px;align-items:start'><div class='chat' style='gap:14px'><div class='label' data-b='1'>Breakdown &rsaquo; repairs</div><div class='msg in' data-b='1' style='font-size:28px'><span class='who'>Caller</span>It's making a grinding sound when I swing.</div><div class='msg out' data-b='2' style='font-size:28px'><span class='who'>Joanne</span>That's Jim Bob's, sugar. Handing you over.</div><div class='tool' data-b='2' style='font-size:22px'>transfer_to_agent</div><div class='msg out' data-b='3' style='font-size:28px'><span class='who'>Jim Bob</span>Park it, bucket down, lock it out. Then check that swing grease.</div></div><div class='chat' style='gap:14px'><div class='label' data-b='4'>Billing question &rsaquo; billing</div><div class='msg in' data-b='4' style='font-size:28px'><span class='who'>Caller</span>Can I just read you my card number?</div><div class='msg out' data-b='5' style='font-size:28px'><span class='who'>Miss Hattie Mae</span>Not on the phone, baby. Texting you a link.</div><div class='tool' data-b='5' style='font-size:22px'>send_sms</div><div class='msg in' data-b='6' style='font-size:28px'><span class='who'>Caller</span>Got it. That was easy.</div></div></div>
   </div>
-  <div class="chrome source">Made-up calls. Jim Bob's answers come from the troubleshooting guide; if it needs a tech, he opens a service ticket with the ETA.</div>
   <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
   <div class="notes">Breakdown: Joanne hands off to Jim Bob with the whole conversation.
 Jim Bob knows what to check. Safety first: parked, bucket down, locked out before anyone climbs on it. If it needs a tech, he opens a ticket with the ETA.
-Billing: Miss Hattie Mae never takes card numbers on the phone. A payment link by text instead.</div>
+Billing: Miss Hattie Mae never takes card numbers on the phone. A payment link by text instead.
+Jim Bob's full line: that grindin' on the swing? Nine times outta ten it's the swing bearing wantin' grease.
+Source: Made-up calls. Jim Bob's answers come from the troubleshooting guide; if it needs a tech, he opens a service ticket with the ETA.</div>
 </section>
 
-<section class="slide light" id="s-handoffs" data-id="handoffs" data-type="page" data-n="14">
+<section class="slide light" id="s-handoffs" data-id="handoffs" data-type="page" data-n="16">
   <div class="page" data-mbox="copy">
     <div class="eb">The handoffs</div>
     <h2 class="ttl">Nobody repeats themselves.</h2>
-    <div class='fill'><div class='grid c2' style='gap:32px;grid-auto-rows:1fr'><div class='card hi' data-b='1'><div class='row' style='gap:18px'><span class='icb'><i class='ic' style='--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMDAsNDhIMTM2VjE2YTgsOCwwLDAsMC0xNiwwVjQ4SDU2QTMyLDMyLDAsMCwwLDI0LDgwVjE5MmEzMiwzMiwwLDAsMCwzMiwzMkgyMDBhMzIsMzIsMCwwLDAsMzItMzJWODBBMzIsMzIsMCwwLDAsMjAwLDQ4Wm0xNiwxNDRhMTYsMTYsMCwwLDEtMTYsMTZINTZhMTYsMTYsMCwwLDEtMTYtMTZWODBBMTYsMTYsMCwwLDEsNTYsNjRIMjAwYTE2LDE2LDAsMCwxLDE2LDE2Wm0tNTItNTZIOTJhMjgsMjgsMCwwLDAsMCw1Nmg3MmEyOCwyOCwwLDAsMCwwLTU2Wm0tMjQsMTZ2MjRIMTE2VjE1MlpNODAsMTY0YTEyLDEyLDAsMCwxLDEyLTEyaDh2MjRIOTJBMTIsMTIsMCwwLDEsODAsMTY0Wm04NCwxMmgtOFYxNTJoOGExMiwxMiwwLDAsMSwwLDI0Wk03MiwxMDhhMTIsMTIsMCwxLDEsMTIsMTJBMTIsMTIsMCwwLDEsNzIsMTA4Wm04OCwwYTEyLDEyLDAsMSwxLDEyLDEyQTEyLDEyLDAsMCwxLDE2MCwxMDhaIi8+PC9zdmc+)'></i></span><div class='k' style='margin:0;font-family:var(--mono)'>transfer_to_agent</div></div><h3 style='margin-top:26px'>To another AI desk</h3><p>The full conversation goes with the caller.</p><p class='foot' style='margin-top:22px'>Joanne &rsaquo; Jim Bob</p></div><div class='card' data-b='2'><div class='row' style='gap:18px'><span class='icb'><i class='ic' style='--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMDEuODksNTQuNjZBMTAzLjQzLDEwMy40MywwLDAsMCwxMjguNzksMjRIMTI4QTEwNCwxMDQsMCwwLDAsMjQsMTI4djU2YTI0LDI0LDAsMCwwLDI0LDI0SDY0YTI0LDI0LDAsMCwwLDI0LTI0VjE0NGEyNCwyNCwwLDAsMC0yNC0yNEg0MC4zNkE4OC4xMiw4OC4xMiwwLDAsMSwxOTAuNTQsNjUuOTMsODcuMzksODcuMzksMCwwLDEsMjE1LjY1LDEyMEgxOTJhMjQsMjQsMCwwLDAtMjQsMjR2NDBhMjQsMjQsMCwwLDAsMjQsMjRoMjRhMjQsMjQsMCwwLDEtMjQsMjRIMTM2YTgsOCwwLDAsMCwwLDE2aDU2YTQwLDQwLDAsMCwwLDQwLTQwVjEyOEExMDMuNDEsMTAzLjQxLDAsMCwwLDIwMS44OSw1NC42NlpNNjQsMTM2YTgsOCwwLDAsMSw4LDh2NDBhOCw4LDAsMCwxLTgsOEg0OGE4LDgsMCwwLDEtOC04VjEzNlptMTI4LDU2YTgsOCwwLDAsMS04LThWMTQ0YTgsOCwwLDAsMSw4LThoMjR2NTZaIi8+PC9zdmc+)'></i></span><div class='k' style='margin:0;font-family:var(--mono)'>transfer_call</div></div><h3 style='margin-top:26px'>To a person</h3><p>With whisper on, they hear a short summary before they pick up.</p><p class='foot' style='margin-top:22px'>Safety issue &rsaquo; the on-call manager</p></div></div><div class='sub' data-b='3' style='margin-top:40px'>Either way, <span class='blue'>the caller never starts over.</span></div></div>
+    <div class='grid c2' style='margin-top:48px;gap:32px'><div class='card hi' data-b='1'><div class='row' style='gap:18px'><span class="icb"><i class="ic" style="--i:url(assets/icons/robot.svg)"></i></span><div class='k' style='margin:0;font-family:var(--mono)'>transfer_to_agent</div></div><h3 style='margin-top:26px'>To another AI desk</h3><p>The whole conversation goes along</p></div><div class='card' data-b='2'><div class='row' style='gap:18px'><span class='icb'><i class='ic' style='--i:url(assets/deck/icons/headset.svg)'></i></span><div class='k' style='margin:0;font-family:var(--mono)'>transfer_call</div></div><h3 style='margin-top:26px'>To a person</h3><p>They hear a summary first</p></div></div><div data-b='3' style='margin-top:48px'><span class='kin big-line' style='font-size:64px'>The caller <span class='blue'>never starts over.</span></span></div>
   </div>
-  <div class="chrome source">Agent Kit reference/agent-functions.md: transfer_to_agent hands off with the full history; transfer_call with whisper_enabled whispers an AI summary to the person.</div>
   <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
   <div class="notes">Agent to agent: transfer_to_agent. The history goes along.
 Agent to a person: transfer_call. Turn whisper on and they hear the summary first.
-Either way the caller doesn't start over.</div>
+Either way the caller doesn't start over.
+Source: Agent Kit reference/agent-functions.md: transfer_to_agent hands off with the full history; transfer_call with whisper_enabled whispers an AI summary to the person.</div>
 </section>
 
-<section class="slide dark" id="s-course-map" data-id="course-map" data-type="page" data-n="15">
+<section class="slide dark" id="s-course-map" data-id="course-map" data-type="page" data-n="17">
   <div class="page" data-mbox="copy">
     <div class="eb">The course map</div>
-    <h2 class="ttl">Eight videos, in order.</h2>
-    <div class='fill'><div class='grid c4 grow' style='grid-auto-rows:1fr;gap:20px'><div class='card sm' data-b='1'><div class='k'>01</div><h3>The data and the team plan</h3><p>Tables in n8n, who does what</p></div><div class='card sm hi' data-b='1'><div class='k'>02</div><h3>Verify the caller</h3><p>The code, the hash, 3 tries</p></div><div class='card sm' data-b='1'><div class='k'>03</div><h3>Joanne's rentals desk</h3><p>Behind the gate</p></div><div class='card sm' data-b='1'><div class='k'>04</div><h3>Jim Bob's troubleshooting desk</h3><p>Fix it, or a ticket and tech ETA</p></div><div class='card sm' data-b='2'><div class='k'>05</div><h3>Miss Hattie Mae's billing desk</h3><p>Balance, invoices, a payment link</p></div><div class='card sm' data-b='2'><div class='k'>06</div><h3>Handoffs</h3><p>Agent to agent, and to a person</p></div><div class='card sm' data-b='2'><div class='k'>07</div><h3>Outbound</h3><p>Off-rent reminders, deliveries, service follow-ups</p></div><div class='card sm' data-b='2'><div class='k'>08</div><h3>Measure and improve</h3><p>Post-call webhook, audit, tune</p></div></div></div>
+    <h2 class="ttl">Eight videos to a $15K build.</h2>
+    <div class='grid c4' style='margin-top:48px;gap:20px'><div class='card sm' data-b='1'><div class='k'>01</div><h3>The data and the team plan</h3></div><div class='card sm hi' data-b='1'><div class='k'>02</div><h3>Verify the caller</h3></div><div class='card sm' data-b='2'><div class='k'>03</div><h3>Joanne's rentals desk</h3></div><div class='card sm' data-b='2'><div class='k'>04</div><h3>Jim Bob's repairs desk</h3></div><div class='card sm' data-b='3'><div class='k'>05</div><h3>Miss Hattie Mae's billing desk</h3></div><div class='card sm' data-b='3'><div class='k'>06</div><h3>Handoffs</h3></div><div class='card sm' data-b='4'><div class='k'>07</div><h3>Outbound</h3></div><div class='card sm' data-b='4'><div class='k'>08</div><h3>Measure and improve</h3></div></div>
   </div>
   <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
   <div class="notes">First the data, then the security. Everything else sits behind it.
 Then one desk per video, then the handoffs.
-Then outbound, and how to measure it and keep it getting better.</div>
+Then outbound, and how to measure it and keep it getting better.
+Video by video: tables in n8n; the code, the hash, 3 tries; rentals behind the gate; fix it or a ticket and tech ETA; balance, invoices, a payment link; agent to agent and to a person; off-rent reminders, deliveries, service follow-ups; post-call webhook, audit, tune.</div>
 </section>
 
-<section class="slide light" id="s-what-you-need" data-id="what-you-need" data-type="page" data-n="16">
+<section class="slide light" id="s-what-you-need" data-id="what-you-need" data-type="page" data-n="18">
   <div class="page" data-mbox="copy">
     <div class="eb">Before video 1</div>
     <h2 class="ttl">What you need.</h2>
-    <div class='fill'><div class='grid c2' style='gap:20px 32px'><div class='card sm' data-b='1'><div class='row' style='gap:18px'><span class='logo sm'><img src='assets/brand/icon-blue.png' alt='Leadlock'><span>Leadlock</span></span></div><p>Your account, with an agent to build on</p></div><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0xMjgsMTI4YTgsOCwwLDAsMS0zLDYuMjVsLTQwLDMyYTgsOCwwLDEsMS0xMC0xMi41TDEwNy4xOSwxMjgsNzUsMTAyLjI1YTgsOCwwLDEsMSwxMC0xMi41bDQwLDMyQTgsOCwwLDAsMSwxMjgsMTI4Wm00OCwyNEgxMzZhOCw4LDAsMCwwLDAsMTZoNDBhOCw4LDAsMCwwLDAtMTZabTU2LTk2VjIwMGExNiwxNiwwLDAsMS0xNiwxNkg0MGExNiwxNiwwLDAsMS0xNi0xNlY1NkExNiwxNiwwLDAsMSw0MCw0MEgyMTZBMTYsMTYsMCwwLDEsMjMyLDU2Wk0yMTYsMjAwVjU2SDQwVjIwMEgyMTZaIi8+PC9zdmc+)"></i><h3>The free Agent Kit</h3></div><p>leadlock.ai/agent-kit</p></div><div class='card sm' data-b='2'><div class='row' style='gap:18px'><span class='logo sm'><img src='assets/deck/logos/n8n-wordmark.svg' alt='n8n'></span><h3>with its MCP</h3></div><p>Set up in the setup video</p></div><div class='card sm' data-b='2'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMjQsNDhIMzJhOCw4LDAsMCwwLTgsOFYxOTJhMTYsMTYsMCwwLDAsMTYsMTZIMjE2YTE2LDE2LDAsMCwwLDE2LTE2VjU2QTgsOCwwLDAsMCwyMjQsNDhaTTIwMy40Myw2NCwxMjgsMTMzLjE1LDUyLjU3LDY0Wk0yMTYsMTkySDQwVjc0LjE5bDgyLjU5LDc1LjcxYTgsOCwwLDAsMCwxMC44MiwwTDIxNiw3NC4xOVYxOTJaIi8+PC9zdmc+)"></i><h3>A Gmail or SMTP login</h3></div><p>In n8n, for the email code</p></div><div class='card sm hi' data-b='3'><div class='row' style='gap:16px'><i class="ic" style="--i:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJjdXJyZW50Q29sb3IiPjxwYXRoIGQ9Ik0yMTYsNDhINDBBMTYsMTYsMCwwLDAsMjQsNjRWMjI0YTE1Ljg1LDE1Ljg1LDAsMCwwLDkuMjQsMTQuNUExNi4xMywxNi4xMywwLDAsMCw0MCwyNDBhMTUuODksMTUuODksMCwwLDAsMTAuMjUtMy43OGwuMDktLjA3TDgzLDIwOEgyMTZhMTYsMTYsMCwwLDAsMTYtMTZWNjRBMTYsMTYsMCwwLDAsMjE2LDQ4Wk00MCwyMjRoMFpNMjE2LDE5Mkg4MGE4LDgsMCwwLDAtNS4yMywxLjk1TDQwLDIyNFY2NEgyMTZaTTg4LDExMmE4LDgsMCwwLDEsOC04aDY0YTgsOCwwLDAsMSwwLDE2SDk2QTgsOCwwLDAsMSw4OCwxMTJabTAsMzJhOCw4LDAsMCwxLDgtOGg2NGE4LDgsMCwxLDEsMCwxNkg5NkE4LDgsMCwwLDEsODgsMTQ0WiIvPjwvc3ZnPg==)"></i><h3>An A2P-registered number</h3></div><p>For the text code and the payment link</p></div></div></div>
+    <div class='grid c2' style='margin-top:40px;gap:20px 32px'><div class='card sm' data-b='1'><div class='row' style='gap:18px'><span class='logo sm'><img src='assets/brand/icon-blue.png' alt='Leadlock'><span>Leadlock</span></span></div><p>Your account</p></div><div class='card sm' data-b='1'><div class='row' style='gap:16px'><i class="ic" style="--i:url(assets/icons/terminal-window.svg)"></i><h3>The free Agent Kit</h3></div><p>leadlock.ai/agent-kit</p></div><div class='card sm' data-b='2'><div class='row' style='gap:18px'><span class='logo sm'><img src='assets/deck/logos/n8n-wordmark.svg' alt='n8n'></span><h3>with its MCP</h3></div><p>From the setup video</p></div><div class='card sm' data-b='2'><div class='row' style='gap:16px'><i class="ic" style="--i:url(assets/icons/envelope-simple.svg)"></i><h3>Gmail or SMTP login</h3></div><p>For the email code</p></div><div class='card sm hi' data-b='3'><div class='row' style='gap:16px'><i class="ic" style="--i:url(assets/icons/chat-text.svg)"></i><h3>An A2P-registered number</h3></div><p>For texts and pay links</p></div></div>
   </div>
-  <div class="chrome source">Texts from Leadlock need an SMS-capable, A2P-enabled number on the account.</div>
   <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
   <div class="notes">Leadlock, the Agent Kit, and n8n with its MCP from the setup video.
 An email login inside n8n, so it can send the code.
-For texting the code or a payment link: a number that's A2P registered.</div>
+For texting the code or a payment link: a number that's A2P registered.
+Source: Texts from Leadlock need an SMS-capable, A2P-enabled number on the account.</div>
 </section>
 
-<section class="slide dark" id="s-close" data-id="close" data-type="page" data-n="17">
+<section class="slide dark" id="s-close" data-id="close" data-type="page" data-n="19">
   <div class="page" data-mbox="copy">
-    <div class="eb">Up next &middot; video 1</div>
-    <h2 class="ttl xl"><span>Let's build it.</span></h2>
-    <div class='split' style='margin-top:40px'><div class='sub' style='margin-top:0'>First up: the data tables and the team plan.</div><div class='card hi' style='align-self:start'><div class='k'>The promise</div><ol class='agenda'><li>Verifies callers like a bank</li><li>Knows their account</li><li>Hands off without repeats</li></ol></div></div>
+    <div class="eb">Your move</div>
+    <h2 class="ttl xl"><span class='kin'>Build it now.</span></h2>
+    <div class='grid c3' style='margin-top:56px;gap:26px'><div class='card hi' data-b='1'><span class='icb'><i class='ic' style='--i:url(assets/icons/terminal-window.svg)'></i></span><h3 style='margin-top:26px'>The free Agent Kit</h3><p class='blue' style='font-family:var(--mono);font-size:30px'>leadlock.ai/agent-kit</p></div><div class='card' data-b='2'><span class='icb'><i class='ic' style='--i:url(assets/icons/list-checks.svg)'></i></span><h3 style='margin-top:26px'>The free checklists</h3><p>One per video, in the kit</p></div><div class='card' data-b='3'><span class='icb'><i class='ic' style='--i:url(assets/icons/users-three.svg)'></i></span><h3 style='margin-top:26px'>The community</h3><p class='blue' style='font-family:var(--mono);font-size:30px'>skool.com/leadlock-6560</p></div></div><div class='sub' data-b='4' style='margin-top:56px'>Next: the data and the team plan.</div>
   </div>
   <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
-  <div class="notes">That's the whole team. Now we build it.
-Video 1: the data and the plan.
-Have your n8n open.</div>
+  <div class="notes">Your move. Build it now, while it's fresh.
+Grab the free Agent Kit: leadlock.ai/agent-kit. Everything I said today is in it.
+The free checklists, free inside the kit, with every Say-this word for word.
+Stuck, or want to show it off? Post in the Skool community: skool.com/leadlock-6560.
+Next video: the data and the team plan. Have your n8n open.</div>
 </section>
 
 <!-- SLIDES:END -->

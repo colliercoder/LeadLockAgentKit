@@ -1,0 +1,1042 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support team video 2: Verify the caller</title>
+<style>
+  @font-face { font-family: "Geist"; src: url(assets/fonts/geist.woff2) format("woff2"); font-weight: 100 900; font-display: block; }
+  @font-face { font-family: "Geist Mono"; src: url(assets/fonts/geist-mono.woff2) format("woff2"); font-weight: 100 900; font-display: block; }
+  :root {
+    --ink: #0F0F0F;
+    --card: #141416;
+    --card-2: #1F1F1F;
+    --line-dark: #26262A;
+    --text: #EDEDED;
+    --muted: #A1A1AA;
+    --paper: #F4F4F1;
+    --paper-card: #FFFFFF;
+    --line-light: #DCDCD6;
+    --text-dark: #0F0F0F;
+    --muted-dark: #5B5B63;
+    --blue: #6298B6;
+    --blue-deep: #4A7A96;
+    --font: "Geist", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #000; overflow: hidden; font-family: var(--font); -webkit-font-smoothing: antialiased; }
+
+  /* Stage: every slide is a fixed 1920x1080 canvas, scaled to fit the window */
+  #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; outline: none; }
+  #deck { width: 1920px; height: 1080px; position: relative; transform-origin: center center; flex: none; }
+  .slide { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; display: none; }
+  .slide.active { display: block; }
+
+  .dark  { background: var(--ink); color: var(--text); }
+  .light { background: var(--paper); color: var(--text-dark); }
+  .accent { color: var(--blue); }
+  .light .accent { color: var(--blue-deep); }
+
+  /* Static copy: the fallback under each video and the PDF source */
+  .pad { position: absolute; left: 0; right: 0; top: 0; height: 940px; padding: 120px 160px 40px; display: flex; flex-direction: column; justify-content: center; }
+  .eyebrow { font-family: var(--mono); font-size: 28px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); margin-bottom: 44px; }
+  .light .eyebrow { color: var(--blue-deep); }
+  h1 { font-size: 128px; line-height: 1.02; font-weight: 700; letter-spacing: -0.04em; }
+  h2 { font-size: 96px; line-height: 1.06; font-weight: 700; letter-spacing: -0.035em; }
+  .lede { font-size: 48px; line-height: 1.3; font-weight: 400; letter-spacing: -0.012em; margin-top: 44px; max-width: 1500px; }
+  .dark .lede { color: #C9C9CF; }
+  .light .lede { color: #3F3F46; }
+
+  .tiles { margin-top: 70px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; width: 1600px; }
+  .tiles.n2, .tiles.n4 { grid-template-columns: repeat(2, 1fr); }
+  .tiles.n5 { grid-template-columns: repeat(6, 1fr); }
+  .tiles.n5 > div { grid-column: span 2; }
+  .tiles.n5 > div:nth-child(n+4) { grid-column: span 3; }
+  .tiles > div { border-radius: 22px; padding: 38px 40px; font-size: 40px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.2; }
+  .dark .tiles > div { background: var(--card); border: 1px solid var(--line-dark); }
+  .light .tiles > div { background: var(--paper-card); border: 1px solid var(--line-light); }
+  .tiles + .lede { margin-top: 48px; }
+  .lede + .tiles { margin-top: 48px; }
+
+  .cols { margin-top: 56px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 1600px; }
+  .col { border-radius: 26px; padding: 40px 48px 42px; }
+  .dark .col { background: var(--card); border: 1px solid var(--line-dark); }
+  .light .col { background: var(--paper-card); border: 1px solid var(--line-light); }
+  .cols.n3 { grid-template-columns: repeat(3, 1fr); gap: 32px; }
+  .cols.n3 .col { padding: 42px 40px 46px; }
+  .cols.n3 .col h3 { font-size: 40px; }
+  .cols.n3 .col li { font-size: 34px; padding-left: 34px; }
+  .cols + .lede { margin-top: 40px; }
+  .col h3 { font-size: 46px; line-height: 1.15; font-weight: 700; letter-spacing: -0.02em; }
+  .col ul { list-style: none; margin-top: 22px; }
+  .col li { font-size: 36px; line-height: 1.3; padding: 9px 0 9px 40px; position: relative; }
+  .col li::before { content: ""; position: absolute; left: 0; top: 50%; width: 14px; height: 14px; margin-top: -7px; border-radius: 50%; background: var(--blue); }
+  .dark .col li { color: #C9C9CF; }
+  .light .col li { color: #3F3F46; }
+
+  /* Dot table (paths compared) */
+  .ptable { margin-top: 56px; width: 1600px; border-collapse: collapse; }
+  .ptable th, .ptable td { font-size: 34px; line-height: 1.2; padding: 20px 0; text-align: left; border-bottom: 1px solid var(--line-dark); }
+  .ptable th { font-weight: 600; color: var(--muted); }
+  .ptable th.win { color: var(--blue); }
+  .ptable td:first-child { width: 520px; color: #C9C9CF; }
+  .dots { display: inline-flex; gap: 12px; }
+  .dots i { width: 22px; height: 22px; border-radius: 50%; background: #3A3A40; }
+  .dots.win i { background: var(--blue); }
+  .ptable + .lede { margin-top: 44px; }
+  .stat-row { display: flex; align-items: flex-end; gap: 80px; }
+  .stat { font-size: 380px; font-weight: 700; letter-spacing: -0.06em; line-height: 0.82; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .stat-lbl { font-size: 58px; line-height: 1.15; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 20px; }
+  .stat-row + h1, .stat-row + h2 { margin-top: 64px; }
+
+  .cmp { margin-top: 80px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 1600px; }
+  .cmp > div { border-radius: 26px; padding: 50px 54px; }
+  .dark .cmp > div { background: var(--card); border: 1px solid var(--line-dark); }
+  .cmp > div.hi { border-color: var(--blue); }
+  .light .cmp > div { background: var(--paper-card); border: 1px solid var(--line-light); }
+  .light .cmp > div.hi { border-color: var(--blue-deep); }
+  .light .cmp .hi .v { color: var(--blue-deep); }
+  .light .cmp .l { color: #3F3F46; }
+  .cmp + .lede { margin-top: 48px; }
+  .cmp .v { font-size: 120px; font-weight: 700; letter-spacing: -0.045em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .cmp .hi .v { color: var(--blue); }
+  .cmp .l { font-size: 38px; margin-top: 24px; color: #C9C9CF; }
+
+  /* ---- Course decks: "page" slides (top-anchored, click-builds) ---------------------- */
+  .page { position: absolute; left: 160px; right: 160px; top: 88px; bottom: 140px; display: flex; flex-direction: column; }
+  .eb { font-family: var(--mono); font-size: 24px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); margin-bottom: 20px; }
+  .light .eb { color: var(--blue-deep); }
+  .ttl { font-size: 88px; line-height: 1.04; font-weight: 700; letter-spacing: -0.04em; }
+  .ttl > span { display: block; }
+  .ttl.md { font-size: 72px; }
+  .ttl.xl { font-size: 132px; line-height: 0.98; letter-spacing: -0.045em; }
+  .sub { font-size: 36px; line-height: 1.35; margin-top: 26px; max-width: 1400px; letter-spacing: -0.01em; }
+  .dark .sub { color: #C9C9CF; } .light .sub { color: #3F3F46; }
+  .muted { color: var(--muted); } .light .muted { color: var(--muted-dark); }
+  .blue { color: var(--blue); } .light .blue { color: var(--blue-deep); }
+  .fill { flex: 1; min-height: 0; margin-top: 52px; display: flex; flex-direction: column; }
+  .center { justify-content: center; }
+  .row { display: flex; align-items: center; gap: 28px; }
+  .grid { display: grid; gap: 28px; }
+  .c2 { grid-template-columns: repeat(2, 1fr); } .c3 { grid-template-columns: repeat(3, 1fr); } .c4 { grid-template-columns: repeat(4, 1fr); }
+  .card { border-radius: 22px; padding: 32px 36px; position: relative; }
+  .dark .card { background: #141416; border: 2px solid #2A2A2F; }
+  .light .card { background: #FFFFFF; border: 2px solid #DCDCD6; box-shadow: 0 10px 30px rgba(15,15,15,0.06); }
+  .dark .card.hi { border-color: var(--blue); } .light .card.hi { border-color: var(--blue-deep); }
+  .light .card.ink { background: #0F0F0F; border-color: #0F0F0F; color: #EDEDED; }
+  .card h3 { font-size: 42px; line-height: 1.15; font-weight: 650; letter-spacing: -0.02em; }
+  .card p { font-size: 32px; line-height: 1.35; margin-top: 14px; }
+  .dark .card p, .light .card.ink p { color: #C9C9CF; } .light .card p { color: #3F3F46; }
+  .card .icb + h3 { margin-top: 22px; }
+  .ic { display: inline-block; width: 52px; height: 52px; flex: none; background-color: var(--blue); -webkit-mask: var(--i) center / contain no-repeat; mask: var(--i) center / contain no-repeat; vertical-align: middle; }
+  .light .ic { background-color: var(--blue-deep); }
+  .icb { width: 92px; height: 92px; border-radius: 22px; display: inline-flex; align-items: center; justify-content: center; flex: none; background: rgba(98,152,182,0.14); }
+  .icb .ic { width: 52px; height: 52px; }
+  .label { font-family: var(--mono); font-size: 22px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .light .label { color: var(--muted-dark); }
+  .chip { display: inline-flex; align-items: center; gap: 12px; height: 54px; padding: 0 24px; border-radius: 999px; font-family: var(--mono); font-size: 24px; font-weight: 500; white-space: nowrap; }
+  .dark .chip { border: 2px solid #2A2A2F; color: #EDEDED; background: #141416; }
+  .light .chip { border: 2px solid #DCDCD6; color: #0F0F0F; background: #FFFFFF; }
+  .chip.on { background: #4A7A96 !important; border-color: #4A7A96 !important; color: #FFFFFF !important; }
+  .chip .ic { width: 28px; height: 28px; }
+  .chip.on .ic { background-color: #FFFFFF; }
+  .chips { display: flex; flex-wrap: wrap; gap: 14px; }
+  .arr { width: 84px; height: 28px; flex: none; fill: none; stroke: var(--muted); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+  .arrd { width: 28px; height: 64px; flex: none; fill: none; stroke: var(--muted); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+  .light .arr, .light .arrd { stroke: #9A9AA2; }
+  .flow { display: flex; align-items: stretch; gap: 18px; }
+  .flow > .arr, .flow > span { align-self: center; display: flex; }
+  .grow { flex: 1; min-height: 0; }
+  .chips.lg .chip { height: 76px; padding: 0 32px; font-size: 30px; gap: 16px; }
+  .chips.lg .chip .ic { width: 36px; height: 36px; }
+  .split { display: grid; grid-template-columns: 1fr 760px; gap: 80px; flex: 1; min-height: 0; }
+  .agenda { counter-reset: ag; list-style: none; }
+  .agenda li { counter-increment: ag; display: flex; align-items: baseline; gap: 22px; font-size: 34px; line-height: 1.3; padding: 13px 0; border-bottom: 2px solid #2A2A2F; }
+  .light .agenda li { border-color: #DCDCD6; }
+  .agenda li::before { content: counter(ag, decimal-leading-zero); font-family: var(--mono); font-size: 24px; color: var(--blue); flex: none; width: 44px; }
+  .agenda li:last-child { border-bottom: 0; }
+  .agenda.tight li { font-size: 30px; padding: 8px 0; }
+  .grow > .card { display: flex; flex-direction: column; }
+  .grow > .card > h3 { margin-top: auto !important; padding-top: 24px; }
+  .grow > .card > h3 + p { min-height: 2.7em; }
+  .term.big .tb { font-size: 36px; line-height: 1.5; padding: 34px 40px; }
+  .doc.lg .r > div { font-size: 40px; padding: 30px 34px; }
+  .doc.lg .r > div:first-child { font-size: 30px; }
+  .bul.lg li { font-size: 42px; padding: 18px 0 18px 46px; }
+  .bul.lg li::before { top: 38px; width: 16px; height: 16px; }
+  .flow .card { flex: 1; }
+  .disp { font-size: 220px; line-height: 0.9; font-weight: 700; letter-spacing: -0.05em; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .light .disp { color: var(--blue-deep); }
+  .num { font-variant-numeric: tabular-nums; }
+  .quote { font-size: 80px; line-height: 1.1; font-weight: 700; letter-spacing: -0.035em; }
+  .bul { list-style: none; }
+  .bul li { position: relative; padding: 10px 0 10px 40px; font-size: 34px; line-height: 1.3; }
+  .bul li::before { content: ""; position: absolute; left: 0; top: 28px; width: 14px; height: 14px; border-radius: 50%; background: var(--blue); }
+  .dark .bul li { color: #C9C9CF; } .light .bul li { color: #3F3F46; }
+  .bul li b { font-weight: 650; } .dark .bul li b { color: #EDEDED; } .light .bul li b { color: #0F0F0F; }
+  /* Terminal mock (typed on screen, illustrative) */
+  .term { border-radius: 20px; overflow: hidden; background: #0B0B0C; border: 2px solid #2A2A2F; color: #EDEDED; font-family: var(--mono); }
+  .term .bar { height: 50px; display: flex; align-items: center; gap: 10px; padding: 0 20px; background: #161618; border-bottom: 2px solid #2A2A2F; }
+  .term .bar i { width: 14px; height: 14px; border-radius: 50%; background: #3A3A40; }
+  .term .bar span { margin-left: 14px; font-size: 20px; color: #A1A1AA; letter-spacing: 0.04em; }
+  .term .tb { padding: 26px 32px; font-size: 28px; line-height: 1.5; }
+  .term .p { color: var(--blue); }
+  .term .o { color: #A1A1AA; }
+  /* Labelled placeholder for a real screenshot still to capture */
+  .ph { border: 3px dashed #8A8A93; border-radius: 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 30px; }
+  .dark .ph { background: rgba(255,255,255,0.02); } .light .ph { background: rgba(15,15,15,0.025); }
+  .ph .label { color: var(--blue); } .light .ph .label { color: var(--blue-deep); }
+  .ph .d { font-size: 30px; line-height: 1.35; max-width: 760px; }
+  .dark .ph .d { color: #C9C9CF; } .light .ph .d { color: #3F3F46; }
+  .foot { font-family: var(--mono); font-size: 22px; line-height: 1.45; letter-spacing: 0.01em; }
+  .dark .foot { color: #A1A1AA; } .light .foot { color: #5B5B63; }
+  .card.sm { padding: 28px 30px; }
+  .card.sm h3 { font-size: 35px; }
+  .card.sm p { font-size: 29px; }
+  .card .k { font-family: var(--mono); font-size: 22px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .light .card .k { color: var(--muted-dark); } .card.hi .k { color: var(--blue); } .light .card.hi .k { color: var(--blue-deep); }
+  /* Two-column comparison (vs) */
+  .vs { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; }
+  .vs .hd { font-family: var(--mono); font-size: 24px; letter-spacing: 0.12em; text-transform: uppercase; padding: 0 0 18px 4px; color: var(--muted); }
+  .vs .hd.a { color: var(--blue); } .light .vs .hd.a { color: var(--blue-deep); }
+  .vs .r { display: contents; }
+  .vs .r > div { font-size: 40px; line-height: 1.25; padding: 30px 34px; margin-bottom: 16px; border-radius: 18px; display: flex; align-items: center; gap: 20px; }
+  .dark .vs .r > div:first-child { background: #141416; color: #A1A1AA; border: 2px solid #2A2A2F; }
+  .dark .vs .r > div:last-child { background: #141416; color: #EDEDED; border: 2px solid var(--blue); }
+  .light .vs .r > div:first-child { background: #FFFFFF; color: #5B5B63; border: 2px solid #DCDCD6; }
+  .light .vs .r > div:last-child { background: #FFFFFF; color: #0F0F0F; border: 2px solid var(--blue-deep); }
+  .vs .r > div .ic { width: 36px; height: 36px; }
+  .vs .r > div:first-child .ic { background-color: #6B6B73; }
+  /* Range / value bars */
+  .bars { display: flex; flex-direction: column; gap: 12px; }
+  .bar { display: grid; grid-template-columns: 380px 1fr; align-items: center; gap: 24px; height: 70px; }
+  .bar .n { font-size: 32px; font-weight: 600; letter-spacing: -0.01em; }
+  .bar .t { position: relative; height: 70px; }
+  .bar .f { position: absolute; top: 6px; bottom: 6px; border-radius: 12px; background: #5B5B63; display: flex; align-items: center; justify-content: flex-end; padding: 0 18px; }
+  .light .bar .f { background: #A1A1AA; }
+  .bar .f.hi { background: #4A7A96; }
+  .bar .f.lo { background: #2A2A2F; } .light .bar .f.lo { background: #DCDCD6; }
+  .bar .v { font-family: var(--mono); font-size: 24px; color: #FFFFFF; white-space: nowrap; }
+  .light .bar .f.lo .v, .bar .f.lo .v { color: #A1A1AA; }
+  .light .bar .f.lo .v { color: #5B5B63; }
+  .bar .v.out { position: absolute; left: calc(100% + 16px); color: var(--muted); }
+  .axis { display: grid; grid-template-columns: 380px 1fr; gap: 24px; margin-top: 10px; }
+  .axis .line { border-top: 2px solid #3A3A40; padding-top: 10px; display: flex; justify-content: space-between; }
+  .light .axis .line { border-color: #C9C9CF; }
+  /* Ladder (rising steps) */
+  .ladder { display: flex; align-items: flex-end; gap: 28px; height: 100%; }
+  .ladder > div { flex: 1; border-radius: 18px 18px 0 0; padding: 26px 28px; display: flex; flex-direction: column; justify-content: flex-start; }
+  .dark .ladder > div { background: #1B1B1E; border: 2px solid #2A2A2F; border-bottom: 0; }
+  .ladder > div.hi { background: #4A7A96 !important; border-color: #4A7A96 !important; }
+  .ladder .lv { font-size: 72px; font-weight: 700; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; line-height: 1; }
+  .ladder .ll { font-family: var(--mono); font-size: 22px; letter-spacing: 0.1em; text-transform: uppercase; color: #A1A1AA; margin-bottom: 14px; }
+  .ladder .hi .ll { color: #FFFFFF; }
+  .ladder .ls { font-size: 26px; color: #C9C9CF; margin-top: 12px; line-height: 1.3; }
+  .ladder .hi .ls { color: #FFFFFF; }
+  .c5 { grid-template-columns: repeat(5, 1fr); gap: 22px; }
+  .flip { transform: scaleX(-1); } .up { transform: rotate(180deg); }
+  .alab { font-family: var(--mono); font-size: 22px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .light .alab { color: var(--muted-dark); }
+  /* Table mock */
+  .tbl { width: 100%; border-collapse: separate; border-spacing: 0; }
+  .tbl th { font-family: var(--mono); font-size: 22px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; text-align: left; padding: 0 22px 16px; color: var(--muted-dark); }
+  .dark .tbl th { color: var(--muted); }
+  .tbl td { font-size: 32px; padding: 36px 24px; white-space: nowrap; }
+  .light .tbl td { background: #FFFFFF; border-top: 2px solid #DCDCD6; border-bottom: 2px solid #DCDCD6; }
+  .dark .tbl td { background: #141416; border-top: 2px solid #2A2A2F; border-bottom: 2px solid #2A2A2F; }
+  .tbl td:first-child { border-left: 2px solid #DCDCD6; border-radius: 16px 0 0 16px; font-weight: 600; }
+  .dark .tbl td:first-child { border-left-color: #2A2A2F; }
+  .tbl td:last-child { border-right: 2px solid #DCDCD6; border-radius: 0 16px 16px 0; }
+  .dark .tbl td:last-child { border-right-color: #2A2A2F; }
+  /* Chat bubbles + tool chips */
+  .chat { display: flex; flex-direction: column; gap: 14px; }
+  .msg { max-width: 1100px; font-size: 34px; line-height: 1.3; padding: 20px 30px; border-radius: 26px; }
+  .msg .who { display: inline-block; font-family: var(--mono); font-size: 20px; letter-spacing: 0.1em; text-transform: uppercase; margin-right: 16px; opacity: 0.75; vertical-align: 3px; }
+  .msg.in { align-self: flex-start; border-bottom-left-radius: 8px; }
+  .light .msg.in { background: #FFFFFF; border: 2px solid #DCDCD6; color: #0F0F0F; }
+  .dark .msg.in { background: #1B1B1E; border: 2px solid #2A2A2F; color: #EDEDED; }
+  .msg.out { align-self: flex-end; background: #436F89; color: #FFFFFF; border-bottom-right-radius: 8px; }
+  .tool { align-self: center; font-family: var(--mono); font-size: 24px; padding: 12px 22px; border-radius: 12px; border: 2px dashed var(--blue); color: var(--blue); }
+  .light .tool { color: var(--blue-deep); border-color: var(--blue-deep); }
+  /* Phone mock (incoming-call demo) */
+  .phone { width: 360px; height: 640px; border-radius: 58px; background: #0F0F0F; border: 10px solid #26262A; box-shadow: 0 30px 60px rgba(15,15,15,0.25); display: flex; flex-direction: column; align-items: center; padding: 70px 26px 44px; color: #EDEDED; text-align: center; }
+  .phone .pl { font-family: var(--mono); font-size: 22px; letter-spacing: 0.1em; text-transform: uppercase; color: #A1A1AA; }
+  .phone .pn { font-size: 46px; font-weight: 700; letter-spacing: -0.02em; margin-top: 20px; line-height: 1.1; }
+  .phone .ps { font-size: 26px; color: #A1A1AA; margin-top: 12px; }
+  .phone .pb { margin-top: auto; display: flex; gap: 60px; }
+  .phone .pb div { display: flex; flex-direction: column; align-items: center; gap: 12px; font-size: 22px; color: #C9C9CF; }
+  .phone .pb i { width: 96px; height: 96px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #3A3A40; }
+  .phone .pb .acc i { background: #436F89; }
+  .phone .pb .ic { width: 44px; height: 44px; background-color: #FFFFFF; }
+  /* Slider (temperature) */
+  .slider { position: relative; height: 22px; border-radius: 999px; background: #2A2A2F; margin: 60px 0 18px; }
+  .slider .zone { position: absolute; top: 0; bottom: 0; }
+  .slider .knob { position: absolute; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%; background: #FFFFFF; border: 8px solid #4A7A96; }
+  .zones { display: grid; grid-template-columns: 30fr 20fr 20fr 30fr; }
+  .zones > div { padding: 10px 14px 0; border-left: 2px solid #3A3A40; }
+  .zones h3 { font-size: 36px; font-weight: 650; } .zones p { font-family: var(--mono); font-size: 22px; color: var(--muted); margin-top: 6px; }
+  /* Stacked bar */
+  .stack { display: flex; height: 96px; border-radius: 18px; overflow: hidden; gap: 4px; }
+  .stack > div { display: flex; align-items: center; justify-content: center; gap: 14px; font-size: 30px; font-weight: 600; color: #FFFFFF; background: #3A3A40; }
+  .stack > div .ic { background-color: #FFFFFF; width: 34px; height: 34px; }
+  .stack > div.hi { background: #436F89; }
+  /* Doc rows (prompt sections) */
+  .doc { display: grid; grid-template-columns: 480px 1fr; row-gap: 12px; }
+  .doc .r { display: contents; }
+  .doc .r > div { padding: 18px 26px; font-size: 32px; display: flex; align-items: center; }
+  .light .doc .r > div { background: #FFFFFF; border-top: 2px solid #DCDCD6; border-bottom: 2px solid #DCDCD6; }
+  .dark .doc .r > div { background: #141416; border-top: 2px solid #2A2A2F; border-bottom: 2px solid #2A2A2F; }
+  .doc .r > div:first-child { font-family: var(--mono); font-size: 28px; color: var(--blue); border-radius: 16px 0 0 16px; border-left: 2px solid #DCDCD6; }
+  .light .doc .r > div:first-child { color: var(--blue-deep); }
+  .dark .doc .r > div:first-child { border-left-color: #2A2A2F; }
+  .doc .r > div:last-child { border-radius: 0 16px 16px 0; border-right: 2px solid #DCDCD6; }
+  .dark .doc .r > div:last-child { border-right-color: #2A2A2F; }
+  .light .doc .r > div:last-child { color: #3F3F46; } .dark .doc .r > div:last-child { color: #C9C9CF; }
+  /* Field form mock */
+  .fld { margin-bottom: 18px; }
+  .fld .label { margin-bottom: 8px; display: block; }
+  .fld .val { font-size: 30px; padding: 16px 22px; border-radius: 14px; background: #0B0B0C; border: 2px solid #2A2A2F; color: #EDEDED; }
+  .fld .val.mono { font-family: var(--mono); font-size: 27px; }
+  /* Third-party logos sit on a white plate so their own colours always read */
+  .logo { display: inline-flex; align-items: center; justify-content: center; gap: 12px; height: 76px; padding: 0 22px; border-radius: 18px; background: #FFFFFF; flex: none; }
+  .light .logo { border: 2px solid #DCDCD6; }
+  .logo img { height: 40px; width: auto; display: block; }
+  .logo.sm { height: 58px; padding: 0 16px; border-radius: 14px; } .logo.sm img { height: 30px; }
+  .logo span { font-size: 28px; font-weight: 650; color: #0F0F0F; letter-spacing: -0.01em; }
+  .logos { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+  /* Real screenshot in a browser frame */
+  .shot { border-radius: 18px; overflow: hidden; background: #FFFFFF; box-shadow: 0 18px 50px rgba(0,0,0,0.25); }
+  .dark .shot { border: 2px solid #2A2A2F; } .light .shot { border: 2px solid #DCDCD6; }
+  .shot .url { height: 46px; display: flex; align-items: center; gap: 10px; padding: 0 18px; background: #EDEDED; border-bottom: 2px solid #DCDCD6; }
+  .shot .url i { width: 13px; height: 13px; border-radius: 50%; background: #C9C9CF; }
+  .shot .url span { margin-left: 12px; font-family: var(--mono); font-size: 20px; color: #3F3F46; background: #FFFFFF; border-radius: 999px; padding: 4px 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .shot img.cap { display: block; width: 100%; height: auto; }
+  .shot.dk .url { background: #1B1B1E; border-bottom-color: #2A2A2F; } .shot.dk .url span { background: #0F0F0F; color: #C9C9CF; }
+  .term pre { font-family: var(--mono); white-space: pre; margin: 0; }
+  /* Click-builds: [data-b="N"] appears on the Nth Next press */
+  [data-b] { opacity: 0; transform: translateY(26px); transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.75s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  [data-b].on { opacity: 1; transform: none; }
+  [data-b].pop { transform: scale(0.92); }
+  [data-b].pop.on { transform: none; }
+  [data-b].ghost.on { opacity: 0.3; }
+  .slide.active .page > :not([data-b]) { animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  .slide.active .page > :nth-child(2) { animation-delay: 0.08s; }
+  .slide.active .page > :nth-child(3) { animation-delay: 0.16s; }
+  .slide.active .page > :nth-child(n+4) { animation-delay: 0.24s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+  /* Money count-up: <span class="cu" style="--k:15" data-tail=",000">$15,000</span> rolls $0 to $15,000 when its slide
+     (or its click-build) shows. The real text stays in the DOM; with motion off it is all that shows. */
+  @property --k { syntax: '<integer>'; initial-value: 0; inherits: true; }
+  .cu { position: relative; display: inline-block; font-variant-numeric: tabular-nums; }
+  .cu::before { content: '$' counter(k) attr(data-tail); counter-reset: k var(--k); position: absolute; left: 0; top: 0; opacity: 0; white-space: nowrap; -webkit-text-fill-color: currentcolor; }
+  .slide.active .cu:not([data-b] .cu), .slide.active [data-b].on .cu { animation: cuHide 1.5s steps(1, end) 0.25s both; }
+  .slide.active .cu:not([data-b] .cu)::before, .slide.active [data-b].on .cu::before { animation: cuNum 1.5s cubic-bezier(0.15, 0.75, 0.25, 1) 0.25s both, cuShow 1.5s steps(1, end) 0.25s both; }
+  @keyframes cuHide { from { -webkit-text-fill-color: transparent; } }
+  @keyframes cuShow { from { opacity: 1; } }
+  @keyframes cuNum { from { --k: 0; } }
+  /* Kinetic type: .kin slams in (blur + scale) when its click-build shows, or with the slide when not in a build */
+  .kin { display: inline-block; }
+  .slide.active .kin:not([data-b] .kin), .slide.active [data-b].on .kin { animation: kin 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s both; }
+  @keyframes kin { from { opacity: 0; transform: scale(1.25); filter: blur(10px); } }
+  .mega { display: block; font-size: 300px; line-height: 0.86; letter-spacing: -0.06em; font-weight: 700; margin-bottom: 18px; }
+  .big-line { font-size: 84px; font-weight: 700; letter-spacing: -0.04em; line-height: 1.05; }
+  .money { font-size: 104px; font-weight: 700; letter-spacing: -0.05em; line-height: 1; }
+  .pp { border-radius: 50%; display: block; flex: none; }
+  html.nomotion *, html.nomotion *::before, html.nomotion *::after { animation: none !important; transition: none !important; }
+
+  /* Presenter window (?presenter=1, opened with S): never on the recorded screen */
+  #pv { display: none; }
+  body.pv #stage { position: fixed; left: 24px; top: 24px; right: auto; bottom: auto; width: 62vw; height: calc(62vw * 0.5625); border: 2px solid #2A2A2F; border-radius: 10px; overflow: hidden; }
+  body.pv #pv { display: grid; position: fixed; left: calc(62vw + 48px); right: 24px; top: 24px; bottom: 24px; grid-template-rows: auto auto 1fr auto; gap: 18px; color: #EDEDED; font-family: var(--font); }
+  body.pv #pv .pv-h { font-family: var(--mono); font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); }
+  body.pv #pv .pv-t { font-family: var(--mono); font-size: 44px; font-variant-numeric: tabular-nums; }
+  body.pv #pv ul { list-style: none; overflow: auto; }
+  body.pv #pv li { font-size: 26px; line-height: 1.4; padding: 8px 0 8px 26px; position: relative; color: #E4E4E7; }
+  body.pv #pv li::before { content: ""; position: absolute; left: 2px; top: 22px; width: 10px; height: 10px; border-radius: 50%; background: var(--blue); }
+  body.pv #pv .pv-next { font-size: 20px; color: #A1A1AA; border-top: 2px solid #2A2A2F; padding-top: 14px; }
+  body.pv #pv .pv-next b { color: #EDEDED; font-weight: 600; }
+  body.pv #pvkeys { position: fixed; left: 24px; top: calc(62vw * 0.5625 + 44px); font-family: var(--mono); font-size: 15px; color: #8A8A93; line-height: 1.7; }
+  #pvkeys { display: none; } body.pv #pvkeys { display: block; }
+  body.pv #notes, body.pv #pp { display: none !important; }
+  #notes ul { list-style: none; } #notes li { padding: 2px 0 2px 22px; position: relative; } #notes li::before { content: ""; position: absolute; left: 2px; top: 14px; width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+
+  /* Chrome: drawn by the shell on every slide, above the video. Video renders must not bake these in. */
+  .chrome { position: absolute; z-index: 6; pointer-events: none; }
+  .source { left: 160px; bottom: 64px; max-width: 1060px; font-family: var(--mono); font-size: 22px; line-height: 1.4; letter-spacing: 0.01em; color: #8A8A93; }
+  .light .source { color: #6B6B73; }
+  .brandmark { right: 160px; bottom: 60px; height: 34px; display: flex; align-items: center; }
+  .brandmark img { height: 34px; width: auto; display: block; }
+  .light .brandmark img { height: 34px; }
+  .brandmark .wm { margin-left: 10px; font-size: 31px; font-weight: 600; letter-spacing: -0.025em; line-height: 1; color: var(--text-dark); }
+  .apply-tag { right: 400px; bottom: 58px; display: flex; align-items: center; gap: 14px; height: 38px; padding: 0 20px 0 16px; border-radius: 999px; font-family: var(--mono); font-size: 21px; font-weight: 500; letter-spacing: 0.02em; }
+  .dark .apply-tag { color: var(--text); background: rgba(98,152,182,0.12); border: 1px solid rgba(98,152,182,0.45); }
+  .light .apply-tag { color: var(--text-dark); background: rgba(74,122,150,0.08); border: 1px solid rgba(74,122,150,0.45); }
+  .apply-tag i { width: 10px; height: 10px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 5px rgba(98,152,182,0.2); }
+
+  /* Per-slide video over the static copy */
+  .sv { position: absolute; inset: 0; width: 1920px; height: 1080px; object-fit: cover; z-index: 5; background: transparent; }
+
+  /* LIVE CALL slide: real iframe in a device frame, no video over it */
+  .live .live-copy { position: absolute; left: 160px; top: 0; height: 940px; width: 900px; display: flex; flex-direction: column; justify-content: center; }
+  .live .live-copy h2 { font-size: 104px; }
+  .live .live-copy .lede { font-size: 44px; }
+  .live-pill { display: inline-flex; align-items: center; gap: 14px; }
+  .live-pill i { width: 14px; height: 14px; border-radius: 50%; background: var(--blue); animation: livepulse 2.4s ease-in-out infinite; }
+  @keyframes livepulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(98,152,182,0.55); } 50% { box-shadow: 0 0 0 12px rgba(98,152,182,0); } }
+  /* The demo page draws its own phone (embed=true, transparent background), so the shell adds no frame:
+     the iframe renders at the demo's native 480x780 and is scaled 1.125x to 540x878 on the stage. */
+  .live .glow { position: absolute; right: 30px; top: 40px; width: 1000px; height: 1000px; background: radial-gradient(closest-side, rgba(98,152,182,0.20), rgba(98,152,182,0) 72%); pointer-events: none; }
+  .device { position: absolute; right: 260px; top: 88px; width: 540px; height: 878px; }
+  .device::after { content: ""; position: absolute; left: 70px; right: 70px; bottom: -26px; height: 60px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,0.75), rgba(0,0,0,0)); z-index: 0; pointer-events: none; }
+  .screen { position: relative; width: 540px; height: 878px; z-index: 1; }
+  .screen iframe { position: absolute; left: 0; top: 0; width: 480px; height: 780px; border: 0; z-index: 2; background: transparent; color-scheme: normal; transform: scale(1.125); transform-origin: 0 0; }
+  .screen .idle, .screen .live-poster, .screen .live-rec { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 64px; }
+  .screen .idle { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; color: var(--muted); font-family: var(--mono); font-size: 20px; letter-spacing: 0.08em; text-transform: uppercase; z-index: 1; }
+  .screen .idle img { width: 70px; opacity: 0.9; }
+  .live.loaded .screen .idle { display: none; }
+  .screen .live-poster { object-fit: contain; z-index: 1; display: none; }
+  .screen .live-rec { object-fit: contain; z-index: 3; display: none; }
+  .live.rec .live-rec { display: block; }
+  .live.rec iframe { display: none; }
+  .hot { position: absolute; z-index: 7; right: 176px; width: 64px; height: 64px; border-radius: 50%; border: 1px solid rgba(98,152,182,0.5); background: rgba(20,20,22,0.7); color: var(--text); font: 600 26px var(--font); cursor: pointer; opacity: 0.35; transition: opacity .2s; }
+  .hot:hover, .hot:focus-visible { opacity: 1; }
+  .hot-back { top: 432px; }
+  .hot-next { top: 516px; }
+
+  #snd { position: fixed; right: 24px; bottom: 82px; z-index: 12; display: none; background: rgba(15,15,15,0.85); color: var(--text); border: 1px solid var(--blue); border-radius: 999px; padding: 12px 20px; font: 600 16px var(--font); cursor: pointer; }
+  #snd.on { display: block; }
+  #pp { position: fixed; right: 22px; bottom: 22px; z-index: 12; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(98,152,182,0.7); background: rgba(15,15,15,0.55); color: var(--text); font: 600 18px var(--font); cursor: pointer; opacity: 0.35; transition: opacity .2s; display: none; align-items: center; justify-content: center; padding: 0; }
+  #pp:hover, #pp.paused { opacity: 1; }
+  #pp.on { display: flex; }
+
+  /* Overlays: notes (N), counter */
+  #notes { position: fixed; left: 0; right: 0; bottom: 0; max-height: 42vh; overflow: auto; background: rgba(20,20,22,0.97); color: #E4E4E7; font-size: 22px; line-height: 1.5; padding: 26px 40px 30px; border-top: 2px solid var(--blue); display: none; z-index: 10; }
+  #notes.on { display: block; }
+  #notes .nh { font-family: var(--mono); font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); margin-bottom: 10px; }
+  #count { display: none; }
+  .notes { display: none; }
+
+  /* Print: one slide per 1920x1080 page */
+  @page { size: 1920px 1080px; margin: 0; }
+  @media print {
+    html, body { height: auto; overflow: visible; background: none; }
+    #stage { position: static; display: block; }
+    #deck { transform: none !important; width: 1920px; height: auto; }
+    .slide { display: block !important; position: relative; page-break-after: always; break-after: page; }
+    .slide:last-child { page-break-after: auto; break-after: auto; }
+    #notes, #count, #pp, #snd, .hot, .screen iframe, .screen .live-rec, #pv, #pvkeys { display: none !important; }
+    [data-b] { opacity: 1 !important; transform: none !important; }
+    [data-b].ghost { opacity: 0.3 !important; }
+    .page > * { animation: none !important; }
+    .screen .live-poster { display: block; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div id="stage" tabindex="-1"><div id="deck">
+
+<!-- SLIDES:BEGIN generated by tools/wire.py from slides.json. Edit slides.json, then run: python3 tools/wire.py -->
+
+<section class="slide dark" id="s-title" data-id="title" data-type="page" data-n="1">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Support team &middot; video 2</div>
+    <h2 class="ttl xl"><span class='mega blue'><span class='cu' style='--k:46' data-tail=',000'>$46,000</span></span><span>Behind one 6-digit code.</span></h2>
+    <div class='sub' data-b='1' style='margin-top:30px'>Verify callers like a bank.</div><div class='row' data-b='2' style='gap:22px;margin-top:56px;align-items:center'><span class='kin' style='font-size:56px;font-weight:650;letter-spacing:-0.02em'>Then <span class='blue'>open the gate.</span></span></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Video 2: the security video. The lock on the whole $15,000 build.
+Caller ID gets you a name, not proof. A code to what's on file gets you proof.
+Ridgeline's $46,000 in open invoices, their rentals, their tickets: none of it comes out until the code checks out.
+Source: Rentals table, INV-7001 $40,800 + INV-7006 $5,200 open.</div>
+</section>
+
+<section class="slide light" id="s-stakes" data-id="stakes" data-type="page" data-n="2">
+  <div class="page" data-mbox="copy">
+    <div class="eb">What the code protects</div>
+    <h2 class="ttl">Every account answer is money.</h2>
+    <div class='grid c3' style='margin-top:64px;gap:26px'><div class='card hi' data-b='1' style='padding:52px 36px'><div class='row' style='gap:18px'><span class='icb'><i class='ic' style='--i:url(assets/deck/icons/truck.svg)'></i></span><div class='k' style='margin:0'>On rent</div></div><div class='num blue money' style='margin-top:56px'><span class='cu' style='--k:140' data-tail=',400'>$140,400</span></div><p style='font-size:38px;margin-top:22px'>A month, all accounts.</p></div><div class='card' data-b='2' style='padding:52px 36px'><div class='row' style='gap:18px'><span class='icb'><i class='ic' style='--i:url(assets/deck/icons/receipt.svg)'></i></span><div class='k' style='margin:0'>Open invoices</div></div><div class='num blue money' style='margin-top:56px'><span class='cu' style='--k:46' data-tail=',000'>$46,000</span></div><p style='font-size:38px;margin-top:22px'>One customer.</p></div><div class='card' data-b='3' style='padding:52px 36px'><div class='row' style='gap:18px'><span class='icb'><i class='ic' style='--i:url(assets/icons/shield-check.svg)'></i></span><div class='k' style='margin:0'>One haul truck</div></div><div class='num blue money' style='margin-top:56px'><span class='cu' style='--k:40' data-tail=',800'>$40,800</span></div><p style='font-size:38px;margin-top:22px'>A month. Gated.</p></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Here's what sits behind the gate.
+$140,400 a month of rentals on file. Balances, dates, sites.
+$46,000 in open invoices for one customer.
+That's why a sweet-talker can't get past it: n8n decides, not the AI.
+Sources: Fleet monthly rates of the five units on rent; Rentals invoices INV-7001 + INV-7006; the 777G at $40,800 a month.</div>
+</section>
+
+<section class="slide dark" id="s-what-we-build" data-id="what-we-build" data-type="page" data-n="3">
+  <div class="page" data-mbox="copy">
+    <div class="eb">What we're building</div>
+    <h2 class="ttl">The agent asks. n8n decides.</h2>
+    <div class='fill'><div class='flow' style='gap:16px'><div class='card sm' data-b='1'><span class="icb"><i class="ic" style="--i:url(assets/icons/robot.svg)"></i></span><h3>Any desk</h3></div><span data-b='1'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><div class='card sm' data-b='2'><span class="icb"><i class="ic" style="--i:url(assets/icons/plug.svg)"></i></span><h3>Two functions</h3><p style='font-family:var(--mono);font-size:26px'>send_verification_code<br>verify_code</p></div><span data-b='2'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><div class='card sm hi' data-b='3'><span class='logo sm'><img src='assets/deck/logos/n8n-wordmark.svg' alt='n8n'></span><h3 style='margin-top:22px'>Verify Caller</h3><p style='font-family:var(--mono);font-size:26px'>send_code<br>check_code</p></div><span data-b='4'><svg class="arr" viewBox="0 0 84 28" aria-hidden="true"><path d="M2 14H76M64 3l12 11-12 11"/></svg></span><div style='display:flex;flex-direction:column;gap:16px;flex:1' data-b='4'><div class='card sm'><div class='row' style='gap:14px'><i class='ic' style='--i:url(assets/icons/envelope-simple.svg)'></i><h3>Email on file</h3></div></div><div class='card sm'><div class='row' style='gap:14px'><i class='ic' style='--i:url(assets/icons/table.svg)'></i><h3>Verifications</h3></div></div></div></div><div data-b='5' style='margin-top:40px'><span class='kin big-line' style='font-size:56px'>The agent only hears <span class='blue'>yes or no.</span></span></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Any desk can start it. Usually Joanne, she answers first.
+Two custom functions: one sends a code, one checks it.
+Both land in one n8n workflow, Verify Caller.
+The code goes to the email on file. A scrambled copy goes in Verifications.
+The agent only learns where it went, and later, yes or no.
+Any desk: Joanne, Jim Bob or Miss Hattie Mae.
+Source: Workflow "Granite Peak - Verify Caller": one webhook behind a shared-secret header, two actions.</div>
+</section>
+
+<section class="slide light" id="s-the-workflow" data-id="the-workflow" data-type="page" data-n="4">
+  <div class="page" data-mbox="copy">
+    <div class="eb">The workflow &middot; Granite Peak - Verify Caller</div>
+    <h2 class="ttl">Two paths. send_code and check_code.</h2>
+    <div class='grid c2' style='margin-top:40px;gap:32px'><div class='card hi' data-b='1'><div class='k' style='font-family:var(--mono)'>send_code</div><ul class='bul' style='margin-top:8px'><li>Makes a 6-digit code</li><li>Stores only a hash</li><li>Emails what's on file</li></ul></div><div class='card' data-b='2'><div class='k' style='font-family:var(--mono)'>check_code</div><ul class='bul' style='margin-top:8px'><li>Hashes what they read</li><li>Marks the call verified</li><li>3 wrong: locked</li></ul></div></div><div data-b='3' style='margin-top:44px'><span class='kin big-line' style='font-size:56px'>Only your agents <span class='blue'>get in.</span></span></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Open it in n8n and you'll see two paths.
+send_code: find them, make a code, keep a scramble, send it.
+check_code: scramble what they read, compare, count the try.
+And right at the start, a secret header check, so nobody else can call it.
+send_code finds the customer on file, stores the hash for 10 minutes, and replies with the masked address, never the code.
+check_code compares, counts the try, and replies verified, or tries left.
+First node: a secret header check (X-Support-Key).
+Source: From the checklist: open Granite Peak - Verify Caller in n8n and find the two paths and the secret header check (X-Support-Key).</div>
+</section>
+
+<section class="slide dark" id="s-rules" data-id="rules" data-type="page" data-n="5">
+  <div class="page" data-mbox="copy">
+    <div class="eb">The rules &middot; in n8n, not the prompt</div>
+    <h2 class="ttl">Nothing to talk your way around.</h2>
+    <div class='fill'><div class='grid c3' style='gap:24px'><div class='card hi' data-b='1'><div class='k'>Destination</div><h3>Only what's on file</h3></div><div class='card' data-b='1'><div class='k'>The agent</div><h3>Never sees the code</h3></div><div class='card' data-b='1'><div class='k'>Storage</div><h3>Only a hash</h3></div><div class='card' data-b='2'><div class='k'>Guessing</div><h3>3 tries per call</h3></div><div class='card' data-b='2'><div class='k'>Scope</div><h3>This call only</h3></div><div class='card' data-b='2'><div class='k'>Logs</div><h3>No copies</h3></div></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Every rule lives in n8n. The prompt can't change any of them.
+The scramble uses a secret only the workflow knows, plus the code, plus the call.
+Three tries, and asking for a new code doesn't buy more.
+And n8n doesn't keep run history for this one, so codes don't sit in logs.
+Detail: never anything the caller says; the agent gets d***@leadlock.ai back; scrambled with a secret and the call, 10 minutes; a resend never adds tries; verified for 60 minutes on this call; run history is off.
+Source: Hash: sha256 of a secret (the pepper, kept only inside the workflow), the code and the call. Execution saving off on Verify Caller.</div>
+</section>
+
+<section class="slide light" id="s-functions" data-id="functions" data-type="page" data-n="6">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Two custom functions</div>
+    <h2 class="ttl">What goes in. What comes back.</h2>
+    <div class='grid c2' style='margin-top:36px;gap:32px'><div class='term' data-b='1'><div class='bar'><i></i><i></i><i></i><span>send_verification_code</span></div><div class='tb' style='font-size:25px;line-height:1.55'><pre><span class='o'>Agent sends</span> first name, last 4,
+            email or sms
+<span class='o'>n8n replies</span>
+{ "sent": true,
+  "to": <span class='p'>"d***@leadlock.ai"</span> }</pre></div></div><div class='term' data-b='2'><div class='bar'><i></i><i></i><i></i><span>verify_code</span></div><div class='tb' style='font-size:25px;line-height:1.55'><pre><span class='o'>Caller reads</span> "481 907"
+<span class='o'>n8n replies</span>
+{ "verified": <span class='p'>true</span>,
+  "company": "Ridgeline Aggregates" }
+<span class='o'>or</span> { "verified": false,
+      "attempts_left": 2 }</pre></div></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">send_verification_code: the agent passes a first name and the last 4 of the phone. With Contact Intelligence on, the number on the call is enough.
+n8n answers with where it went. Masked.
+verify_code: the caller reads the code aloud, the agent passes it on, n8n says yes or no.
+Every desk gets both, so a handoff never means verifying twice.
+All three desks get both. Whoever's on the line can verify.
+Source: Illustrative replies. Code digits shown are made up.</div>
+</section>
+
+<section class="slide dark" id="s-the-gate" data-id="the-gate" data-type="page" data-n="7">
+  <div class="page" data-mbox="copy">
+    <div class="eb">The gate &middot; n8n decides, not the AI</div>
+    <h2 class="ttl">No verify, no account.</h2>
+    <div class='split' style='margin-top:28px;grid-template-columns:1fr 1fr;gap:40px'><div class='card hi' data-b='1'><div class='row' style='gap:16px'><i class='ic' style='--i:url(assets/deck/icons/lock-simple.svg)'></i><h3>Behind the gate</h3></div><p style='font-family:var(--mono);font-size:26px;line-height:1.5'>rental_status<br>extend_rental<br>call_off_rent<br>create_service_ticket<br>service_ticket_status<br>account_balance<br>send_payment_link</p></div><div class='card' data-b='2'><div class='row' style='gap:16px'><i class='ic' style='--i:url(assets/deck/icons/lock-simple-open.svg)'></i><h3>Open to anyone</h3></div><p style='font-family:var(--mono);font-size:26px;line-height:1.5'>fleet_availability<br>rental_quote<br>troubleshoot_machine</p></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Every account lookup asks n8n first: is this exact call verified?
+No: verify_first. The agent asks for the code.
+Prices and what's on the lot are open. Anything about your account isn't.
+Joanne can be sweet-talked. n8n can't.
+Before the code: {"error": "verify_first"}
+Nothing private in the answer
+Source: Each gated action checks the Verifications table for this call_sid in n8n before it answers.</div>
+</section>
+
+<section class="slide dark" id="s-verify-flow" data-id="verify-flow" data-type="video" data-n="8">
+  <video class="sv" src="media/verify-flow.mp4?v=1792827523" poster="media/verify-flow-poster.png?v=1792827523" data-loop="7.2" data-cues="2.6,4.0,5.4" muted playsinline preload="none"></video>
+  <div class="pad" data-mbox="copy">
+    <div class="eyebrow">How it works</div>
+    <h2>Code. Read aloud. Verified. Open.</h2>
+    <div class="tiles n4"><div>send_verification_code</div><div>Caller reads it aloud</div><div>verify_code: verified</div><div>rental_status: the gate opens</div></div>
+    <div class="lede">Joanne sends a code to the email on file, the caller reads it aloud, n8n checks it, and the gate opens for this call.</div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Caller asks about their rental. Joanne sends a code to what's on file.
+Caller reads it out loud. Why aloud? A text back goes to the text assistant, not the live call.
+n8n checks it. Verified, for this call.
+Same question as before, and now the rental comes back.
+Source: Illustrative call. Rental from the course data. Code digits blurred.</div>
+</section>
+
+<section class="slide light" id="s-before-you-start" data-id="before-you-start" data-type="page" data-n="9">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Before you start</div>
+    <h2 class="ttl">You're already on file.</h2>
+    <div class='grid c3' style='margin-top:48px;gap:24px'><div class='card ' data-b='1'><div class='row' style='gap:16px'><span class='icb'><i class='ic' style='--i:url(assets/icons/envelope-simple.svg)'></i></span><h3>n8n can send email</h3></div><p>Gmail or SMTP, in n8n</p></div><div class='card  hi' data-b='2'><div class='row' style='gap:16px'><span class='icb'><i class='ic' style='--i:url(assets/icons/identification-card.svg)'></i></span><h3>You are customer C-1001</h3></div><p>Set up in video 1</p></div><div class='card ' data-b='3'><div class='row' style='gap:16px'><span class='icb'><i class='ic' style='--i:url(assets/deck/icons/truck.svg)'></i></span><h3>You own a $40,800 truck</h3></div><p>On rent, at Ridgeline</p></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">Two things first.
+n8n needs a way to send email. A Gmail or SMTP login, in n8n.
+And you're already on file. Video 1 made you the Ridgeline customer.
+So when the code goes to what's on file, it comes to you.
+Ridgeline Aggregates owns a 777G haul truck and a CAT 374 excavator on rent, a water truck on the way, two service tickets.
+The code only ever goes to what's on file, so you're the one who gets it.
+Source: Demo customer C-1001 from the kit's customers.csv; the installer writes your name, email and MY_PHONE_NUMBER onto it in n8n only.</div>
+</section>
+
+<section class="slide dark" id="s-say-this" data-id="say-this" data-type="page" data-n="10">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Say this</div>
+    <h2 class="ttl">Install it. Then have it explained.</h2>
+    <div class='fill'><div class='term' data-b='1' style=''><div class='bar'><i></i><i></i><i></i><span>Say this &middot; Claude Code, in the Agent Kit</span></div><div class='tb' style='font-size:26px;line-height:1.55'><pre><span class='p'>&gt;</span> install the Verify Caller step
+<span class='o'>  Pre-flight: Leadlock key, n8n, email credential</span>
+<span class='o'>  Workflow Granite Peak - Verify Caller: published</span>
+<span class='o'>  Functions: send_verification_code, verify_code</span>
+<span class='o'>  Emailed one real code to d***@leadlock.ai. Read it back?</span></pre></div></div><div class='term' data-b='2' style='margin-top:26px'><div class='bar'><i></i><i></i><i></i><span>Say this &middot; Claude Code, in the Agent Kit</span></div><div class='tb' style='font-size:24px;line-height:1.55'><pre><span class='p'>&gt;</span> Walk me through the Granite Peak - Verify Caller workflow in plain English:
+  what happens on send_code, what happens on check_code, and where each
+  rule is enforced.</pre></div></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">One sentence installs the workflow and the two functions.
+Then make Claude explain it. Every rule, and where it lives.
+If you can't explain the security to a client, you can't sell it.
+Source: Illustrative run of the install-support-team skill (flag form: /install-support-team --only verify).</div>
+</section>
+
+<section class="slide light" id="s-test" data-id="test" data-type="page" data-n="11">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Test it &middot; try to break it</div>
+    <h2 class="ttl">Wrong first. Then lock it.</h2>
+    <div class='fill' style='gap:18px'><div class='card sm hi' data-b='1' style='display:grid;grid-template-columns:1fr 440px;gap:28px;align-items:center;margin-top:18px'><div><div class='k'>Read the code back, wrong first</div><p style='margin-top:4px;font-family:var(--mono);font-size:26px;line-height:1.45'>&gt; 000000</p></div><div><div class='k'>Success</div><p style='margin-top:4px;font-size:32px'>2 tries left. Then verified.</p></div></div><div class='card sm' data-b='2' style='display:grid;grid-template-columns:1fr 440px;gap:28px;align-items:center;margin-top:18px'><div><div class='k'>Lock it</div><p style='margin-top:4px;font-family:var(--mono);font-size:26px;line-height:1.45'>&gt; Send me a new verification code on a new test call, then check three wrong codes in a row and show me what comes back.</p></div><div><div class='k'>Success</div><p style='margin-top:4px;font-size:32px'>Locked. Resend refused.</p></div></div><div class='card sm' data-b='3' style='margin-top:18px'><div class='k'>The gate</div><h3>verify_first, then your rentals</h3></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">The install ends by emailing you a real code.
+Type a wrong one first. Two tries left. Then the real one. Verified.
+Then lock it on purpose: new test call, three wrong codes. Locked, and a resend is refused.
+It also checks the gate: no rentals before the code, your rentals after.
+At the end of the install, Claude emails one real code to you and asks for it.
+Wrong first: not verified, 2 tries left. Then the real code from your email: verified.
+Lock it: 2 tries left, 1 try left, then locked. A resend on that call is refused too.
+The installer also checks the gate: rental_status before the code says verify_first; after, your rentals.
+Source: From the video 2 checklist. Codes belong to one call: send and check on the same one, within 10 minutes.</div>
+</section>
+
+<section class="slide dark" id="s-gotchas" data-id="gotchas" data-type="page" data-n="12">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Gotchas</div>
+    <h2 class="ttl">Every fix is one line.</h2>
+    <div class='grid c2' style='margin-top:48px;gap:24px'><div class='card ' data-b='1'><div class='row' style='gap:16px'><span class='icb'><i class='ic' style='--i:url(assets/icons/envelope-simple.svg)'></i></span><h3>No email arrives</h3></div><p>Credential, then spam</p></div><div class='card ' data-b='1'><div class='row' style='gap:16px'><span class='icb'><i class='ic' style='--i:url(assets/icons/x-circle.svg)'></i></span><h3>Right code, still false</h3></div><p>Same call, within 10 minutes</p></div><div class='card ' data-b='2'><div class='row' style='gap:16px'><span class='icb'><i class='ic' style='--i:url(assets/deck/icons/lock-simple.svg)'></i></span><h3>Locked</h3></div><p>Start a new test call</p></div><div class='card ' data-b='2'><div class='row' style='gap:16px'><span class='icb'><i class='ic' style='--i:url(assets/icons/magnifying-glass.svg)'></i></span><h3>Nothing in Executions</h3></div><p>On purpose: history is off</p></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">No email: the n8n email login, then spam.
+Right code but false: the code belongs to one call. Same call, inside 10 minutes.
+Locked is the system working.
+And no run history is by design. Turn it on only for a test, then off again.
+Source: API key or n8n trouble: check my setup, /mcp, connect n8n (as in video 1).</div>
+</section>
+
+<section class="slide light" id="s-result" data-id="result" data-type="page" data-n="13">
+  <div class="page" data-mbox="copy">
+    <div class="eb">What you built</div>
+    <h2 class="ttl">The lock on a $15K build.</h2>
+    <div class='grid c3' style='margin-top:56px;gap:24px'><div class='card  hi' data-b='1'><div class='row' style='gap:16px'><span class='icb'><i class='ic' style='--i:url(assets/icons/flow-arrow.svg)'></i></span><h3>Verify Caller, published</h3></div></div><div class='card ' data-b='2'><div class='row' style='gap:16px'><span class='icb'><i class='ic' style='--i:url(assets/icons/plug.svg)'></i></span><h3>Two functions, every desk</h3></div></div><div class='card ' data-b='3'><div class='row' style='gap:16px'><span class='icb'><i class='ic' style='--i:url(assets/icons/shield-check.svg)'></i></span><h3>A gate on every account</h3></div></div></div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/icon-blue.png" alt=""><span class="wm">Leadlock.ai</span></div>
+  <div class="notes">The lock is built.
+A workflow, two functions, and a gate in front of every account answer.
+Everything private in this course sits behind it.</div>
+</section>
+
+<section class="slide dark" id="s-close" data-id="close" data-type="page" data-n="14">
+  <div class="page" data-mbox="copy">
+    <div class="eb">Your move</div>
+    <h2 class="ttl xl"><span class='kin'>Build it now.</span></h2>
+    <div class='grid c3' style='margin-top:56px;gap:26px'><div class='card hi' data-b='1'><span class='icb'><i class='ic' style='--i:url(assets/icons/terminal-window.svg)'></i></span><h3 style='margin-top:26px'>The free Agent Kit</h3><p class='blue' style='font-family:var(--mono);font-size:30px'>leadlock.ai/agent-kit</p></div><div class='card' data-b='2'><span class='icb'><i class='ic' style='--i:url(assets/icons/list-checks.svg)'></i></span><h3 style='margin-top:26px'>This video's checklist</h3><p>Free, inside the kit</p></div><div class='card' data-b='3'><span class='icb'><i class='ic' style='--i:url(assets/icons/users-three.svg)'></i></span><h3 style='margin-top:26px'>The community</h3><p class='blue' style='font-family:var(--mono);font-size:30px'>skool.com/leadlock-6560</p></div></div><div class='sub' data-b='4' style='margin-top:56px'>Next: Joanne's rentals desk.</div>
+  </div>
+  <div class="chrome brandmark"><img src="assets/brand/logo-white.png" alt="Leadlock"></div>
+  <div class="notes">Your move. Build it now, while it's fresh.
+Grab the free Agent Kit: leadlock.ai/agent-kit. Everything I said today is in it.
+This video's checklist, free inside the kit, with every Say-this word for word.
+Stuck, or want to show it off? Post in the Skool community: skool.com/leadlock-6560.
+Next video: Joanne, our first agent. Quotes for anyone, rentals after the code. Have a phone handy for the test call.</div>
+</section>
+
+<!-- SLIDES:END -->
+
+</div></div>
+
+<div id="notes"><div class="nh">Speaker notes · <span id="nn"></span></div><div id="nt"></div></div>
+<div id="count"></div>
+<button id="pp" type="button" title="Pause / play (P)">&#10073;&#10073;</button>
+<button id="snd" type="button">Tap for sound</button>
+<div id="pv"><div class="pv-h" id="pvh"></div><div class="pv-t" id="pvt">00:00</div><ul id="pvn"></ul><div class="pv-next" id="pvx"></div></div>
+<div id="pvkeys">Presenter view. Right / Space: next. Left: back. T: reset timer.<br>Keys here drive the deck window. Record the deck window, not this one.</div>
+
+<script>
+/* ---- Config ---------------------------------------------------------- */
+var DEMO_URL = 'https://app.leadlock.ai/d/sophia-from-leadlock-voiceaidemo-xqit66';
+var WARM_UP = 'prefetch';      // on the slide before a live call: 'prefetch' (preconnect + prefetch), 'premount' (load the iframe hidden), or 'off'
+var RECLAIM_FOCUS_MS = 700;    // after a click inside the live iframe, hand keyboard focus back to the deck after this delay (0 = never)
+/* ---------------------------------------------------------------------- */
+(function () {
+  var params = new URLSearchParams(location.search);
+  var demoOverride = params.get('demo');
+  if (demoOverride && (/^\//.test(demoOverride) || /^https:\/\//.test(demoOverride))) DEMO_URL = demoOverride;
+  function demoSrc() { return DEMO_URL + (DEMO_URL.indexOf('?') < 0 ? '?' : '&') + 'embed=true'; }
+
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var stage = document.getElementById('stage');
+  var deck = document.getElementById('deck');
+  var notes = document.getElementById('notes');
+  var snd = document.getElementById('snd');
+  var pp = document.getElementById('pp');
+  var i = 0;
+
+  /* ---- HTML click-builds: [data-b="N"] shows on the Nth Next press ---- */
+  var step = 0;
+  function stepsOf(el) {
+    if (el._steps == null) {
+      el._steps = 0;
+      Array.prototype.forEach.call(el.querySelectorAll('[data-b]'), function (b) { el._steps = Math.max(el._steps, parseInt(b.dataset.b, 10) || 0); });
+    }
+    return el._steps;
+  }
+  function setStep(k) {
+    var el = slides[i];
+    step = Math.max(0, Math.min(stepsOf(el), k));
+    Array.prototype.forEach.call(el.querySelectorAll('[data-b]'), function (b) { b.classList.toggle('on', (parseInt(b.dataset.b, 10) || 0) <= step); });
+    updateNotesHead(); post();
+  }
+  function buildNext() { if (step < stepsOf(slides[i])) { setStep(step + 1); return true; } return false; }
+  function buildBack() { if (step > 0) { setStep(step - 1); return true; } return false; }
+
+  /* ---- Presenter window (?presenter=1, S opens it): mirrors the deck over a BroadcastChannel ---- */
+  var PRESENTER = params.get('presenter') === '1';
+  var bc = ('BroadcastChannel' in window) ? new BroadcastChannel('lldeck:' + location.pathname) : null;
+  function post() { if (bc && !PRESENTER) bc.postMessage({ state: { i: i, step: step } }); }
+  if (PRESENTER) document.body.classList.add('pv');
+  var t0 = Date.now();
+  function presenterPanel() {
+    if (!PRESENTER) return;
+    var nEl = slides[i].querySelector('.notes');
+    var ul = document.getElementById('pvn'); ul.innerHTML = '';
+    (nEl ? nEl.textContent : '').split('\n').forEach(function (l) { if (l.trim()) { var li = document.createElement('li'); li.textContent = l.replace(/^[-*]\s*/, ''); ul.appendChild(li); } });
+    var steps = stepsOf(slides[i]);
+    document.getElementById('pvh').textContent = 'Slide ' + (i + 1) + ' of ' + slides.length + (steps ? ' · build ' + (step + 1) + ' of ' + (steps + 1) : '');
+    var nx = step < steps ? 'next click: build ' + (step + 2) + ' on this slide' : (slides[i + 1] ? 'next slide: ' : 'end of deck');
+    var nh = slides[i + 1] && step >= steps ? (slides[i + 1].querySelector('.ttl, h1, h2') || {}).textContent || '' : '';
+    document.getElementById('pvx').innerHTML = '';
+    var b = document.createElement('b'); b.textContent = nh;
+    document.getElementById('pvx').append(nx, b);
+  }
+  if (PRESENTER) setInterval(function () {
+    var s = Math.floor((Date.now() - t0) / 1000);
+    document.getElementById('pvt').textContent = ('0' + Math.floor(s / 60)).slice(-2) + ':' + ('0' + s % 60).slice(-2);
+  }, 500);
+
+  // play() returns a promise that rejects when a slide change pauses it first; that is expected, never an error.
+  function play(v, onBlocked) {
+    var p = v.play();
+    if (p && p.catch) p.catch(function (err) { if (onBlocked && err && err.name === 'NotAllowedError') onBlocked(); });
+  }
+  function curVid() { return slides[i].querySelector('video.sv'); }
+  function setPP() {
+    var v = curVid();
+    pp.classList.toggle('on', !!v);
+    var paused = !!(v && ((v._held && !v._cueHold) || (v._cueHold && v._loop && v.paused)));
+    pp.classList.toggle('paused', paused);
+    pp.innerHTML = paused ? '&#9654;' : '&#10073;&#10073;';
+  }
+  function togglePause() {
+    var v = curVid(); if (!v) return;
+    if (v._cueHold && v._loop) { if (v.paused) play(v); else { v._ours = true; v.pause(); } setPP(); return; }
+    if (v._held) { v._held = false; v._cueHold = false; play(v); }
+    else { v._held = true; v._ours = true; v.pause(); }
+    setPP();
+  }
+  pp.addEventListener('click', function (e) { e.stopPropagation(); togglePause(); });
+  snd.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var v = curVid(); if (!v) return;
+    v.muted = false; try { v.currentTime = 0; } catch (x) {} play(v); snd.classList.remove('on');
+  });
+  function fit() {
+    var s = PRESENTER ? stage.clientWidth / 1920 : Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    deck.style.transform = 'scale(' + s + ')';
+  }
+  function focusDeck() {
+    if (document.activeElement && document.activeElement !== document.body) { try { document.activeElement.blur(); } catch (e) {} }
+    stage.focus({ preventScroll: true });
+  }
+
+  /* ---- Click-builds: data-cues="t1,t2,..." -----------------------------
+     Entering the slide plays to t1 and holds. Each Next plays to the next cue
+     and holds; Next on the last cue plays out to the end (then loop or hold).
+     Next pressed mid-segment snaps to that segment's cue. Back steps back one build.
+     data-cue-loops="a1:b1,,a3:b3" (optional, one slot per cue): a hold with a loop keeps
+     playing a..b seamlessly instead of freezing, and the next build plays on from b. */
+  function cuesOf(v) {
+    if (!v || !v.dataset.cues) return null;
+    if (!v._cues) v._cues = v.dataset.cues.split(',').map(parseFloat).filter(function (t) { return !isNaN(t); });
+    return v._cues.length ? v._cues : null;
+  }
+  function loopOf(v, k) {
+    if (!v || !v.dataset.cueLoops) return null;
+    if (!v._loops) v._loops = v.dataset.cueLoops.split(',').map(function (x) {
+      var p = x ? x.split(':').map(parseFloat) : [];
+      return p.length === 2 && p[1] > p[0] ? p : null;
+    });
+    return v._loops[k] || null;
+  }
+  function holdAt(v, k) {
+    var c = cuesOf(v), lp = loopOf(v, k);
+    v._target = -1; v._at = k; v._cueHold = true; v._held = true; v._ours = true;
+    v._loop = lp;
+    try { v.currentTime = c[k]; } catch (e) {}
+    if (lp) { play(v); loopWatch(v, lp); } else v.pause();
+    setPP(); updateNotesHead();
+  }
+  // A living hold: wrap b -> a until the loop is released (next build, back, leaving the slide).
+  function loopWatch(v, lp) {
+    function tick() {
+      if (v._loop !== lp || !v.closest('.slide').classList.contains('active')) return;
+      if (v.currentTime >= lp[1] - 0.02 || v.currentTime < lp[0] - 0.25) { try { v.currentTime = lp[0]; } catch (e) {} }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  // Leaving a living hold: the next build starts where the loop ends.
+  function releaseLoop(v) {
+    var lp = v._loop; v._loop = null;
+    if (lp) { try { v.currentTime = lp[1]; } catch (e) {} }
+  }
+  function playTo(v, k) {
+    releaseLoop(v);
+    v._target = k; v._at = k - 1; v._held = false; v._cueHold = false;
+    play(v);
+    watchCue(v); setPP(); updateNotesHead();
+  }
+  function playOut(v) {
+    var c = cuesOf(v);
+    releaseLoop(v);
+    v._target = -1; v._at = c.length; v._held = false; v._cueHold = false;
+    play(v);
+    setPP(); updateNotesHead();
+  }
+  function watchCue(v) {
+    var c = cuesOf(v);
+    function tick() {
+      if (v._target < 0 || !v.closest('.slide').classList.contains('active')) return;
+      if (v.currentTime >= c[v._target] - 0.02 || v.ended) { holdAt(v, v._target); return; }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  // Returns true when the press was consumed by a build inside the slide.
+  function cueNext() {
+    var v = curVid(), c = cuesOf(v);
+    if (!c) return false;
+    if (v._target >= 0) { holdAt(v, v._target); return true; }
+    if (v._cueHold && v._at < c.length - 1) { playTo(v, v._at + 1); return true; }
+    if (v._cueHold && v._at === c.length - 1) { playOut(v); return true; }
+    return false;
+  }
+  function cueBack() {
+    var v = curVid(), c = cuesOf(v);
+    if (!c) return false;
+    var k = v._target >= 0 ? v._target - 1 : (v._cueHold ? v._at - 1 : c.length - 1);
+    if (k < 0) return false;
+    holdAt(v, k);
+    return true;
+  }
+  function buildLabel() {
+    var v = curVid(), c = cuesOf(v);
+    if (!c) { var n = stepsOf(slides[i]); return n ? ' · build ' + (step + 1) + ' of ' + (n + 1) : ''; }
+    var step = v._target >= 0 ? v._target + 1 : Math.min(v._at + 1, c.length + 1);
+    return ' · build ' + step + ' of ' + (c.length + 1);
+  }
+  function updateNotesHead() {
+    document.getElementById('nn').textContent = 'slide ' + (i + 1) + ' of ' + slides.length + buildLabel();
+    presenterPanel();
+  }
+
+  /* ---- Live call: mount on enter, unmount on leave ------------------- */
+  var warmed = {};
+  function warm(slide) {
+    if (WARM_UP === 'off' || warmed[slide.id]) return;
+    warmed[slide.id] = true;
+    var src = demoSrc();
+    if (WARM_UP === 'premount') { mountLive(slide, true); return; }
+    try {
+      var origin = new URL(src, location.href).origin;
+      if (origin !== location.origin) { var pc = document.createElement('link'); pc.rel = 'preconnect'; pc.href = origin; document.head.appendChild(pc); }
+    } catch (e) {}
+    var pf = document.createElement('link'); pf.rel = 'prefetch'; pf.href = src; pf.as = 'document'; document.head.appendChild(pf);
+  }
+  function mountLive(slide, hidden) {
+    var screen = slide.querySelector('.screen');
+    var f = screen.querySelector('iframe');
+    if (!f) {
+      f = document.createElement('iframe');
+      f.setAttribute('allow', 'microphone; autoplay');
+      f.setAttribute('title', 'Live Leadlock demo');
+      f.addEventListener('load', function () { if (f.getAttribute('src') !== 'about:blank') slide.classList.add('loaded'); });
+      f.src = demoSrc();
+      screen.appendChild(f);
+    }
+    f.style.visibility = hidden ? 'hidden' : 'visible';
+  }
+  function unmountLive(slide) {
+    var f = slide.querySelector('.screen iframe');
+    if (f) { try { f.src = 'about:blank'; } catch (e) {} f.remove(); }
+    slide.classList.remove('loaded');
+    var r = slide.querySelector('.live-rec');
+    if (r && !r.paused) r.pause();
+    slide.classList.remove('rec');
+    warmed[slide.id] = false;
+  }
+  function toggleRecording() {
+    var s = slides[i];
+    if (!s.classList.contains('live')) return;
+    var r = s.querySelector('.live-rec');
+    if (!r) return;
+    if (s.classList.contains('rec')) { s.classList.remove('rec'); r.pause(); mountLive(s, false); }
+    else {
+      var f = s.querySelector('.screen iframe'); if (f) { f.src = 'about:blank'; f.remove(); }
+      s.classList.add('rec'); r.currentTime = 0; r.muted = false;
+      play(r, function () { r.muted = true; play(r); });
+    }
+  }
+  // A click inside the cross-origin iframe takes keyboard focus with it. Hand it back so the clicker keeps working.
+  window.addEventListener('blur', function () {
+    if (!RECLAIM_FOCUS_MS) return;
+    setTimeout(function () {
+      var a = document.activeElement;
+      if (a && a.tagName === 'IFRAME') focusDeck();
+    }, RECLAIM_FOCUS_MS);
+  });
+
+  /* ---- Navigation ------------------------------------------------------ */
+  function show(n, opts) {
+    opts = opts || {};
+    var prev = i;
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function (el, k) { el.classList.toggle('active', k === i); });
+    var av = slides[i].querySelector('video.sv[data-audio]');
+    snd.classList.toggle('on', !!av && /iPhone|iPad|Android/.test(navigator.userAgent));
+    slides.forEach(function (el, k) {
+      if (el.classList.contains('live') && k !== i) unmountLive(el);
+      var v = el.querySelector('video.sv');
+      if (!v) return;
+      if (k === i || k === i + 1 || k === i + 2) {
+        if (v.preload !== 'auto') { v.preload = 'auto'; if (k !== i && v.networkState === 0) v.load(); }
+      }
+      v._held = false; v._cueHold = false; v._target = -1; v._loop = null;
+      if (k === i) {
+        var c = cuesOf(v);
+        v.muted = !v.dataset.audio;
+        if (c && opts.fromEnd) {
+          // Arriving backwards: show the finished build.
+          v._at = c.length;
+          try { v.currentTime = parseFloat(v.dataset.loop) || c[c.length - 1]; } catch (e) {}
+          play(v);
+        } else {
+          try { v.currentTime = 0; } catch (e) {}
+          if (c) { playTo(v, 0); }
+          else {
+            play(v, function () { v.muted = true; play(v); if (v.dataset.audio) snd.classList.add('on'); });
+          }
+        }
+      } else if (!v.paused) { v._ours = true; v.pause(); }
+    });
+    if (slides[i].classList.contains('live')) { mountLive(slides[i], false); }
+    if (slides[i + 1] && slides[i + 1].classList.contains('live')) warm(slides[i + 1]);
+    setPP();
+    var nEl = slides[i].querySelector('.notes');
+    var nt = document.getElementById('nt'); nt.innerHTML = '';
+    var ul = document.createElement('ul');
+    (nEl ? nEl.textContent : '').split('\n').forEach(function (l) { if (l.trim()) { var li = document.createElement('li'); li.textContent = l.replace(/^[-*]\s*/, ''); ul.appendChild(li); } });
+    nt.appendChild(ul);
+    setStep(opts.step != null ? opts.step : (opts.fromEnd ? stepsOf(slides[i]) : 0));
+    document.getElementById('count').textContent = (i + 1) + ' / ' + slides.length;
+    if (location.hash !== '#' + (i + 1)) history.replaceState(null, '', location.pathname + location.search + '#' + (i + 1));
+    if (prev !== i && document.activeElement && document.activeElement.tagName === 'IFRAME') focusDeck();
+  }
+  function next() {
+    if (PRESENTER && bc) { bc.postMessage({ cmd: 'next' }); return; }
+    if (!cueNext() && !buildNext()) show(i + 1);
+  }
+  function back() {
+    if (PRESENTER && bc) { bc.postMessage({ cmd: 'back' }); return; }
+    if (!cueBack() && !buildBack()) { if (i > 0) show(i - 1, { fromEnd: true }); }
+  }
+  if (bc) bc.onmessage = function (ev) {
+    var m = ev.data || {};
+    if (PRESENTER) { if (m.state) { if (m.state.i !== i) show(m.state.i, { step: m.state.step }); else setStep(m.state.step); } return; }
+    if (m.cmd === 'next') next();
+    else if (m.cmd === 'back') back();
+    else if (m.cmd === 'hello') post();
+  };
+
+  document.addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (k === 's' || k === 'S') { if (!PRESENTER) window.open(location.pathname + '?presenter=1' + location.hash, 'lldeck-presenter', 'width=1500,height=900'); return; }
+    if (PRESENTER && (k === 't' || k === 'T')) { t0 = Date.now(); return; }
+    if (k === 'ArrowRight' || k === ' ' || k === 'PageDown' || k === 'ArrowDown' || k === 'Enter') { e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'PageUp' || k === 'ArrowUp' || k === 'Backspace') { e.preventDefault(); back(); }
+    else if (k === 'Home') show(0);
+    else if (k === 'End') show(slides.length - 1);
+    else if (k === 'Escape') focusDeck();
+    else if (k === 'f' || k === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+      else document.exitFullscreen && document.exitFullscreen();
+    }
+    else if (k === 'p' || k === 'P' || k === 'k' || k === 'K') { e.preventDefault(); togglePause(); }
+    else if (k === 'n' || k === 'N') notes.classList.toggle('on');
+    else if (k === 'r' || k === 'R') toggleRecording();
+  });
+  document.addEventListener('click', function (e) {
+    if (notes.contains(e.target) || e.target.closest('.device, button')) return;
+    if (e.clientX < window.innerWidth / 3) back(); else next();
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.hot'), function (b) {
+    b.addEventListener('click', function (e) { e.stopPropagation(); if (b.classList.contains('hot-next')) next(); else back(); focusDeck(); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('video.sv'), function (v) {
+    v.addEventListener('ended', function () {
+      v.muted = true;
+      if (v._target >= 0) return;   // a cue at the very end: watchCue holds it
+      if (v.dataset.hold) return;
+      v.currentTime = parseFloat(v.dataset.loop) || 0; play(v);
+    });
+    v.addEventListener('pause', function () {
+      if (v.ended || v._ours || v._held || !v.closest('.slide').classList.contains('active')) { v._ours = false; return; }
+      v.muted = true; play(v); if (v.dataset.audio) snd.classList.add('on');
+    });
+  });
+  window.addEventListener('resize', fit);
+  window.addEventListener('hashchange', function () { var h = parseInt(location.hash.slice(1), 10); if (h && h - 1 !== i) show(h - 1); });
+  fit();
+  focusDeck();
+  // Read-only handle for tools/check.py.
+  window.__deck = {
+    count: function () { return slides.length; },
+    index: function () { return i; },
+    go: function (n) { show(n); },
+    next: next, back: back,
+    steps: function () { return stepsOf(slides[i]); },
+    step: function () { return step; },
+    setStep: setStep,
+    build: function () { var v = curVid(); return v ? { at: v._at, target: v._target, held: !!v._cueHold, loop: v._loop || null, paused: v.paused, t: v.currentTime } : null; }
+  };
+  var start = parseInt(location.hash.slice(1), 10);
+  show(start ? start - 1 : 0);
+  if (PRESENTER && bc) bc.postMessage({ cmd: 'hello' });
+})();
+</script>
+</body>
+</html>

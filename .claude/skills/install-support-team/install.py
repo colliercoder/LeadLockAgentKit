@@ -140,14 +140,17 @@ VERIFY_FNS = ["send_verification_code", "verify_code"]
 DESKS = {  # piece -> agent
     "rentals": {"title": "Joanne (Rentals)", "short": "Joanne", "prompt": "joanne.md", "voice": "eve",
                 "greeting": "Well howdy, thanks for calling {COMPANY}, this is Joanne. What can I do for you, sugar?",
+                "outbound": "Hey there, it's Joanne at {COMPANY}, giving you a ring. What can I do for you, sugar?",
                 "tag": "rental-lead",
                 "when": "The caller wants machine availability, a quote, their rental status, an extension or to call a machine off rent."},
     "maintenance": {"title": "Doug Jim Bob McGee (Maintenance)", "short": "Jim Bob", "prompt": "jimbob.md", "voice": "rex",
                     "greeting": "This is Jim Bob in maintenance. Tell me what that machine's doing.",
+                    "outbound": "Howdy, it's Jim Bob in maintenance at {COMPANY}, giving you a ring. Got a minute, partner?",
                     "tag": "breakdown",
                     "when": "A rented machine broke down, is acting up, needs troubleshooting, or the caller wants a service ticket or a tech."},
     "billing": {"title": "Miss Hattie Mae (Billing)", "short": "Miss Hattie Mae", "prompt": "hattie.md", "voice": "ara",
                 "greeting": "Hey there, baby, this is Miss Hattie Mae in billing. What can I help you with?",
+                "outbound": "Hey there, baby, it's Miss Hattie Mae in billing at {COMPANY}, giving you a ring. Got a minute?",
                 "tag": "payment-link-sent",
                 "when": "The caller asks about a balance, an invoice, or paying."},
 }
@@ -691,12 +694,37 @@ def agent_payload(piece, names, cfg, present, crm, agent_ids):
         "agent_mode": "both" if piece == "rentals" else "inbound", "voice_enabled": True, "text_enabled": False,
         "ai_speaks_first": True, "finish_greeting_before_listening": False,
         "ai_speaks_first_outbound": True,
-        "greeting_outbound": f"Hey there, it's Joanne at {cfg['company']}, giving you a ring. What can I do for you, sugar?",
+        "greeting_outbound": d["outbound"].replace("{COMPANY}", cfg["company"]),
         "tools_enabled": tools, "transfer_to_agents": targets,
         "ghl_tags": [{"name": d["tag"]}] if crm else [],
         "enable_contact_intelligence": crm, "prompt_includes_contact_intelligence": crm,
         "max_call_duration_minutes": 15, "max_silence_seconds": 30,
     }
+
+
+def keep_user_tools(ours, current):
+    """The installer manages a fixed set of built-ins. Anything else the user switched on
+    later (transfer_call to a person in video 6, send_sms, ...) stays on across re-runs."""
+    managed = {"end_call", "schedule_callback", "transfer_to_agent", *CRM_TOOLS}
+    extra = [t for t in (current or []) if t not in managed and t not in ours]
+    return list(ours) + extra
+
+
+# What earlier installs wrote as every desk's outbound greeting (a bug: Jim Bob and
+# Miss Hattie Mae introduced themselves as Joanne). Re-runs replace it.
+OLD_OUTBOUND_GREETING = "Hey there, it's Joanne at "
+
+
+def keep_user_outbound(body, current):
+    """Video 7 sets Jim Bob to Both and writes outbound greetings by hand. A re-run must not
+    flip a desk back to Inbound (its sequence would stop saving and dialing) or drop that greeting."""
+    if current.get("agent_mode") in ("outbound", "both"):
+        body["agent_mode"] = current["agent_mode"]
+    mine = current.get("greeting_outbound") or ""
+    stale = mine.startswith(OLD_OUTBOUND_GREETING) and not body["greeting_outbound"].startswith(OLD_OUTBOUND_GREETING)
+    if mine and not stale:
+        body["greeting_outbound"] = mine
+    return body
 
 
 def build_agents(desk_pieces, names, cfg, rec, crm):
@@ -714,6 +742,9 @@ def build_agents(desk_pieces, names, cfg, rec, crm):
             say(f"  agent {body['name']}: created")
     for p in present:
         body = agent_payload(p, names, cfg, present, crm, ids)
+        current = must(ll("GET", f"/agents/{ids[p]}"), "read agent")
+        body["tools_enabled"] = keep_user_tools(body["tools_enabled"], current.get("tools_enabled"))
+        keep_user_outbound(body, current)
         must(ll("PATCH", f"/agents/{ids[p]}", body), f"update agent {body['name']}")
         got = must(ll("GET", f"/agents/{ids[p]}"), "read agent")
         problems = [k for k in ("voice_provider", "voice", "enable_contact_intelligence") if got.get(k) != body[k]]
@@ -838,6 +869,11 @@ def cmd_test(args, names):
         if targs is None:
             continue  # these two send a real message; send-code covers them
         r = test_fn(names, fname, targs)
+        if r.get("result") == "not installed":
+            # Piece-by-piece installs (the course videos) test what exists so far.
+            r["skipped"] = True
+            say(f"  SKIP {r['function']}: not installed yet")
+            continue
         txt = json.dumps(r.get("result"))
         res = r.get("result") if isinstance(r.get("result"), dict) else {}
         gated = fname not in ("fleet_availability", "rental_quote", "troubleshoot_machine", "verify_code")
@@ -852,6 +888,12 @@ def cmd_test(args, names):
     return results
 
 
+def gate_line(label, r):
+    if r.get("result") == "not installed":
+        return f"  {label}: no account lookups yet (Joanne's rentals desk adds them, then the gate shows here)"
+    return f"  {label}: {json.dumps(r['result'])[:300]}"
+
+
 def demo_last4():
     return re.sub(r"\D", "", ENV.get("MY_PHONE_NUMBER", ""))[-4:]
 
@@ -860,7 +902,7 @@ def cmd_send_code(args, names):
     rec, cfg = config_from(args, names)
     clear_test_row(names)
     before = test_fn(names, "rental_status", {})
-    say(f"  gate before: {json.dumps(before['result'])[:120]}")
+    say(gate_line("gate before", before))
     channel = "sms" if args.codes == "sms" else "email"
     sent = test_fn(names, "send_verification_code", {"first_name": cfg.get("first_name", ""), "phone_last4": demo_last4(), "channel": channel})
     say(f"  send code: {json.dumps(sent['result'])[:200]}")
@@ -874,7 +916,7 @@ def cmd_check_code(args, names):
     ok = test_fn(names, "verify_code", {"code": args.code})
     say(f"  your code: {json.dumps(ok['result'])[:160]}")
     after = test_fn(names, "rental_status", {})
-    say(f"  gate after: {json.dumps(after['result'])[:300]}")
+    say(gate_line("gate after", after))
     clear_test_row(names)
     say("  cleared the test-call-sid verification row")
     return {"wrong": w, "right": ok, "gate_after": after}

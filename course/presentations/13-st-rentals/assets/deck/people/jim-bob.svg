@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><title>Doug Jim Bob McGee</title>
+<defs><clipPath id="c"><circle cx="100" cy="100" r="100"/></clipPath></defs>
+<g clip-path="url(#c)">
+<rect width="200" height="200" fill="#DCE7EE"/>
+<path d="M18 200 C 24 152 60 140 100 140 C 140 140 176 152 182 200 Z" fill="#3F3F46"/>
+<rect x="18" y="176" width="164" height="9" fill="#C9C9CF"/>
+<rect x="86" y="118" width="28" height="26" fill="#D9A983"/>
+<circle cx="63" cy="100" r="8" fill="#D9A983"/><circle cx="137" cy="100" r="8" fill="#D9A983"/>
+<ellipse cx="100" cy="96" rx="38" ry="44" fill="#E2B691"/>
+<ellipse cx="79" cy="106" rx="10" ry="5" fill="#5B5B63" opacity="0.35"/>
+<ellipse cx="123" cy="101" rx="8" ry="4" fill="#5B5B63" opacity="0.3"/>
+<ellipse cx="112" cy="80" rx="7" ry="3" fill="#5B5B63" opacity="0.28"/>
+<path d="M62 94 C 62 152 85 166 100 166 C 115 166 138 152 138 94 C 131 120 118 124 100 124 C 82 124 69 120 62 94 Z" fill="#5A4636"/>
+<path d="M82 114 C 89 106 97 108 100 112 C 103 108 111 106 118 114 C 109 119 91 119 82 114 Z" fill="#45362A"/>
+<ellipse cx="100" cy="104" rx="6" ry="7" fill="#D49F7A"/>
+<rect x="78" y="82" width="16" height="5" rx="2.5" fill="#45362A"/><rect x="106" y="82" width="16" height="5" rx="2.5" fill="#45362A"/>
+<circle cx="86" cy="94" r="4" fill="#1F1F1F"/><circle cx="114" cy="94" r="4" fill="#1F1F1F"/>
+<path d="M54 72 C 54 28 146 28 146 72 Z" fill="#4A7A96"/>
+<rect x="95" y="34" width="10" height="36" rx="4" fill="#6298B6"/>
+<rect x="44" y="66" width="112" height="11" rx="5.5" fill="#3A6680"/>
+<circle cx="100" cy="54" r="10" fill="#F4F4F1" stroke="#3A6680" stroke-width="3"/>
+<circle cx="100" cy="54" r="4" fill="#FFFFFF"/>
+</g></svg>

@@ -166,6 +166,7 @@ What the caller can do, for explaining it:
 - **Function names are unique per Leadlock account.** If a same-named function from somewhere else exists, the script stops instead of taking it over; re-run with `--prefix`.
 - **Handoffs need the same voice provider on every desk** (xAI or OpenAI). All three are Grok Voice 3.0; if the user changes one desk's provider, change all three.
 - **Agent and prompt changes apply to the next call**, not one in progress.
+- **A re-run re-renders every prompt from `prompts/`.** It keeps an agent on Outbound or Both and keeps a hand-written outbound greeting (video 7), but an outbound section added to a prompt is dropped. After a re-run, repeat video 7's outbound greeting step.
 - **Texting needs an A2P-registered number** and a Leadlock API key stored as an n8n credential (only created in text mode). Without A2P, `/outbound/sms` refuses to send.
 
 ## Rule capture

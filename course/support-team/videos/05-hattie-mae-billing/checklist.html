@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>05 Miss Hattie Mae's billing desk: checklist</title>
+<style>
+  :root { --blue:#6298B6; --ink:#0f1419; --muted:#5b6670; --line:#e4e8ec; --bg:#f6f8fa; --done:#9aa5ae; --warn:#b5651d; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:17px/1.5 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif; color:var(--ink); background:var(--bg); }
+  header { background:var(--ink); color:#fff; padding:28px 40px 24px; }
+  header .top { display:flex; align-items:center; gap:22px; }
+  header .top img { width:84px; height:84px; border-radius:50%; flex:none; background:#24303a; }
+  header .eyebrow { color:var(--blue); font:600 13px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.12em; text-transform:uppercase; }
+  header h1 { margin:10px 0 6px; font-size:34px; letter-spacing:-.01em; }
+  header p { margin:0; color:#b8c2ca; }
+  .bar { margin-top:18px; height:8px; background:#24303a; border-radius:99px; overflow:hidden; }
+  .bar i { display:block; height:100%; width:0; background:var(--blue); transition:width .25s; }
+  .count { margin-top:8px; font:13px ui-monospace, Menlo, monospace; color:#b8c2ca; }
+  main { max-width:980px; margin:0 auto; padding:28px 40px 60px; }
+  h2 { margin:34px 0 12px; font-size:22px; display:flex; align-items:center; gap:10px; }
+  h2 .tag { font:600 12px ui-monospace, Menlo, monospace; color:#fff; background:var(--blue); padding:4px 8px; border-radius:6px; }
+  .step { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin:10px 0; display:grid; grid-template-columns:34px 1fr; gap:12px; cursor:pointer; transition:opacity .2s, border-color .2s; }
+  .step:hover { border-color:var(--blue); }
+  .step input { width:24px; height:24px; margin:2px 0 0; accent-color:var(--blue); cursor:pointer; }
+  .step .t { font-weight:650; font-size:18px; }
+  .step .d { color:var(--muted); margin-top:4px; }
+  .step.done { opacity:.55; }
+  .step.done .t { text-decoration:line-through; color:var(--done); }
+  code, .cmd { font:15px ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .cmd { display:flex; align-items:center; gap:10px; background:var(--ink); color:#e6edf3; padding:9px 12px; border-radius:8px; margin-top:8px; }
+  .cmd span { flex:1; overflow-x:auto; white-space:nowrap; }
+  .cmd b { font:600 11px ui-monospace, Menlo, monospace; color:var(--blue); min-width:62px; text-transform:uppercase; letter-spacing:.06em; }
+  .cmd button, .say button { font:600 12px ui-monospace, Menlo, monospace; background:var(--blue); color:#fff; border:0; border-radius:6px; padding:5px 9px; cursor:pointer; flex:none; }
+  a { color:var(--blue); font-weight:600; text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  .say { margin-top:8px; padding:8px 12px; background:#eef4f8; border-left:3px solid var(--blue); border-radius:6px; font:15px ui-monospace, Menlo, monospace; display:flex; align-items:flex-start; gap:12px; }
+  .say span { flex:1; }
+  .note { color:var(--muted); font-size:14px; margin-top:6px; }
+  .ok { margin-top:8px; padding:8px 12px; background:#eef7f0; border-left:3px solid #3f8f5a; border-radius:6px; font-size:15px; }
+  .trouble { background:#fff; border:1px solid var(--line); border-radius:12px; padding:6px 18px; margin:10px 0; }
+  .trouble dt { font-weight:650; margin-top:12px; }
+  .trouble dd { margin:4px 0 12px; color:var(--muted); }
+  .next { background:var(--ink); color:#e6edf3; border-radius:12px; padding:18px 20px; margin-top:12px; }
+  .next a { color:#9cc3d8; }
+  footer { text-align:center; color:var(--muted); font-size:14px; padding:10px 0 40px; }
+  .reset { background:none; border:1px solid var(--line); color:var(--muted); border-radius:8px; padding:6px 12px; cursor:pointer; font-size:13px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="top"><img src="../../assets/people/hattie-mae.svg" alt=""><div>
+  <div class="eyebrow">Build an AI customer support team &middot; Video 05 of 8</div>
+  <h1>Miss Hattie Mae's billing desk</h1>
+  <p>Balance and invoices behind the gate. A payment link by text. Never a card on the phone.</p>
+  </div></div>
+  <div class="bar"><i id="bar"></i></div>
+  <div class="count" id="count">0 of 0 done</div>
+</header>
+<main>
+
+<h2><span class="tag">BEFORE</span> Before you start</h2>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">1. Videos 1 to 4 are done</div>
+  <div class="d">Tables, Verify Caller, Joanne and Jim Bob.</div>
+</div></label>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">2. A number that can text</div>
+  <div class="d">The payment link goes by text, so you need an A2P-registered number. Not there yet? Say <code>register A2P</code>. Until then, the link goes by email.</div>
+</div></label>
+<h2><span class="tag">BUILD</span> Miss Hattie Mae</h2>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">3. Install her desk</div>
+  <div class="say"><span>install Miss Hattie Mae</span><button type="button">Copy</button></div>
+  <div class="ok"><b>Success:</b> A workflow called <b>Granite Peak - Billing</b> and an agent called <b>Granite Peak - Miss Hattie Mae (Billing)</b> with account_balance, send_payment_link and the two verify functions.</div>
+</div></label>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">4. Check the card rule</div>
+  <div class="say"><span>Show me the part of Miss Hattie Mae's prompt about card numbers and payment links.</span><button type="button">Copy</button></div>
+  <div class="ok"><b>Success:</b> She never takes a card number on the phone. If a caller starts reading one, she stops them and sends the link.</div>
+</div></label>
+<h2><span class="tag">TEST</span> Test it</h2>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">5. The gate</div>
+  <div class="say"><span>Test Miss Hattie Mae's account_balance before verifying.</span><button type="button">Copy</button></div>
+  <div class="ok"><b>Success:</b> <b>verify_first</b>. No balance until the code is checked.</div>
+</div></label>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">6. The link sits behind the gate too</div>
+  <div class="say"><span>Test Miss Hattie Mae's send_payment_link by email before verifying.</span><button type="button">Copy</button></div>
+  <div class="ok"><b>Success:</b> <b>verify_first</b>. No link goes out until the caller is verified.</div>
+</div></label>
+<label class="step"><input type="checkbox"><div>
+  <div class="t">7. A test call</div>
+  <div class="d">On the call: ask what you owe, read back the code, then "Can I just read you my card number?"</div>
+  <div class="say"><span>Give Miss Hattie Mae a phone number and place a test call to my phone.</span><button type="button">Copy</button></div>
+  <div class="ok"><b>Success:</b> Your balance after the code. Then she says no to the card, sweetly, and sends the link instead.</div>
+</div></label>
+<h2><span class="tag">FIX</span> If something goes wrong</h2>
+<dl class="trouble"><dt>Claude says the API key is missing or gets a 401</dt><dd>Say <code>check my setup</code>. The setup-check skill finds the problem in <code>.env</code>.</dd><dt>Claude can't reach n8n</dt><dd>Type <code>/mcp</code> and look for n8n. Not there? Say <code>connect n8n</code>. The installer also needs <code>N8N_API_URL</code> and <code>N8N_API_KEY</code> in <code>.env</code>.</dd><dt>The text never arrives</dt><dd>The number isn't A2P-registered yet, or texting is paused on the account. Use the email link until it's approved.</dd><dt>She reads out a full card or account number</dt><dd>She shouldn't. Ask Claude to tighten the rule in her prompt, then test again.</dd></dl>
+<h2><span class="tag">NEXT</span> Handoffs</h2>
+<div class="next">Next: <a href="../06-handoffs/checklist.html">Video 6: Handoffs</a>. One call, three desks, nobody repeats themselves.</div>
+
+</main>
+<footer><button class="reset" type="button" id="reset">Reset checklist</button></footer>
+
+<script>
+  const boxes = [...document.querySelectorAll('.step input')];
+  const KEY = 'leadlock-support-team-05-hattie-mae';
+  const saved = JSON.parse(localStorage.getItem(KEY) || '[]');
+  function paint() {
+    const n = boxes.filter(b => b.checked).length;
+    boxes.forEach(b => b.closest('.step').classList.toggle('done', b.checked));
+    document.getElementById('bar').style.width = (100 * n / boxes.length) + '%';
+    document.getElementById('count').textContent = n + ' of ' + boxes.length + ' done';
+    localStorage.setItem(KEY, JSON.stringify(boxes.map(b => b.checked)));
+  }
+  boxes.forEach((b, i) => { b.checked = !!saved[i]; b.addEventListener('change', paint); });
+  document.querySelectorAll('.cmd button, .say button').forEach(btn => btn.addEventListener('click', e => {
+    e.preventDefault(); e.stopPropagation();
+    navigator.clipboard.writeText(btn.previousElementSibling.textContent);
+    btn.textContent = 'Copied'; setTimeout(() => btn.textContent = 'Copy', 1200);
+  }));
+  document.getElementById('reset').addEventListener('click', () => { boxes.forEach(b => b.checked = false); paint(); });
+  paint();
+</script>
+</body>
+</html>
