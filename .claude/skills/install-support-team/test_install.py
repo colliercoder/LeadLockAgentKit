@@ -56,5 +56,37 @@ class KeepUserTools(unittest.TestCase):
         self.assertNotIn("transfer_to_agent", got)
 
 
+class OutboundSettings(unittest.TestCase):
+    """Video 7 makes Jim Bob outbound and writes each desk's outbound greeting."""
+
+    cfg = {"company": "Granite Peak Equipment Rental", "first_name": "Dan"}
+
+    def payload(self, piece):
+        names = install.Names("GP Test - ", True)
+        with mock.patch.object(install, "render_prompt", lambda *a: "prompt"):
+            return install.agent_payload(piece, names, self.cfg, list(install.DESKS), True, {})
+
+    def test_each_desk_greets_outbound_as_itself(self):
+        for piece, d in install.DESKS.items():
+            got = self.payload(piece)["greeting_outbound"]
+            self.assertIn(d["short"], got)
+            if piece != "rentals":
+                self.assertNotIn("Joanne", got)
+
+    def test_rerun_keeps_outbound_mode_and_a_custom_greeting(self):
+        body = self.payload("maintenance")
+        current = {"agent_mode": "both", "greeting_outbound": "Howdy, it's Jim Bob, following up."}
+        install.keep_user_outbound(body, current)
+        self.assertEqual(body["agent_mode"], "both")
+        self.assertEqual(body["greeting_outbound"], "Howdy, it's Jim Bob, following up.")
+
+    def test_rerun_replaces_the_old_wrong_greeting(self):
+        body = self.payload("maintenance")
+        old = "Hey there, it's Joanne at Granite Peak Equipment Rental, giving you a ring. What can I do for you, sugar?"
+        install.keep_user_outbound(body, {"agent_mode": "inbound", "greeting_outbound": old})
+        self.assertEqual(body["agent_mode"], "inbound")
+        self.assertNotIn("Joanne", body["greeting_outbound"])
+
+
 if __name__ == "__main__":
     unittest.main()
