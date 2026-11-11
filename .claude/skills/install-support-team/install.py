@@ -699,6 +699,14 @@ def agent_payload(piece, names, cfg, present, crm, agent_ids):
     }
 
 
+def keep_user_tools(ours, current):
+    """The installer manages a fixed set of built-ins. Anything else the user switched on
+    later (transfer_call to a person in video 6, send_sms, ...) stays on across re-runs."""
+    managed = {"end_call", "schedule_callback", "transfer_to_agent", *CRM_TOOLS}
+    extra = [t for t in (current or []) if t not in managed and t not in ours]
+    return list(ours) + extra
+
+
 def build_agents(desk_pieces, names, cfg, rec, crm):
     agents = {a["name"]: a for a in ll_agents()}
     present = [p for p in DESKS if p in desk_pieces or names.agent(p) in agents]
@@ -714,6 +722,8 @@ def build_agents(desk_pieces, names, cfg, rec, crm):
             say(f"  agent {body['name']}: created")
     for p in present:
         body = agent_payload(p, names, cfg, present, crm, ids)
+        current = must(ll("GET", f"/agents/{ids[p]}"), "read agent")
+        body["tools_enabled"] = keep_user_tools(body["tools_enabled"], current.get("tools_enabled"))
         must(ll("PATCH", f"/agents/{ids[p]}", body), f"update agent {body['name']}")
         got = must(ll("GET", f"/agents/{ids[p]}"), "read agent")
         problems = [k for k in ("voice_provider", "voice", "enable_contact_intelligence") if got.get(k) != body[k]]
@@ -838,6 +848,11 @@ def cmd_test(args, names):
         if targs is None:
             continue  # these two send a real message; send-code covers them
         r = test_fn(names, fname, targs)
+        if r.get("result") == "not installed":
+            # Piece-by-piece installs (the course videos) test what exists so far.
+            r["skipped"] = True
+            say(f"  SKIP {r['function']}: not installed yet")
+            continue
         txt = json.dumps(r.get("result"))
         res = r.get("result") if isinstance(r.get("result"), dict) else {}
         gated = fname not in ("fleet_availability", "rental_quote", "troubleshoot_machine", "verify_code")
@@ -852,6 +867,12 @@ def cmd_test(args, names):
     return results
 
 
+def gate_line(label, r):
+    if r.get("result") == "not installed":
+        return f"  {label}: no account lookups yet (Joanne's rentals desk adds them, then the gate shows here)"
+    return f"  {label}: {json.dumps(r['result'])[:300]}"
+
+
 def demo_last4():
     return re.sub(r"\D", "", ENV.get("MY_PHONE_NUMBER", ""))[-4:]
 
@@ -860,7 +881,7 @@ def cmd_send_code(args, names):
     rec, cfg = config_from(args, names)
     clear_test_row(names)
     before = test_fn(names, "rental_status", {})
-    say(f"  gate before: {json.dumps(before['result'])[:120]}")
+    say(gate_line("gate before", before))
     channel = "sms" if args.codes == "sms" else "email"
     sent = test_fn(names, "send_verification_code", {"first_name": cfg.get("first_name", ""), "phone_last4": demo_last4(), "channel": channel})
     say(f"  send code: {json.dumps(sent['result'])[:200]}")
@@ -874,7 +895,7 @@ def cmd_check_code(args, names):
     ok = test_fn(names, "verify_code", {"code": args.code})
     say(f"  your code: {json.dumps(ok['result'])[:160]}")
     after = test_fn(names, "rental_status", {})
-    say(f"  gate after: {json.dumps(after['result'])[:300]}")
+    say(gate_line("gate after", after))
     clear_test_row(names)
     say("  cleared the test-call-sid verification row")
     return {"wrong": w, "right": ok, "gate_after": after}
