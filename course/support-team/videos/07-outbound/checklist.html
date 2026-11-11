@@ -66,41 +66,42 @@
 </div></label>
 <label class="step"><input type="checkbox"><div>
   <div class="t">2. Outbound is on</div>
-  <div class="d">In Leadlock: accept the outbound terms, set the agent to Outbound or Both, and give it a number.</div>
+  <div class="d">In Leadlock: accept the outbound terms, set Joanne and Jim Bob to Outbound or Both, and give Joanne a number. The installer leaves Jim Bob on Inbound, and a sequence won't save with an Inbound agent.</div>
 </div></label>
 <h2><span class="tag">BUILD</span> Three reasons to call</h2>
 <label class="step"><input type="checkbox"><div>
   <div class="t">3. Off-rent reminders</div>
-  <div class="say"><span>Build an n8n workflow called Granite Peak - Off-rent reminders. Every morning at 8, read Granite Peak - Rentals for rentals ending in 2 days, and for each one ask Leadlock to have Joanne call the customer, passing first_name, unit, model and end_date as context. Keep it inactive until I say so.</span><button type="button">Copy</button></div>
+  <div class="say"><span>Build an n8n workflow called Granite Peak - Off-rent reminders. Every morning at 8 Mountain time, read Granite Peak - Rentals for rentals ending in 2 days, look up each customer's phone in Granite Peak - Customers, and ask Leadlock to have Joanne call them, passing first_name, unit, model and end_date as context. Keep it inactive until I say so.</span><button type="button">Copy</button></div>
   <div class="ok"><b>Success:</b> A workflow with a schedule, a table read, a filter and a Leadlock call node. Inactive.</div>
 </div></label>
 <label class="step"><input type="checkbox"><div>
   <div class="t">4. Delivery confirmations</div>
-  <div class="say"><span>Build an n8n workflow called Granite Peak - Delivery confirmations. Every afternoon at 3, find rentals starting tomorrow and have Joanne call to confirm the delivery time and the site. Keep it inactive.</span><button type="button">Copy</button></div>
+  <div class="say"><span>Build an n8n workflow called Granite Peak - Delivery confirmations. Every afternoon at 3 Mountain time, find rentals in Granite Peak - Rentals starting tomorrow and have Joanne call the customer to confirm the delivery time and the site, passing the unit, start_date and site as context. Keep it inactive.</span><button type="button">Copy</button></div>
 </div></label>
 <label class="step"><input type="checkbox"><div>
   <div class="t">5. Service follow-ups, as a sequence</div>
-  <div class="say"><span>Make a Leadlock sequence called Granite Peak - Service follow-up for Jim Bob: call the day after a ticket closes to check the machine is running right, try once more the next afternoon if there's no answer, then send a short text. Leave it off.</span><button type="button">Copy</button></div>
-  <div class="ok"><b>Success:</b> A sequence with three steps, not active. Nobody is enrolled yet.</div>
-  <div class="note">A sequence retries for you. Use one when a single call isn't enough.</div>
+  <div class="say"><span>Make a Leadlock sequence called Granite Peak - Service follow-up for Jim Bob: call the day after a ticket closes to check the machine is running right, with one retry if nobody answers, then send a short check-in text the next day. Leave it off.</span><button type="button">Copy</button></div>
+  <div class="ok"><b>Success:</b> A sequence with two steps (a call that retries once, then a text), not active. Nobody is enrolled yet.</div>
+  <div class="note">A call step retries a no-answer for you, an hour later. An answered call moves straight to the next step, so don't add a second call step for the retry: it would ring people who already picked up.</div>
 </div></label>
 <label class="step"><input type="checkbox"><div>
   <div class="t">6. Enroll from n8n</div>
-  <div class="say"><span>Build an n8n workflow called Granite Peak - Ticket closed. Every hour, find tickets in Granite Peak - Service closed since the last run and enroll that customer in the Granite Peak - Service follow-up sequence. Keep it inactive.</span><button type="button">Copy</button></div>
+  <div class="say"><span>Build an n8n workflow called Granite Peak - Ticket closed. Every hour, find tickets in Granite Peak - Service whose status changed to Closed since the last run, look up the customer in Granite Peak - Customers, and enroll them in the Granite Peak - Service follow-up sequence. Keep it inactive.</span><button type="button">Copy</button></div>
+  <div class="note">Nothing in the team closes tickets yet. To see it work, set a ticket's status to Closed in the table.</div>
 </div></label>
 <label class="step"><input type="checkbox"><div>
   <div class="t">7. Give each agent an outbound greeting</div>
-  <div class="say"><span>Give Joanne and Jim Bob an outbound greeting that uses the context from these workflows, and make sure they verify before talking about the account.</span><button type="button">Copy</button></div>
+  <div class="say"><span>Give Joanne and Jim Bob an outbound greeting and an outbound section in their prompts that uses the context from these workflows, and make sure they verify before talking about the account. Jim Bob's sequence calls only carry the customer's name, so he looks the ticket up after verifying.</span><button type="button">Copy</button></div>
 </div></label>
 <h2><span class="tag">TEST</span> Test it</h2>
 <label class="step"><input type="checkbox"><div>
   <div class="t">8. A dry run</div>
-  <div class="say"><span>Dry-run Granite Peak - Off-rent reminders: show me who it would call today and the context it would send, without placing any calls.</span><button type="button">Copy</button></div>
-  <div class="ok"><b>Success:</b> A list of rentals ending in 2 days, with the context for each. No calls.</div>
+  <div class="say"><span>Dry-run Granite Peak - Off-rent reminders: show me who it would call today and the context it would send, without placing any calls. If nobody is due today, say so and show the next rental it would call, and on which day.</span><button type="button">Copy</button></div>
+  <div class="ok"><b>Success:</b> A list of rentals ending in 2 days with the context for each, or "nobody due today" and the next one up. No calls.</div>
 </div></label>
 <label class="step"><input type="checkbox"><div>
   <div class="t">9. One real call to yourself</div>
-  <div class="say"><span>Put my number on one test rental ending in 2 days, run Granite Peak - Off-rent reminders once, then put the rental back.</span><button type="button">Copy</button></div>
+  <div class="say"><span>Move one test rental so it ends in 2 days and put my number on its customer, run Granite Peak - Off-rent reminders once, then put the rental and the customer back.</span><button type="button">Copy</button></div>
   <div class="ok"><b>Success:</b> Your phone rings, and Joanne knows which unit is due back.</div>
 </div></label>
 <label class="step"><input type="checkbox"><div>
@@ -108,7 +109,7 @@
   <div class="d">Prefer GoHighLevel? A workflow with a Contact Tag trigger and the Leadlock Outbound Call action does the same. See <a href="../../../README.md">the course README</a>, video 8 of the first course.</div>
 </div></label>
 <h2><span class="tag">FIX</span> If something goes wrong</h2>
-<dl class="trouble"><dt>Claude says the API key is missing or gets a 401</dt><dd>Say <code>check my setup</code>. The setup-check skill finds the problem in <code>.env</code>.</dd><dt>Claude can't reach n8n</dt><dd>Type <code>/mcp</code> and look for n8n. Not there? Say <code>connect n8n</code>. The installer also needs <code>N8N_API_URL</code> and <code>N8N_API_KEY</code> in <code>.env</code>.</dd><dt>The call doesn't start</dt><dd>Check the outbound terms are accepted, the agent is Outbound or Both, and it has a number.</dd><dt>It calls everybody</dt><dd>The filter is wrong. Dry-run first, every time.</dd></dl>
+<dl class="trouble"><dt>Claude says the API key is missing or gets a 401</dt><dd>Say <code>check my setup</code>. The setup-check skill finds the problem in <code>.env</code>.</dd><dt>Claude can't reach n8n</dt><dd>Type <code>/mcp</code> and look for n8n. Not there? Say <code>connect n8n</code>. The installer also needs <code>N8N_API_URL</code> and <code>N8N_API_KEY</code> in <code>.env</code>.</dd><dt>The call doesn't start</dt><dd>Check the outbound terms are accepted, the agent is Outbound or Both, and it has a number (a sequence needs one too).</dd><dt>It calls everybody</dt><dd>The filter is wrong. Dry-run first, every time.</dd></dl>
 <h2><span class="tag">NEXT</span> Measure and improve</h2>
 <div class="next">Next: <a href="../08-measure/checklist.html">Video 8: Measure and improve</a>. Every call logged, and a better team every week.</div>
 

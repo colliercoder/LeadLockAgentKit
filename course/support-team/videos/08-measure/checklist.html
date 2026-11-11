@@ -62,12 +62,12 @@
 <h2><span class="tag">BEFORE</span> Before you start</h2>
 <label class="step"><input type="checkbox"><div>
   <div class="t">1. The team is live</div>
-  <div class="d">Videos 1 to 7, and a few test calls in the call log.</div>
+  <div class="d">Videos 1 to 7, and at least 5 real phone calls to Joanne. Playground calls don't count for the audit.</div>
 </div></label>
 <h2><span class="tag">BUILD</span> Log every call</h2>
 <label class="step"><input type="checkbox"><div>
   <div class="t">2. A calls table and a workflow</div>
-  <div class="say"><span>Build an n8n workflow called Granite Peak - Call log. A webhook receives Leadlock's post-call webhook and saves one row per call to a new data table called Granite Peak - Calls: the date, the agent (from ?agent= on the URL), direction, the last 4 digits of the caller's number, duration, outcome, the summary, and verified (look up the call_sid in Granite Peak - Verifications). Publish it and give me the production URL.</span><button type="button">Copy</button></div>
+  <div class="say"><span>Build an n8n workflow called Granite Peak - Call log. A webhook receives Leadlock's post-call webhook and saves one row per call to a new data table called Granite Peak - Calls: the date, the agent (from ?agent= on the URL), direction, the last 4 digits of the customer's number (from_number on inbound calls, to_number on outbound), duration, outcome, the summary, and verified (look up the call_sid in Granite Peak - Verifications). Publish it and give me the production URL.</span><button type="button">Copy</button></div>
   <div class="note">The post-call payload doesn't name the agent, so each agent gets its own <code>?agent=</code> on the URL.</div>
 </div></label>
 <label class="step"><input type="checkbox"><div>
@@ -89,7 +89,7 @@
 <label class="step"><input type="checkbox"><div>
   <div class="t">6. Read the calls</div>
   <div class="say"><span>audit my calls</span><button type="button">Copy</button></div>
-  <div class="note">Pick one agent at a time. You get a scorecard and the patterns behind the misses.</div>
+  <div class="note">Pick one agent at a time, starting with Joanne: she answers every call, so calls she hands off are in her log too. It needs at least 5 real calls. You get a scorecard and the patterns behind the misses.</div>
 </div></label>
 <label class="step"><input type="checkbox"><div>
   <div class="t">7. Ship the fixes</div>
@@ -119,7 +119,7 @@
   <div class="d">Every one is a lesson. Read them first.</div>
 </div></label>
 <h2><span class="tag">FIX</span> If something goes wrong</h2>
-<dl class="trouble"><dt>Claude says the API key is missing or gets a 401</dt><dd>Say <code>check my setup</code>. The setup-check skill finds the problem in <code>.env</code>.</dd><dt>Claude can't reach n8n</dt><dd>Type <code>/mcp</code> and look for n8n. Not there? Say <code>connect n8n</code>. The installer also needs <code>N8N_API_URL</code> and <code>N8N_API_KEY</code> in <code>.env</code>.</dd><dt>No rows in the calls table</dt><dd>Check the workflow is published, the URL is the production one, and post-call webhook is on for each agent.</dd><dt>audit my calls finds nothing</dt><dd>It needs real calls. Place a few test calls first.</dd></dl>
+<dl class="trouble"><dt>Claude says the API key is missing or gets a 401</dt><dd>Say <code>check my setup</code>. The setup-check skill finds the problem in <code>.env</code>.</dd><dt>Claude can't reach n8n</dt><dd>Type <code>/mcp</code> and look for n8n. Not there? Say <code>connect n8n</code>. The installer also needs <code>N8N_API_URL</code> and <code>N8N_API_KEY</code> in <code>.env</code>.</dd><dt>No rows in the calls table</dt><dd>Check the workflow is published, the URL is the production one, and post-call webhook is on for each agent.</dd><dt>audit my calls finds nothing</dt><dd>It needs at least 5 real phone calls on that agent; playground calls don't count. Jim Bob and Miss Hattie Mae only have their own calls once they dial out, so audit Joanne first.</dd></dl>
 <h2><span class="tag">NEXT</span> You built a support team</h2>
 <div class="next">That's the course. Free kit, these checklists and every file: <a href="https://www.leadlock.ai/agent-kit" target="_blank">leadlock.ai/agent-kit</a>. Back to <a href="../../README.md">the course overview</a>.</div>
 
